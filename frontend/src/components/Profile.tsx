@@ -7,17 +7,20 @@ interface ProfileData {
     profile_url: string;
 }
 
-const Profile: React.FC = () => {
+const Profile = () => {
     const [profile, setProfile] = useState<ProfileData | null>(null);
 
     useEffect(() => {
-        axios.get<ProfileData>('http://localhost:8000/profile')
-            .then(response => {
-                setProfile(response.data);
-            })
-            .catch(error => {
-                console.error("There was an error fetching the profile!", error);
-            });
+        const token = localStorage.getItem('spotify_token');
+        if (token) {
+            axios.get(`http://localhost:8000/profile?token=${token}`)
+                .then(response => {
+                    setProfile(response.data);
+                })
+                .catch(error => {
+                    console.error("There was an error fetching the profile!", error);
+                });
+        }
     }, []);
 
     if (!profile) return <div>Loading...</div>;
