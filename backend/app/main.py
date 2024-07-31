@@ -40,7 +40,7 @@ def login():
 async def callback(request: Request):
     code = request.query_params.get("code")
     token_info = oauth.get_access_token(code)
-    return RedirectResponse(f"http://localhost:3000/callback?token={token_info['access_token']}")
+    return RedirectResponse(f"http://localhost:5173/callback?token={token_info['access_token']}")
 
 @app.get("/profile")
 async def get_profile(token: str):
