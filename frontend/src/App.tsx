@@ -1,10 +1,26 @@
-import React from 'react';
-import Profile from './components/Profile';
+import React, { useEffect, useState } from 'react';
 
-const App: React.FC = () => {
+function App() {
+    const [username, setUsername] = useState("");
+
+    useEffect(() => {
+        // Fetch user details from your backend after successful login
+        async function fetchUsername() {
+            const response = await fetch('http://yourdomain.com/spotify/callback');
+            const data = await response.json();
+            setUsername(data.username);
+        }
+
+        fetchUsername();
+    }, []);
+
     return (
-        <div className="App">
-            <Profile />
+        <div>
+            {username ? (
+                <p>Welcome, {username}!</p>
+            ) : (
+                <p>Loading...</p>
+            )}
         </div>
     );
 }
