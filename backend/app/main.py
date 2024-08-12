@@ -54,7 +54,7 @@ def welcome():
     if not token_info:
         return redirect('/')
 
-    # Create Spotify client
+    # Create Spotify client using the user's access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
 
     # Get current user's information
@@ -70,7 +70,7 @@ def user_info():
     if not token_info:
         return redirect('/')
 
-    # Create Spotify client
+    # Create Spotify client using the user's access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
 
     # Get current user's information
