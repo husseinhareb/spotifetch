@@ -2,14 +2,18 @@ import os
 from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from flask import Flask, request, redirect, session, url_for, jsonify
+from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.middleware.sessions import SessionMiddleware
+from fastapi.templating import Jinja2Templates
 
 # Load environment variables from .env file
 load_dotenv()
 
-app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Used to secure session
-app.config['SESSION_COOKIE_NAME'] = 'spotify-login-session'
+app = FastAPI()
+
+# Secret key for session management
+app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
 
 # Spotify API credentials from environment variables
 client_id = os.getenv('SPOTIPY_CLIENT_ID')
@@ -19,40 +23,42 @@ redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 # Spotify OAuth object
 sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope='user-read-private')
 
-@app.route('/')
-def index():
+templates = Jinja2Templates(directory="templates")
+
+@app.get('/')
+async def index():
     # Redirect user to Spotify login page
     auth_url = sp_oauth.get_authorize_url()
-    return redirect(auth_url)
+    return RedirectResponse(auth_url)
 
-@app.route('/callback')
-def callback():
+@app.get('/callback')
+async def callback(request: Request):
     # Get the authorization code from the callback URL
-    code = request.args.get('code')
+    code = request.query_params.get('code')
     token_info = sp_oauth.get_access_token(code)
 
     # Save the token info in the session
-    session['token_info'] = token_info
-    return redirect(url_for('welcome'))
+    request.session['token_info'] = token_info
+    return RedirectResponse(url='/welcome')
 
-def get_token():
-    token_info = session.get('token_info', None)
+def get_token(request: Request):
+    token_info = request.session.get('token_info', None)
     if not token_info:
         return None
 
     # Check if token is expired and refresh if needed
     if sp_oauth.is_token_expired(token_info):
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-        session['token_info'] = token_info
+        request.session['token_info'] = token_info
 
     return token_info
 
-@app.route('/welcome')
-def welcome():
+@app.get('/welcome')
+async def welcome(request: Request):
     # Get token info from session
-    token_info = get_token()
+    token_info = get_token(request)
     if not token_info:
-        return redirect('/')
+        return RedirectResponse(url='/')
 
     # Create Spotify client using the user's access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
@@ -61,21 +67,22 @@ def welcome():
     user_info = sp.current_user()
     username = user_info['display_name']
 
-    return f'Welcome, {username}!'
+    return templates.TemplateResponse("welcome.html", {"request": request, "username": username})
 
-@app.route('/user_info')
-def user_info():
+@app.get('/user_info')
+async def user_info(request: Request):
     # Get token info from session
-    token_info = get_token()
+    token_info = get_token(request)
     if not token_info:
-        return redirect('/')
+        raise HTTPException(status_code=401, detail="Token not found or expired")
 
     # Create Spotify client using the user's access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
 
     # Get current user's information
     user_info = sp.current_user()
-    return jsonify(user_info)
+    return JSONResponse(user_info)
 
 if __name__ == '__main__':
-    app.run(port=5173, debug=True)
+    import uvicorn
+    uvicorn.run(app, host='0.0.0.0', port=5173, debug=True)
