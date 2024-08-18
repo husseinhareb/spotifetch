@@ -2,15 +2,25 @@ import os
 from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
-from fastapi.middleware.sessions import SessionMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI()
+
+# Configure CORS (adjust the origin for your frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Secret key for session management
 app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
@@ -35,6 +45,9 @@ async def index():
 async def callback(request: Request):
     # Get the authorization code from the callback URL
     code = request.query_params.get('code')
+    if not code:
+        raise HTTPException(status_code=400, detail="Authorization code not found")
+
     token_info = sp_oauth.get_access_token(code)
 
     # Save the token info in the session
@@ -83,6 +96,7 @@ async def user_info(request: Request):
     user_info = sp.current_user()
     return JSONResponse(user_info)
 
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(app, host='0.0.0.0', port=5173, debug=True)
+@app.get('/logout')
+async def logout(request: Request):
+    request.session.pop('token_info', None)
+    return RedirectResponse(url='/')
