@@ -6,14 +6,13 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.templating import Jinja2Templates
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI()
 
-# Configure CORS (adjust the origin for your frontend)
+# Configure CORS for your frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Frontend origin
@@ -32,8 +31,6 @@ redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 
 # Spotify OAuth object
 sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope='user-read-private')
-
-templates = Jinja2Templates(directory="templates")
 
 @app.get('/')
 async def index():
@@ -78,9 +75,7 @@ async def welcome(request: Request):
 
     # Get current user's information
     user_info = sp.current_user()
-    username = user_info['display_name']
-
-    return templates.TemplateResponse("welcome.html", {"request": request, "username": username})
+    return JSONResponse({"username": user_info['display_name']})
 
 @app.get('/user_info')
 async def user_info(request: Request):
