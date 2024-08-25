@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
+import Navbar from './components/Navbar/Navbar';
 
 // Define the shape of user data based on the expected API response
 interface User {
@@ -36,21 +37,7 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        {loading ? (
-          <p>Loading...</p>
-        ) : user ? (
-          <div>
-            <h1>Welcome, {user.display_name}</h1>
-            <button onClick={handleLogout}>Logout</button>
-          </div>
-        ) : (
-          <div>
-            <h1>Not Logged In</h1>
-            <button onClick={handleLogin}>Login with Spotify</button>
-          </div>
-        )}
-      </header>
+      <Navbar />
     </div>
   );
 }

@@ -1,37 +1,58 @@
+//frontend/src/components/App.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './App.css';
 
-interface ProfileData {
-    display_name: string;
-    followers: number;
-    profile_url: string;
+// Define the shape of user data based on the expected API response
+interface User {
+  display_name: string;
 }
 
-const Profile = () => {
-    const [profile, setProfile] = useState<ProfileData | null>(null);
+const App: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        const token = localStorage.getItem('spotify_token');
-        if (token) {
-            axios.get(`http://localhost:8000/profile?token=${token}`)
-                .then(response => {
-                    setProfile(response.data);
-                })
-                .catch(error => {
-                    console.error("There was an error fetching the profile!", error);
-                });
-        }
-    }, []);
+  useEffect(() => {
+    // Check if user is already authenticated
+    axios.get<User>('http://localhost:8000/user_info', { withCredentials: true })
+      .then(response => {
+        setUser(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching user info:', error);
+        setLoading(false);
+      });
+  }, []);
 
-    if (!profile) return <div>Loading...</div>;
+  const handleLogin = () => {
+    window.location.href = 'http://localhost:8000/'; // This triggers the OAuth flow
+  };
 
-    return (
-        <div>
-            <h1>{profile.display_name}</h1>
-            <p>Followers: {profile.followers}</p>
-            <a href={profile.profile_url} target="_blank" rel="noopener noreferrer">Profile</a>
-        </div>
-    );
+  const handleLogout = () => {
+    // Log out by redirecting to the logout URL
+    window.location.href = 'http://localhost:8000/logout';
+  };
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        {loading ? (
+          <p>Loading...</p>
+        ) : user ? (
+          <div>
+            <h1>Welcome, {user.display_name}</h1>
+            <button onClick={handleLogout}>Logout</button>
+          </div>
+        ) : (
+          <div>
+            <h1>Not Logged In</h1>
+            <button onClick={handleLogin}>Login with Spotify</button>
+          </div>
+        )}
+      </header>
+    </div>
+  );
 }
 
-export default Profile;
+export default App;
