@@ -1,13 +1,50 @@
-import React from 'react';
-import { Nav,
+import React, { useEffect, useState } from 'react';
+import {
+  Nav,
   Title,
   NavList,
   NavItem,
   NavLink
+} from './Styles/style';
 
- } from './Styles/style';
 // Navbar component
 const Navbar: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check if user is logged in when component mounts
+    checkLoginStatus();
+  }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/user_info', {
+        credentials: 'include', // This ensures cookies are included
+      });
+
+      if (response.ok) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    } catch (error) {
+      setIsLoggedIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('http://localhost:8000/logout', {
+        method: 'GET',
+        credentials: 'include', // Ensure cookies are included in the request
+      });
+
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
+
   return (
     <Nav>
       <Title>
@@ -23,6 +60,17 @@ const Navbar: React.FC = () => {
         <NavItem>
           <NavLink href="/profile">Profile</NavLink>
         </NavItem>
+        {isLoggedIn ? (
+          <NavItem>
+            <NavLink as="button" onClick={handleLogout}>
+              Logout
+            </NavLink>
+          </NavItem>
+        ) : (
+          <NavItem>
+            <NavLink href="/">Login</NavLink>
+          </NavItem>
+        )}
       </NavList>
     </Nav>
   );
