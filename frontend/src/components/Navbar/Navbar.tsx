@@ -32,6 +32,19 @@ const Navbar: React.FC = () => {
     }
   };
 
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/login', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const { auth_url } = await response.json();
+      window.location.href = auth_url; // Redirect to the Spotify login page
+    } catch (error) {
+      console.error('Login failed', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('http://localhost:8000/logout', {
@@ -68,7 +81,9 @@ const Navbar: React.FC = () => {
           </NavItem>
         ) : (
           <NavItem>
-            <NavLink href="/">Login</NavLink>
+            <NavLink as="button" onClick={handleLogin}>
+              Login
+            </NavLink>
           </NavItem>
         )}
       </NavList>

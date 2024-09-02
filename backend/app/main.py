@@ -1,22 +1,21 @@
-import os
-from dotenv import load_dotenv
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = FastAPI()
 
-# Configure CORS for your frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend origin
-    allow_credentials=True,
+    allow_origins=["http://localhost:3000"],  # Match your frontend origin exactly
+    allow_credentials=True,  # This must be True to allow cookies in requests
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -34,9 +33,13 @@ sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redire
 
 @app.get('/')
 async def index():
-    # Redirect user to Spotify login page
+    return {"message": "Welcome to Spotifetch"}
+
+@app.get('/login')
+async def login():
+    # Generate Spotify authorization URL
     auth_url = sp_oauth.get_authorize_url()
-    return RedirectResponse(auth_url)
+    return JSONResponse({"auth_url": auth_url})
 
 @app.get('/callback')
 async def callback(request: Request):
