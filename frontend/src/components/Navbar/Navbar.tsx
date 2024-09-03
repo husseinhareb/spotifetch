@@ -10,10 +10,23 @@ import {
 // Navbar component
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is logged in when component mounts
     checkLoginStatus();
+  }, []);
+
+  useEffect(() => {
+    // Get the username from the URL if it exists
+    const params = new URLSearchParams(window.location.search);
+    const username = params.get('username');
+    if (username) {
+      setUsername(username);
+      setIsLoggedIn(true);
+      // Clear the query params from the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   const checkLoginStatus = async () => {
@@ -53,6 +66,7 @@ const Navbar: React.FC = () => {
       });
 
       setIsLoggedIn(false);
+      setUsername(null);
     } catch (error) {
       console.error('Logout failed', error);
     }
@@ -74,11 +88,16 @@ const Navbar: React.FC = () => {
           <NavLink href="/profile">Profile</NavLink>
         </NavItem>
         {isLoggedIn ? (
-          <NavItem>
-            <NavLink as="button" onClick={handleLogout}>
-              Logout
-            </NavLink>
-          </NavItem>
+          <>
+            <NavItem>
+              <span>Welcome back, {username}!</span>
+            </NavItem>
+            <NavItem>
+              <NavLink as="button" onClick={handleLogout}>
+                Logout
+              </NavLink>
+            </NavItem>
+          </>
         ) : (
           <NavItem>
             <NavLink as="button" onClick={handleLogin}>

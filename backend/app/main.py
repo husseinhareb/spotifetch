@@ -78,7 +78,8 @@ async def welcome(request: Request):
 
     # Get current user's information
     user_info = sp.current_user()
-    return JSONResponse({"username": user_info['display_name']})
+    # Redirect to the React frontend with a query parameter for the username
+    return RedirectResponse(url=f'http://localhost:3000/?username={user_info["display_name"]}')
 
 @app.get('/user_info')
 async def user_info(request: Request):
