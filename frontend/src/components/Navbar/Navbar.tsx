@@ -1,38 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Nav,
-  Title,
-  NavList,
-  NavItem,
-  NavLink
-} from './Styles/style';
+// Navbar/Navbar.tsx
+import React, { useEffect, useState } from "react";
+import { useSetUsername, useUsername } from "../../services/store"; // Import from Zustand store
+import { Nav, Title, NavList, NavItem, NavLink } from "./Styles/style";
 
 // Navbar component
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const setUsername = useSetUsername(); // Zustand setter
+  const username = useUsername(); // Zustand getter
 
   useEffect(() => {
-    // Check if user is logged in when component mounts
     checkLoginStatus();
   }, []);
 
   useEffect(() => {
     // Get the username from the URL if it exists
     const params = new URLSearchParams(window.location.search);
-    const username = params.get('username');
-    if (username) {
-      setUsername(username);
+    const urlUsername = params.get("username");
+    if (urlUsername) {
+      setUsername(urlUsername); // Use Zustand to set the username
       setIsLoggedIn(true);
       // Clear the query params from the URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+  }, [setUsername]);
 
   const checkLoginStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/user_info', {
-        credentials: 'include', // This ensures cookies are included
+      const response = await fetch("http://localhost:8000/user_info", {
+        credentials: "include", // Ensure cookies are included
       });
 
       if (response.ok) {
@@ -47,28 +43,28 @@ const Navbar: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:8000/login', {
-        method: 'GET',
-        credentials: 'include',
+      const response = await fetch("http://localhost:8000/login", {
+        method: "GET",
+        credentials: "include",
       });
       const { auth_url } = await response.json();
-      window.location.href = auth_url; // Redirect to the Spotify login page
+      window.location.href = auth_url; // Redirect to the login page
     } catch (error) {
-      console.error('Login failed', error);
+      console.error("Login failed", error);
     }
   };
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8000/logout', {
-        method: 'GET',
-        credentials: 'include', // Ensure cookies are included in the request
+      await fetch("http://localhost:8000/logout", {
+        method: "GET",
+        credentials: "include", // Ensure cookies are included in the request
       });
 
       setIsLoggedIn(false);
-      setUsername(null);
+      setUsername("N/A"); // Reset the username
     } catch (error) {
-      console.error('Logout failed', error);
+      console.error("Logout failed", error);
     }
   };
 
@@ -89,9 +85,6 @@ const Navbar: React.FC = () => {
         </NavItem>
         {isLoggedIn ? (
           <>
-            <NavItem>
-              <span>Welcome back, {username}!</span>
-            </NavItem>
             <NavItem>
               <NavLink as="button" onClick={handleLogout}>
                 Logout
