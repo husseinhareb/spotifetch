@@ -99,3 +99,31 @@ async def user_info(request: Request):
 async def logout(request: Request):
     request.session.pop('token_info', None)
     return RedirectResponse(url='/')
+
+@app.get('/currently_playing')
+async def currently_playing(request: Request):
+    # Get token info from session
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    # Create Spotify client using the user's access token
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+
+    # Get the currently playing track
+    current_track = sp.current_playback()
+
+    if current_track and current_track['is_playing']:
+        # Extract necessary information from the currently playing track
+        track_info = {
+            "track_name": current_track['item']['name'],
+            "artist_name": ", ".join([artist['name'] for artist in current_track['item']['artists']]),
+            "album_name": current_track['item']['album']['name'],
+            "album_image": current_track['item']['album']['images'][0]['url'] if current_track['item']['album']['images'] else None,
+            "is_playing": current_track['is_playing'],
+            "progress_ms": current_track['progress_ms'],  # Current progress in the song
+            "duration_ms": current_track['item']['duration_ms']  # Total duration of the song
+        }
+        return JSONResponse(track_info)
+    else:
+        return JSONResponse({"message": "No track currently playing"})
