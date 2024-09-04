@@ -1,44 +1,52 @@
 // Navbar/Navbar.tsx
 import React, { useEffect, useState } from "react";
-import { useSetUsername, useUsername } from "../../services/store"; // Import from Zustand store
+import { useSetUsername, useSetEmail, useSetProfileImage, useSetCountry, useSetProduct, useUsername } from "../../services/store";
 import { Nav, Title, NavList, NavItem, NavLink } from "./Styles/style";
 
-// Navbar component
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const setUsername = useSetUsername(); // Zustand setter
-  const username = useUsername(); // Zustand getter
+  const setUsername = useSetUsername();
+  const setEmail = useSetEmail();
+  const setProfileImage = useSetProfileImage();
+  const setCountry = useSetCountry();
+  const setProduct = useSetProduct();
+  const username = useUsername();
 
   useEffect(() => {
     checkLoginStatus();
   }, []);
 
-  useEffect(() => {
-    // Get the username from the URL if it exists
-    const params = new URLSearchParams(window.location.search);
-    const urlUsername = params.get("username");
-    if (urlUsername) {
-      setUsername(urlUsername); // Use Zustand to set the username
-      setIsLoggedIn(true);
-      // Clear the query params from the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [setUsername]);
-
   const checkLoginStatus = async () => {
     try {
       const response = await fetch("http://localhost:8000/user_info", {
-        credentials: "include", // Ensure cookies are included
+        credentials: "include",
       });
 
       if (response.ok) {
+        const userInfo = await response.json();
+        setUsername(userInfo.display_name);
+        setEmail(userInfo.email);
+        setProfileImage(userInfo.profile_image);
+        setCountry(userInfo.country);
+        setProduct(userInfo.product);
         setIsLoggedIn(true);
       } else {
         setIsLoggedIn(false);
+        resetUserDetails();
       }
     } catch (error) {
+      console.error("Error checking login status", error);
       setIsLoggedIn(false);
+      resetUserDetails();
     }
+  };
+
+  const resetUserDetails = () => {
+    setUsername("N/A");
+    setEmail("N/A");
+    setProfileImage(null);
+    setCountry("N/A");
+    setProduct("N/A");
   };
 
   const handleLogin = async () => {
@@ -48,7 +56,7 @@ const Navbar: React.FC = () => {
         credentials: "include",
       });
       const { auth_url } = await response.json();
-      window.location.href = auth_url; // Redirect to the login page
+      window.location.href = auth_url;
     } catch (error) {
       console.error("Login failed", error);
     }
@@ -58,11 +66,10 @@ const Navbar: React.FC = () => {
     try {
       await fetch("http://localhost:8000/logout", {
         method: "GET",
-        credentials: "include", // Ensure cookies are included in the request
+        credentials: "include",
       });
-
       setIsLoggedIn(false);
-      setUsername("N/A"); // Reset the username
+      resetUserDetails();
     } catch (error) {
       console.error("Logout failed", error);
     }
