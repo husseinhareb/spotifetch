@@ -13,10 +13,7 @@ import {
 
 const Home: React.FC = () => {
   const username = useUsername();
-  const email = useEmail();
-  const profileImage = useProfileImage();
-  const country = useCountry();
-  const product = useProduct();
+
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
   const [currentArtist, setCurrentArtist] = useState<string | null>(null);
   const [albumImage, setAlbumImage] = useState<string | null>(null);
@@ -49,13 +46,7 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      <h1>Home Page</h1>
-      <p>Welcome, {username}!</p>
-      {email && <p>Email: {email}</p>}
-      {profileImage && <img src={profileImage} alt="Profile" />}
-      {country && <p>Country: {country}</p>}
-      {product && <p>Product: {product}</p>}
-
+      <p>Welcome home, {username}!</p>
       {isPlaying ? (
         <div>
           <h2>Currently Playing:</h2>
