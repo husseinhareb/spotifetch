@@ -1,5 +1,5 @@
-// /src/services/store.ts
 import { create } from "zustand";
+
 interface Store {
   username: string;
   email: string;
@@ -10,6 +10,7 @@ interface Store {
   currentArtist: string;
   albumImage: string | null;
   isPlaying: boolean;
+  topArtists: { name: string; genres: string[]; imageUrl: string | null }[];
   setUsername: (username: string) => void;
   setEmail: (email: string) => void;
   setProfileImage: (profileImage: string | null) => void;
@@ -19,6 +20,9 @@ interface Store {
   setCurrentArtist: (artist: string) => void;
   setAlbumImage: (image: string | null) => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  setTopArtists: (
+    artists: { name: string; genres: string[]; imageUrl: string | null }[]
+  ) => void;
 }
 
 export const useStore = create<Store>((set) => ({
@@ -31,6 +35,7 @@ export const useStore = create<Store>((set) => ({
   currentArtist: "N/A",
   albumImage: null,
   isPlaying: false,
+  topArtists: [],
   setUsername: (username) => set({ username }),
   setEmail: (email) => set({ email }),
   setProfileImage: (profileImage) => set({ profileImage }),
@@ -40,8 +45,10 @@ export const useStore = create<Store>((set) => ({
   setCurrentArtist: (artist) => set({ currentArtist: artist }),
   setAlbumImage: (image) => set({ albumImage: image }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
+  setTopArtists: (artists) => set({ topArtists: artists }),
 }));
 
+// Selectors for accessing state
 export const useUsername = () => useStore((state) => state.username);
 export const useEmail = () => useStore((state) => state.email);
 export const useProfileImage = () => useStore((state) => state.profileImage);
@@ -51,6 +58,9 @@ export const useCurrentTrack = () => useStore((state) => state.currentTrack);
 export const useCurrentArtist = () => useStore((state) => state.currentArtist);
 export const useAlbumImage = () => useStore((state) => state.albumImage);
 export const useIsPlaying = () => useStore((state) => state.isPlaying);
+export const useTopArtists = () => useStore((state) => state.topArtists);
+
+// Setters for updating state
 export const useSetUsername = () => useStore((state) => state.setUsername);
 export const useSetEmail = () => useStore((state) => state.setEmail);
 export const useSetProfileImage = () => useStore((state) => state.setProfileImage);
@@ -60,3 +70,4 @@ export const useSetCurrentTrack = () => useStore((state) => state.setCurrentTrac
 export const useSetCurrentArtist = () => useStore((state) => state.setCurrentArtist);
 export const useSetAlbumImage = () => useStore((state) => state.setAlbumImage);
 export const useSetIsPlaying = () => useStore((state) => state.setIsPlaying);
+export const useSetTopArtists = () => useStore((state) => state.setTopArtists);

@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   useUsername,
-  useEmail,
-  useProfileImage,
-  useCountry,
-  useProduct,
-  useSetCurrentTrack,
-  useSetCurrentArtist,
-  useSetAlbumImage,
-  useSetIsPlaying,
 } from '../../services/store';
 
 const Home: React.FC = () => {
@@ -49,6 +41,7 @@ const Home: React.FC = () => {
       <p>Welcome home, {username}!</p>
       {isPlaying ? (
         <div>
+          <h1>{isPlaying}</h1>
           <h2>Currently Playing:</h2>
           <p><strong>Track:</strong> {currentTrack}</p>
           <p><strong>Artist:</strong> {currentArtist}</p>

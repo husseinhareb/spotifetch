@@ -29,7 +29,7 @@ client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 
 # Spotify OAuth object
-sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope='user-read-private')
+sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope='user-read-private user-top-read')
 
 @app.get('/')
 async def index():
@@ -127,3 +127,34 @@ async def currently_playing(request: Request):
         return JSONResponse(track_info)
     else:
         return JSONResponse({"message": "No track currently playing"})
+
+@app.get('/top_artists')
+async def top_artists(request: Request, time_range: str = 'medium_term', limit: int = 10):
+    """
+    Fetch the top artists for the current user.
+    `time_range` can be one of 'short_term', 'medium_term', or 'long_term'.
+    `limit` specifies the number of top artists to retrieve (default is 10).
+    """
+    # Get token info from session
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    # Create Spotify client using the user's access token
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+
+    # Get the current user's top artists based on the specified time range
+    top_artists_data = sp.current_user_top_artists(time_range=time_range, limit=limit)
+
+    # Extract relevant information
+    top_artists = [
+        {
+            "artist_name": artist['name'],
+            "genres": artist['genres'],
+            "popularity": artist['popularity'],
+            "image_url": artist['images'][0]['url'] if artist['images'] else None
+        }
+        for artist in top_artists_data['items']
+    ]
+
+    return JSONResponse({"top_artists": top_artists})
