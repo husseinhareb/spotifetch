@@ -29,7 +29,13 @@ client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 
 # Spotify OAuth object
-sp_oauth = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope='user-read-private user-top-read')
+# Updated scope to include playback-related permissions
+sp_oauth = SpotifyOAuth(
+    client_id=client_id,
+    client_secret=client_secret,
+    redirect_uri=redirect_uri,
+    scope='user-read-private user-top-read user-read-playback-state user-read-currently-playing'
+)
 
 @app.get('/')
 async def index():
