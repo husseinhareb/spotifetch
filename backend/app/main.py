@@ -164,3 +164,34 @@ async def top_artists(request: Request, time_range: str = 'medium_term', limit: 
     ]
 
     return JSONResponse({"top_artists": top_artists})
+@app.get('/recently_played')
+async def recently_played(request: Request, limit: int = 10):
+    """
+    Fetch the recently played tracks for the current user.
+    `limit` specifies the number of recently played tracks to retrieve (default is 10).
+    """
+    # Get token info from session
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    # Create Spotify client using the user's access token
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+
+    # Get the current user's recently played tracks
+    recent_tracks_data = sp.current_user_recently_played(limit=limit)
+
+    # Extract relevant information
+    recent_tracks = [
+        {
+            "track_name": item['track']['name'],
+            "artist_name": ", ".join([artist['name'] for artist in item['track']['artists']]),
+            "album_name": item['track']['album']['name'],
+            "album_image": item['track']['album']['images'][0]['url'] if item['track']['album']['images'] else None,
+            "played_at": item['played_at'],
+            "track_id": item['track']['id']
+        }
+        for item in recent_tracks_data['items']
+    ]
+
+    return JSONResponse({"recent_tracks": recent_tracks})
