@@ -1,80 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
 import { useUsername } from '../../services/store';
-
-// Styled components for enhanced design
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #f7f7f7;
-  height: 100vh;
-  padding: 20px;
-  font-family: 'Arial', sans-serif;
-`;
-
-const WelcomeMessage = styled.p`
-  font-size: 1.5rem;
-  color: #333;
-  margin-bottom: 20px;
-`;
-
-const SongDetails = styled.div`
-  text-align: center;
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 100%;
-`;
-
-const Title = styled.h2`
-  font-size: 2rem;
-  color: #333;
-  margin-bottom: 20px;
-`;
-
-const Info = styled.p`
-  font-size: 1.2rem;
-  margin: 10px 0;
-`;
-
-const AlbumImage = styled.img`
-  width: 100%;
-  max-width: 300px;
-  border-radius: 10px;
-  margin: 20px 0;
-`;
-
-const ProgressContainer = styled.div`
-  width: 100%;
-  background-color: #e0e0e0;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-top: 15px;
-  position: relative;
-`;
-
-const ProgressBar = styled.div<{ progress: number }>`
-  width: ${({ progress }) => `${progress}%`};
-  height: 100%;
-  background-color: #4caf50;
-  transition: width 0.5s ease;
-`;
-
-const ProgressTime = styled.p`
-  font-size: 1.1rem;
-  color: #555;
-  margin: 10px 0;
-`;
-
-const NoSongMessage = styled.p`
-  font-size: 1.5rem;
-  color: #888;
-`;
+import { Title,
+  Container,
+  WelcomeMessage,
+  SongDetails,
+  Info,
+  ProgressTime,
+  ProgressBar,
+  ProgressContainer,
+  AlbumImage,
+  NoSongMessage,
+ } from './Styles/style'
 
 const Home: React.FC = () => {
   const username = useUsername();
