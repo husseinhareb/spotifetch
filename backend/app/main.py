@@ -165,12 +165,7 @@ async def top_artists(request: Request, time_range: str = 'medium_term', limit: 
 
     return JSONResponse({"top_artists": top_artists})
 @app.get('/recently_played')
-async def recently_played(request: Request, limit: int = 10):
-    """
-    Fetch the recently played tracks for the current user.
-    `limit` specifies the number of recently played tracks to retrieve (default is 10).
-    """
-    # Get token info from session
+async def recently_played(request: Request, limit: int = 30):
     token_info = get_token(request)
     if not token_info:
         raise HTTPException(status_code=401, detail="Token not found or expired")
