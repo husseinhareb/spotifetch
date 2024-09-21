@@ -16,6 +16,7 @@ import {
   RecentlyPlayedItem,
   RecentlyPlayedImage
  } from './Styles/style';
+import TopArtists from './TopArtists';
 
 interface RecentTrack {
   track_name: string;
@@ -134,6 +135,7 @@ const Home: React.FC = () => {
           <NoSongMessage>No recently played tracks available.</NoSongMessage>
         )}
       </RecentlyPlayedList>
+      <TopArtists/>
     </Container>
   );
 };
