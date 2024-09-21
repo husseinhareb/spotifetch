@@ -17,6 +17,7 @@ import {
   RecentlyPlayedImage
  } from './Styles/style';
 import TopArtists from './TopArtists';
+import FibonacciDivs from './FibonacciDivs';
 
 interface RecentTrack {
   track_name: string;
@@ -136,6 +137,7 @@ const Home: React.FC = () => {
         )}
       </RecentlyPlayedList>
       <TopArtists/>
+      <FibonacciDivs/>
     </Container>
   );
 };
