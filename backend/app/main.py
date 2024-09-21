@@ -136,11 +136,6 @@ async def currently_playing(request: Request):
 
 @app.get('/top_artists')
 async def top_artists(request: Request, time_range: str = 'medium_term', limit: int = 10):
-    """
-    Fetch the top artists for the current user.
-    `time_range` can be one of 'short_term', 'medium_term', or 'long_term'.
-    `limit` specifies the number of top artists to retrieve (default is 10).
-    """
     # Get token info from session
     token_info = get_token(request)
     if not token_info:
@@ -164,6 +159,7 @@ async def top_artists(request: Request, time_range: str = 'medium_term', limit: 
     ]
 
     return JSONResponse({"top_artists": top_artists})
+
 @app.get('/recently_played')
 async def recently_played(request: Request, limit: int = 30):
     token_info = get_token(request)
