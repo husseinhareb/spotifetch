@@ -137,7 +137,6 @@ const Home: React.FC = () => {
         )}
       </RecentlyPlayedList>
       <TopArtists/>
-      <FibonacciDivs/>
     </Container>
   );
 };
