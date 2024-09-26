@@ -1,76 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { ArtistCard, ArtistsWrapper, OtherArtists, SecondTitle, TopArtist, TopArtistsContainer } from './Styles/style';
 
-const TopArtistsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-`;
 
-const ArtistsWrapper = styled.div`
-  display: flex;
-  width: 100%;
-  max-width: 1200px;
-`;
-
-const TopArtist = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    object-fit: cover;
-    max-height: 300px; /* Limits height */
-  }
-
-  p {
-    margin-top: 10px;
-    font-size: 16px;
-    text-align: center;
-  }
-`;
-
-const OtherArtists = styled.div`
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 20px;
-`;
-
-const ArtistCard = styled.div`
-  flex: 1 1 45%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    object-fit: cover;
-    max-height: 150px; /* Limits height */
-  }
-
-  p {
-    margin-top: 10px;
-    font-size: 16px;
-    text-align: center;
-  }
-`;
-
-const Title = styled.h1`
-  margin-bottom: 20px;
-  text-align: center;
-`;
 
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
@@ -104,7 +35,7 @@ const TopArtists: React.FC = () => {
 
   return (
     <TopArtistsContainer>
-      <Title>Top Artists</Title>
+      <SecondTitle>Top Artists</SecondTitle>
       <ArtistsWrapper>
         {artistNames.length > 0 && (
           <>

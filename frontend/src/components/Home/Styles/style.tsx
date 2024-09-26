@@ -149,3 +149,74 @@ export const RecentlyPlayedInfo = styled.div`
     color: #333;
   }
 `;
+
+
+//------------------------
+export const TopArtistsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+`;
+
+export const ArtistsWrapper = styled.div`
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+`;
+
+export const TopArtist = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 300px; /* Limits height */
+  }
+
+  p {
+    margin-top: 10px;
+    font-size: 16px;
+    text-align: center;
+  }
+`;
+
+export const OtherArtists = styled.div`
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 20px;
+`;
+
+export const ArtistCard = styled.div`
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 150px; /* Limits height */
+  }
+
+  p {
+    margin-top: 10px;
+    font-size: 16px;
+    text-align: center;
+  }
+`;
+
+export const SecondTitle = styled.h1`
+  margin-bottom: 20px;
+  text-align: center;
+`;
