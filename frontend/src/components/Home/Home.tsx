@@ -17,7 +17,7 @@ import {
   RecentlyPlayedImage
  } from './Styles/style';
 import TopArtists from './TopArtists';
-import FibonacciDivs from './FibonacciDivs';
+import CurrentlyPlaying from './CurrentlyPlaying';
 
 interface RecentTrack {
   track_name: string;
@@ -28,38 +28,9 @@ interface RecentTrack {
 
 const Home: React.FC = () => {
   const username = useUsername();
-
-  const [currentTrack, setCurrentTrack] = useState<string | null>(null);
-  const [currentArtist, setCurrentArtist] = useState<string | null>(null);
-  const [albumImage, setAlbumImage] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [progressMs, setProgressMs] = useState<number | null>(0);
-  const [durationMs, setDurationMs] = useState<number | null>(0);
   const [recentlyPlayed, setRecentlyPlayed] = useState<RecentTrack[]>([]);
 
   useEffect(() => {
-    const fetchCurrentSong = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/currently_playing", {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const songInfo = await response.json();
-          if (songInfo.track_name) {
-            setCurrentTrack(songInfo.track_name);
-            setCurrentArtist(songInfo.artist_name);
-            setAlbumImage(songInfo.album_image);
-            setIsPlaying(songInfo.is_playing);
-            setProgressMs(songInfo.progress_ms);
-            setDurationMs(songInfo.duration_ms);
-          }
-        } else {
-          console.error("Failed to fetch current song");
-        }
-      } catch (error) {
-        console.error("Error fetching current song", error);
-      }
-    };
 
     const fetchRecentlyPlayed = async () => {
       try {
@@ -77,49 +48,14 @@ const Home: React.FC = () => {
       }
     };
 
-    fetchCurrentSong();
     fetchRecentlyPlayed();
 
-    const interval = setInterval(() => {
-      fetchCurrentSong();
-    }, 1000); // Fetch the current song every second to update the progress
-
-    return () => clearInterval(interval); // Clean up the interval on unmount
   }, []);
 
-  // Calculate progress as percentage
-  const calculateProgress = () => {
-    if (!progressMs || !durationMs) return 0;
-    return (progressMs / durationMs) * 100;
-  };
-
-  // Helper function to format time in mm:ss
-  const formatTime = (ms: number | null) => {
-    if (ms === null) return '0:00';
-    const minutes = Math.floor(ms / 60000);
-    const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
 
   return (
     <Container>
       <WelcomeMessage>Welcome home, {username}!</WelcomeMessage>
-      {isPlaying ? (
-        <SongDetails>
-          <Title>Currently Playing</Title>
-          <Info><strong>Track:</strong> {currentTrack}</Info>
-          <Info><strong>Artist:</strong> {currentArtist}</Info>
-          {albumImage && <AlbumImage src={albumImage} alt="Album cover" />}
-          <ProgressTime>
-            {formatTime(progressMs)} / {formatTime(durationMs)}
-          </ProgressTime>
-          <ProgressContainer>
-            <ProgressBar progress={calculateProgress()} />
-          </ProgressContainer>
-        </SongDetails>
-      ) : (
-        <NoSongMessage>No song is currently playing.</NoSongMessage>
-      )}
 
       <RecentlyPlayedTitle>Recently Played Tracks</RecentlyPlayedTitle>
       <RecentlyPlayedList>
@@ -136,6 +72,7 @@ const Home: React.FC = () => {
           <NoSongMessage>No recently played tracks available.</NoSongMessage>
         )}
       </RecentlyPlayedList>
+      <CurrentlyPlaying/>
       <TopArtists/>
     </Container>
   );
