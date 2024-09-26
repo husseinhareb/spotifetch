@@ -10,7 +10,6 @@ import {
   AlbumImage,
   NoSongMessage,
  } from './Styles/style';
-import TopArtists from './TopArtists';
 
 interface RecentTrack {
   track_name: string;
@@ -95,7 +94,6 @@ const CurrentlyPlaying: React.FC = () => {
         <NoSongMessage>No song is currently playing.</NoSongMessage>
       )}
 
-      <TopArtists/>
     </Container>
   );
 };
