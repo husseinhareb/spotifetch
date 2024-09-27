@@ -99,7 +99,10 @@ async def user_info(request: Request):
 
     # Get current user's information
     user_info = sp.current_user()
+        
     return JSONResponse(user_info)
+
+
 
 @app.get('/logout')
 async def logout(request: Request):

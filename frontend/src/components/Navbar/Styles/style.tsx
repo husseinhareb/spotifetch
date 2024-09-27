@@ -31,8 +31,9 @@ export const NavItem = styled.li`
 export const NavLink = styled.a<{ as?: string }>`
   color: white;
   text-decoration: none;
-  display: inline-flex; /* Changed to inline-flex for better alignment */
+  display: inline-flex; /* Ensures consistent inline flex behavior for both links and buttons */
   align-items: center; /* Vertically centers text and icons */
+  justify-content: center; /* Ensures content inside is centered */
   padding: 0.5rem 1rem; /* Uniform padding */
   line-height: 1; /* Consistent line-height */
   border: none;

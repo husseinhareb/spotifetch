@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useUsername } from '../../services/store';
 import {
   Container,
   WelcomeMessage,
 } from './Styles/style';
+
 import TopArtists from './TopArtists';
 import CurrentlyPlaying from './CurrentlyPlaying';
 import RecentlyPlayed from './RecentlyPlayed';

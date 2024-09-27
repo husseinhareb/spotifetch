@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { ArtistCard, ArtistsWrapper, OtherArtists, SecondTitle, TopArtist, TopArtistsContainer } from './Styles/style';
-
-
+import {
+  ArtistCard,
+  ArtistsWrapper,
+  OtherArtists,
+  SecondTitle,
+  TopArtist,
+  TopArtistsContainer,
+  ImageWrapper,
+  ArtistImage,
+} from './Styles/style';
 
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
@@ -11,12 +18,11 @@ const TopArtists: React.FC = () => {
   useEffect(() => {
     const fetchTopArtists = async () => {
       try {
-        const response = await fetch("http://localhost:8000/top_artists", {
-          credentials: "include",
+        const response = await fetch('http://localhost:8000/top_artists', {
+          credentials: 'include',
         });
         if (response.ok) {
           const topArtists = await response.json();
-          console.log(topArtists);
           const names = topArtists.top_artists.map((artist: any) => artist.artist_name);
           const popularities = topArtists.top_artists.map((artist: any) => artist.popularity);
           const images = topArtists.top_artists.map((artist: any) => artist.image_url);
@@ -26,7 +32,7 @@ const TopArtists: React.FC = () => {
           setArtistImages(images);
         }
       } catch (error) {
-        console.error("Error fetching top artists", error);
+        console.error('Error fetching top artists', error);
       }
     };
 
@@ -40,14 +46,18 @@ const TopArtists: React.FC = () => {
         {artistNames.length > 0 && (
           <>
             <TopArtist>
-              <img src={artistImages[0]} alt={artistNames[0]} />
-              <p>{artistNames[0]}</p>
+              <ImageWrapper>
+                <ArtistImage src={artistImages[0]} alt={artistNames[0]} />
+              </ImageWrapper>
+              {/* <p>{artistNames[0]}</p> */}
             </TopArtist>
             <OtherArtists>
               {artistNames.slice(1, 5).map((name, index) => (
                 <ArtistCard key={index}>
-                  <img src={artistImages[index + 1]} alt={name} />
-                  <p>{name}</p>
+                  <ImageWrapper>
+                    <ArtistImage src={artistImages[index + 1]} alt={name} />
+                  </ImageWrapper>
+                  {/* <p>{name}</p> */}
                 </ArtistCard>
               ))}
             </OtherArtists>

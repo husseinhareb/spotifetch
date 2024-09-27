@@ -39,7 +39,10 @@ const Profile: React.FC = () => {
 
   return (
     <ProfileContainer>
-      {profileImage && <ProfileImage src={profileImage} alt="Profile" />}
+      <ProfileImage
+        src={profileImage || 'https://via.placeholder.com/150'}
+        alt="Profile"
+      />
       {email && <ProfileInfo>Email: {email}</ProfileInfo>}
       {country && <ProfileInfo>Country: {country}</ProfileInfo>}
       {product && <ProfileInfo>Product: {product}</ProfileInfo>}

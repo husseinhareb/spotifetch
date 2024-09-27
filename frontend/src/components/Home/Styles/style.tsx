@@ -220,3 +220,20 @@ export const SecondTitle = styled.h1`
   margin-bottom: 20px;
   text-align: center;
 `;
+
+export const ImageWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  overflow: hidden;
+`;
+
+// Style the image to cover the square container
+export const ArtistImage = styled.img`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  `
