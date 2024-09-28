@@ -56,3 +56,33 @@ export const NavLink = styled.a<{ as?: string }>`
     }
   `}
 `;
+
+// Styled components for the logout button containing the profile picture
+export const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7f7f7;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #333;
+  transition: background 0.3s;
+
+  &:hover {
+    background: #e6e6e6;
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;
+
+export const ProfileThumbnail = styled.img`
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+`;
