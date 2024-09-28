@@ -1,7 +1,9 @@
 // Navbar/Navbar.tsx
 import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSetUsername, useSetEmail, useSetProfileImage, useSetCountry, useSetProduct, useUsername, useProfileImage } from "../../services/store";
 import { Nav, Title, NavList, NavItem, NavLink, LogoutButton, ProfileThumbnail } from "./Styles/style";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -103,7 +105,7 @@ const Navbar: React.FC = () => {
                     alt="Profile Thumbnail"
                   />
                 )}
-                {username} 
+                {username} <FontAwesomeIcon icon={faRightFromBracket} />
               </LogoutButton>
             </NavItem>
           </>

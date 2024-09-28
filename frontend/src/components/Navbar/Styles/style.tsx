@@ -61,24 +61,25 @@ export const NavLink = styled.a<{ as?: string }>`
 export const LogoutButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: #f7f7f7;
-  border: 1px solid #ccc;
+  justify-content: center; 
+  padding: 0.5rem 1rem; 
+  line-height: 1; 
+  background: #444;
+  color: white; 
+  border: none;
   border-radius: 5px;
-  padding: 8px 12px;
   cursor: pointer;
-  font-size: 16px;
-  color: #333;
   transition: background 0.3s;
 
   &:hover {
-    background: #e6e6e6;
+    background: #555;
   }
 
   &:focus {
     outline: none;
   }
 `;
+
 
 export const ProfileThumbnail = styled.img`
   border-radius: 50%;
