@@ -1,8 +1,9 @@
+// Navbar/Styles/style.ts
 import styled from "styled-components";
 
 // Styled components
 export const Nav = styled.nav`
-  background-color: #333;
+  background-color: #1db954; 
   padding: 1rem;
   display: flex;
   justify-content: space-between;
@@ -19,71 +20,57 @@ export const NavList = styled.ul`
   display: flex;
   margin: 0;
   padding: 0;
+  align-items: center;
 `;
 
 export const NavItem = styled.li`
   margin-left: 1rem;
-  display: flex; /* Ensure items inside align correctly */
-  align-items: center; /* Center items vertically */
+  display: flex;
+  align-items: center;
 `;
 
-// Modified NavLink styled component
-export const NavLink = styled.a<{ as?: string }>`
+export const NavLink = styled.a`
   color: white;
   text-decoration: none;
-  display: inline-flex; /* Ensures consistent inline flex behavior for both links and buttons */
-  align-items: center; /* Vertically centers text and icons */
-  justify-content: center; /* Ensures content inside is centered */
-  padding: 0.5rem 1rem; /* Uniform padding */
-  line-height: 1; /* Consistent line-height */
+  display: inline-flex; 
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  line-height: 1; 
   border: none;
-  background: none;
+  background: transparent;
   cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
 
   &:hover {
     text-decoration: underline;
+    background-color: rgba(255, 255, 255, 0.1);
   }
-
-  /* If used as a button, apply button-specific styles */
-  ${({ as }) =>
-    as === "button" &&
-    `
-    background-color: #444;
-    border-radius: 5px;
-    text-decoration: none; /* Ensure no underline for buttons */
-    &:hover {
-      background-color: #555;
-    }
-  `}
 `;
 
-// Styled components for the logout button containing the profile picture
 export const LogoutButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center; 
-  padding: 0.5rem 1rem; 
-  line-height: 1; 
-  background: #444;
-  color: white; 
+  background: none;
   border: none;
-  border-radius: 5px;
+  color: white;
   cursor: pointer;
-  transition: background 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem; 
+  line-height: 1;
+  font-size: 1rem; 
+  transition: background-color 0.3s;
 
   &:hover {
-    background: #555;
-  }
-
-  &:focus {
-    outline: none;
+    background-color: rgba(255, 255, 255, 0.1);
   }
 `;
-
 
 export const ProfileThumbnail = styled.img`
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: cover;
-`;
+  margin-right: 0.5rem;
+  `;
