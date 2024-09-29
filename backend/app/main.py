@@ -12,10 +12,11 @@ load_dotenv()
 
 app = FastAPI()
 
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # Match your frontend origin exactly
-    allow_credentials=True,  # This must be True to allow cookies in requests
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -28,13 +29,12 @@ client_id = os.getenv('SPOTIPY_CLIENT_ID')
 client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 
-# Spotify OAuth object
-# Updated scope to include playback-related permissions
+# Spotify OAuth object with required scopes
 sp_oauth = SpotifyOAuth(
     client_id=client_id,
     client_secret=client_secret,
     redirect_uri=redirect_uri,
-    scope='user-read-private user-top-read user-read-playback-state user-read-currently-playing'
+    scope='user-read-private user-top-read user-read-playback-state user-read-currently-playing user-read-email'
 )
 
 @app.get('/')
@@ -51,41 +51,61 @@ async def login():
 async def callback(request: Request):
     # Get the authorization code from the callback URL
     code = request.query_params.get('code')
+    print(f"Received authorization code: {code}")  # Debugging print
+
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code not found")
 
+    # Exchange the code for an access token for the specific user
     token_info = sp_oauth.get_access_token(code)
+    print(f"Token info obtained: {token_info}")  # Debugging print
 
-    # Save the token info in the session
+    if not token_info:
+        raise HTTPException(status_code=400, detail="Failed to obtain access token")
+
+    # Save the token info in the session. Each user's token info is different.
     request.session['token_info'] = token_info
+    print(f"Saved token info in session: {request.session['token_info']}")  # Debugging print
+
     return RedirectResponse(url='/welcome')
 
 def get_token(request: Request):
     token_info = request.session.get('token_info', None)
+    print(f"Token info retrieved from session: {token_info}")  # Debugging print
+
     if not token_info:
         return None
 
-    # Check if token is expired and refresh if needed
+    # Check if token is expired and refresh it if needed
     if sp_oauth.is_token_expired(token_info):
+        print("Token is expired, attempting to refresh...")  # Debugging print
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        print(f"Refreshed token info: {token_info}")  # Debugging print
         request.session['token_info'] = token_info
 
     return token_info
 
 @app.get('/welcome')
 async def welcome(request: Request):
-    # Get token info from session
+    # Get token info from the session
     token_info = get_token(request)
+    print(f"Token info for welcome: {token_info}")  # Debugging print
+
     if not token_info:
         return RedirectResponse(url='/')
 
-    # Create Spotify client using the user's access token
+    # Create a Spotify client using the specific user's access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
 
     # Get current user's information
     user_info = sp.current_user()
+    print(f"User info obtained: {user_info}")  # Debugging print
+
     # Redirect to the React frontend with a query parameter for the username
-    return RedirectResponse(url=f'http://localhost:3000/?username={user_info["display_name"]}')
+    redirect_url = f'http://localhost:3000/?username={user_info["display_name"]}&email={user_info.get("email", "Not provided")}'
+    print(f"Redirecting to: {redirect_url}")  # Debugging print
+
+    return RedirectResponse(url=redirect_url)
 
 @app.get('/user_info')
 async def user_info(request: Request):
@@ -101,8 +121,6 @@ async def user_info(request: Request):
     user_info = sp.current_user()
         
     return JSONResponse(user_info)
-
-
 
 @app.get('/logout')
 async def logout(request: Request):
@@ -189,3 +207,4 @@ async def recently_played(request: Request, limit: int = 30):
     ]
 
     return JSONResponse({"recent_tracks": recent_tracks})
+
