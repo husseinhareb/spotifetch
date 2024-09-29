@@ -1,9 +1,9 @@
 // Navbar/Styles/style.ts
 import styled from "styled-components";
 
-// Styled components
+// Styled components for consistent layout
 export const Nav = styled.nav`
-  background-color: #1db954; 
+  background-color: #1db954; /* Updated to match Spotify's theme */
   padding: 1rem;
   display: flex;
   justify-content: space-between;
@@ -20,28 +20,28 @@ export const NavList = styled.ul`
   display: flex;
   margin: 0;
   padding: 0;
-  align-items: center;
+  align-items: center; /* Ensure all nav items align vertically */
 `;
 
 export const NavItem = styled.li`
   margin-left: 1rem;
   display: flex;
-  align-items: center;
+  align-items: center; /* Ensure items align vertically */
 `;
 
-export const NavLink = styled.a`
+// Unified NavButton for all navigation interactions
+export const NavButton = styled.button`
   color: white;
-  text-decoration: none;
-  display: inline-flex; 
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem;
-  line-height: 1; 
-  border: none;
-  background: transparent;
-  cursor: pointer;
   transition: background-color 0.3s;
-  font-size: 1rem;
 
   &:hover {
     text-decoration: underline;
@@ -49,28 +49,11 @@ export const NavLink = styled.a`
   }
 `;
 
-export const LogoutButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem; 
-  line-height: 1;
-  font-size: 1rem; 
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
+// Styled component for the profile picture
 export const ProfileThumbnail = styled.img`
   border-radius: 50%;
   width: 32px;
   height: 32px;
   object-fit: cover;
-  margin-right: 0.5rem;
-  `;
+  margin-right: 0.5rem; /* Adds spacing between image and username */
+`;
