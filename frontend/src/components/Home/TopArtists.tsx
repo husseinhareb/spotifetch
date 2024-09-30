@@ -12,8 +12,8 @@ import {
 
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
-  const [artistPopularity, setArtistPopularity] = useState<number[]>([]);
   const [artistImages, setArtistImages] = useState<string[]>([]);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchTopArtists = async () => {
@@ -24,11 +24,9 @@ const TopArtists: React.FC = () => {
         if (response.ok) {
           const topArtists = await response.json();
           const names = topArtists.top_artists.map((artist: any) => artist.artist_name);
-          const popularities = topArtists.top_artists.map((artist: any) => artist.popularity);
           const images = topArtists.top_artists.map((artist: any) => artist.image_url);
 
           setArtistNames(names);
-          setArtistPopularity(popularities);
           setArtistImages(images);
         }
       } catch (error) {
@@ -39,6 +37,14 @@ const TopArtists: React.FC = () => {
     fetchTopArtists();
   }, []);
 
+  const handleMouseEnter = (index: number) => {
+    setHoveredIndex(index);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+  };
+
   return (
     <TopArtistsContainer>
       <SecondTitle>Top Artists</SecondTitle>
@@ -47,17 +53,25 @@ const TopArtists: React.FC = () => {
           <>
             <TopArtist>
               <ImageWrapper>
-                <ArtistImage src={artistImages[0]} alt={artistNames[0]} />
+                <ArtistImage
+                  src={hoveredIndex !== null ? artistImages[hoveredIndex + 1] : artistImages[0]}
+                  alt={artistNames[0]}
+                />
               </ImageWrapper>
-              {/* <p>{artistNames[0]}</p> */}
             </TopArtist>
             <OtherArtists>
               {artistNames.slice(1, 5).map((name, index) => (
-                <ArtistCard key={index}>
+                <ArtistCard
+                  key={index}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={handleMouseLeave}
+                >
                   <ImageWrapper>
-                    <ArtistImage src={artistImages[index + 1]} alt={name} />
+                    <ArtistImage
+                      src={hoveredIndex === index ? artistImages[0] : artistImages[index + 1]}
+                      alt={name}
+                    />
                   </ImageWrapper>
-                  {/* <p>{name}</p> */}
                 </ArtistCard>
               ))}
             </OtherArtists>
