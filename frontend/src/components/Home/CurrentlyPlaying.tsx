@@ -76,7 +76,7 @@ const CurrentlyPlaying: React.FC = () => {
   };
 
   return (
-    <Container>
+    <>
       {isPlaying ? (
         <SongDetails>
           <Title>Currently Playing</Title>
@@ -94,7 +94,7 @@ const CurrentlyPlaying: React.FC = () => {
         <NoSongMessage>No song is currently playing.</NoSongMessage>
       )}
 
-    </Container>
+    </>
   );
 };
 

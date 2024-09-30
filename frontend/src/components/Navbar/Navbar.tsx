@@ -91,21 +91,25 @@ const Navbar: React.FC = () => {
         <NavItem>
           <NavButton onClick={() => window.location.href = "/about"}>About</NavButton>
         </NavItem>
-        <NavItem>
-          <NavButton onClick={() => window.location.href = "/profile"}>Profile</NavButton>
-        </NavItem>
         {isLoggedIn ? (
-          <NavItem>
-            <NavButton onClick={handleLogout}>
-              {profileImage && (
-                <ProfileThumbnail
-                  src={profileImage}
-                  alt="Profile Thumbnail"
-                />
-              )}
-              {username} <FontAwesomeIcon icon={faRightFromBracket} />
-            </NavButton>
-          </NavItem>
+          <>
+            <NavItem>
+              <NavButton onClick={() => window.location.href = "/profile"}>
+                {profileImage && (
+                  <ProfileThumbnail
+                    src={profileImage}
+                    alt="Profile Thumbnail"
+                  />
+                )}
+                {username}
+              </NavButton>
+            </NavItem>
+            <NavItem>
+              <NavButton onClick={handleLogout}>
+                <FontAwesomeIcon icon={faRightFromBracket} />
+              </NavButton>
+            </NavItem>
+          </>
         ) : (
           <NavItem>
             <NavButton onClick={handleLogin}>Login</NavButton>

@@ -9,6 +9,7 @@ export const Container = styled.div`
   min-height: 100vh;  
   padding: 20px;
   font-family: 'Arial', sans-serif;
+
 `;
 
 // Welcome message displayed at the top of the home page
