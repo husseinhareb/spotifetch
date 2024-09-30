@@ -92,6 +92,36 @@ export const NoSongMessage = styled.p`
 
 
 //------------------------
+
+const fadeInOut = keyframes`
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+`;
+
+export const ArtistImage = styled.img`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.5s ease-in-out; /* Smooth transition */
+
+  &.swap {
+    animation: ${fadeInOut} 0.8s ease-in-out; /* Apply animation when class 'swap' is active */
+  }
+`;
+
 export const TopArtistsContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -161,16 +191,34 @@ export const ImageWrapper = styled.div`
   width: 100%;
   padding-bottom: 100%; /* Makes the wrapper a perfect square */
   overflow: hidden;
+
+  &:hover {
+    div {
+      opacity: 1;
+    }
+  }
 `;
 
-// Style the image to cover the square container
-export const ArtistImage = styled.img`
+
+
+// Artist Name overlay that appears on hover of the swapped image
+export const ArtistName = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  font-size: 14px;
+  pointer-events: none;
+
+  /* Only show the artist name when the wrapper is hovered */
+  ${ImageWrapper}:hover & {
+    opacity: 1;
+  }
 `;
 
 //--------------------------------
@@ -235,3 +283,4 @@ export const RecentlyPlayedInfo = styled.div`
     color: #333;
   }
 `;
+

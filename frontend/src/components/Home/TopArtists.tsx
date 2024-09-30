@@ -14,6 +14,7 @@ const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
   const [artistImages, setArtistImages] = useState<string[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [animationKey, setAnimationKey] = useState<number>(0); // New state for triggering animation
 
   useEffect(() => {
     const fetchTopArtists = async () => {
@@ -39,10 +40,12 @@ const TopArtists: React.FC = () => {
 
   const handleMouseEnter = (index: number) => {
     setHoveredIndex(index);
+    setAnimationKey(prevKey => prevKey + 1); // Update key to retrigger animation
   };
 
   const handleMouseLeave = () => {
     setHoveredIndex(null);
+    setAnimationKey(prevKey => prevKey + 1); // Update key to retrigger animation
   };
 
   return (
@@ -54,8 +57,10 @@ const TopArtists: React.FC = () => {
             <TopArtist>
               <ImageWrapper>
                 <ArtistImage
+                  key={animationKey} // Unique key to retrigger animation
                   src={hoveredIndex !== null ? artistImages[hoveredIndex + 1] : artistImages[0]}
                   alt={artistNames[0]}
+                  className={hoveredIndex !== null ? 'swap' : ''}
                 />
               </ImageWrapper>
             </TopArtist>
@@ -68,8 +73,10 @@ const TopArtists: React.FC = () => {
                 >
                   <ImageWrapper>
                     <ArtistImage
+                      key={animationKey + index + 1} // Unique key to retrigger animation
                       src={hoveredIndex === index ? artistImages[0] : artistImages[index + 1]}
                       alt={name}
+                      className={hoveredIndex === index ? 'swap' : ''}
                     />
                   </ImageWrapper>
                 </ArtistCard>
