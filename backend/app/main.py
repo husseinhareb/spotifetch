@@ -34,7 +34,7 @@ sp_oauth = SpotifyOAuth(
     client_id=client_id,
     client_secret=client_secret,
     redirect_uri=redirect_uri,
-    scope='user-read-private user-top-read user-read-playback-state user-read-currently-playing user-read-email'
+    scope='user-read-private user-top-read user-read-playback-state user-read-currently-playing user-read-email user-read-recently-played'
 )
 
 @app.get('/')
@@ -51,36 +51,30 @@ async def login():
 async def callback(request: Request):
     # Get the authorization code from the callback URL
     code = request.query_params.get('code')
-    print(f"Received authorization code: {code}")  # Debugging print
 
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code not found")
 
     # Exchange the code for an access token for the specific user
-    token_info = sp_oauth.get_access_token(code)
-    print(f"Token info obtained: {token_info}")  # Debugging print
+    token_info = sp_oauth.get_access_token(code, check_cache=False)
 
     if not token_info:
         raise HTTPException(status_code=400, detail="Failed to obtain access token")
 
     # Save the token info in the session. Each user's token info is different.
     request.session['token_info'] = token_info
-    print(f"Saved token info in session: {request.session['token_info']}")  # Debugging print
 
     return RedirectResponse(url='/welcome')
 
 def get_token(request: Request):
     token_info = request.session.get('token_info', None)
-    print(f"Token info retrieved from session: {token_info}")  # Debugging print
 
     if not token_info:
         return None
 
     # Check if token is expired and refresh it if needed
     if sp_oauth.is_token_expired(token_info):
-        print("Token is expired, attempting to refresh...")  # Debugging print
         token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-        print(f"Refreshed token info: {token_info}")  # Debugging print
         request.session['token_info'] = token_info
 
     return token_info
