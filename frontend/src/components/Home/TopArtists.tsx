@@ -8,6 +8,7 @@ import {
   TopArtistsContainer,
   ImageWrapper,
   ArtistImage,
+  ArtistNameOverlay, // New import for the artist name overlay style
 } from './Styles/style';
 
 const TopArtists: React.FC = () => {
@@ -40,6 +41,15 @@ const TopArtists: React.FC = () => {
 
   const handleMouseEnter = (index: number) => {
     setHoveredIndex(index);
+
+    // Force class removal and re-add to retrigger animation
+    const element = document.querySelector(`.artist-image-${index}`) as HTMLElement;
+    if (element) {
+      element.classList.remove('swap');
+      void element.offsetWidth; // Trigger a reflow (forces the browser to recalculate styles)
+      element.classList.add('swap');
+    }
+
     setAnimationKey(prevKey => prevKey + 1); // Update key to retrigger animation
   };
 
@@ -57,11 +67,14 @@ const TopArtists: React.FC = () => {
             <TopArtist>
               <ImageWrapper>
                 <ArtistImage
-                  key={animationKey} // Unique key to retrigger animation
+                  key={`top-artist-${animationKey}`} // Use a more unique key for proper re-render
                   src={hoveredIndex !== null ? artistImages[hoveredIndex + 1] : artistImages[0]}
-                  alt={artistNames[0]}
+                  alt={hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0]}
                   className={hoveredIndex !== null ? 'swap' : ''}
                 />
+                <ArtistNameOverlay>
+                  {hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0]}
+                </ArtistNameOverlay>
               </ImageWrapper>
             </TopArtist>
             <OtherArtists>
@@ -73,7 +86,7 @@ const TopArtists: React.FC = () => {
                 >
                   <ImageWrapper>
                     <ArtistImage
-                      key={animationKey + index + 1} // Unique key to retrigger animation
+                      key={`other-artist-${animationKey + index + 1}`} // More unique key
                       src={hoveredIndex === index ? artistImages[0] : artistImages[index + 1]}
                       alt={name}
                       className={hoveredIndex === index ? 'swap' : ''}

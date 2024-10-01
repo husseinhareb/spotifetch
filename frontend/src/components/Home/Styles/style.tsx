@@ -221,6 +221,20 @@ export const ArtistName = styled.div`
   }
 `;
 
+export const ArtistNameOverlay = styled.div`
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: opacity 0.3s ease-in-out;
+  font-size: 1rem;
+  pointer-events: none;
+
+  z-index: 1;
+`;
 //--------------------------------
 
 
