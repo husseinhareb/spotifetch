@@ -8,14 +8,16 @@ import {
   TopArtistsContainer,
   ImageWrapper,
   ArtistImage,
-  ArtistNameOverlay, // New import for the artist name overlay style
+  ArtistNameOverlay,
+  MoreInfoText,
 } from './Styles/style';
 
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
   const [artistImages, setArtistImages] = useState<string[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [animationKey, setAnimationKey] = useState<number>(0); // New state for triggering animation
+  const [prevHoveredIndex, setPrevHoveredIndex] = useState<number | null>(null);
+  const [isSwapping, setIsSwapping] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchTopArtists = async () => {
@@ -40,22 +42,15 @@ const TopArtists: React.FC = () => {
   }, []);
 
   const handleMouseEnter = (index: number) => {
-    setHoveredIndex(index);
-
-    // Force class removal and re-add to retrigger animation
-    const element = document.querySelector(`.artist-image-${index}`) as HTMLElement;
-    if (element) {
-      element.classList.remove('swap');
-      void element.offsetWidth; // Trigger a reflow (forces the browser to recalculate styles)
-      element.classList.add('swap');
-    }
-
-    setAnimationKey(prevKey => prevKey + 1); // Update key to retrigger animation
+    setIsSwapping(true);
+    setPrevHoveredIndex(hoveredIndex); // Store the previous hovered index
+    setHoveredIndex(index); // Update to the newly hovered index
   };
 
   const handleMouseLeave = () => {
-    setHoveredIndex(null);
-    setAnimationKey(prevKey => prevKey + 1); // Update key to retrigger animation
+    setIsSwapping(false);
+    setPrevHoveredIndex(hoveredIndex); // Store the last hovered index for smooth transition
+    setHoveredIndex(null); // No card hovered now
   };
 
   return (
@@ -64,19 +59,24 @@ const TopArtists: React.FC = () => {
       <ArtistsWrapper>
         {artistNames.length > 0 && (
           <>
+            {/* Main Top Artist Section */}
             <TopArtist>
               <ImageWrapper>
                 <ArtistImage
-                  key={`top-artist-${animationKey}`} // Use a more unique key for proper re-render
-                  src={hoveredIndex !== null ? artistImages[hoveredIndex + 1] : artistImages[0]}
+                  src={
+                    hoveredIndex !== null ? artistImages[hoveredIndex + 1] : artistImages[0]
+                  }
                   alt={hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0]}
-                  className={hoveredIndex !== null ? 'swap' : ''}
+                  isSwapping={isSwapping}
+                  key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'} // Key to force image rerender
                 />
                 <ArtistNameOverlay>
                   {hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0]}
                 </ArtistNameOverlay>
               </ImageWrapper>
             </TopArtist>
+
+            {/* Other Artists Section */}
             <OtherArtists>
               {artistNames.slice(1, 5).map((name, index) => (
                 <ArtistCard
@@ -85,12 +85,16 @@ const TopArtists: React.FC = () => {
                   onMouseLeave={handleMouseLeave}
                 >
                   <ImageWrapper>
-                    <ArtistImage
-                      key={`other-artist-${animationKey + index + 1}`} // More unique key
-                      src={hoveredIndex === index ? artistImages[0] : artistImages[index + 1]}
-                      alt={name}
-                      className={hoveredIndex === index ? 'swap' : ''}
-                    />
+                    {hoveredIndex === index ? (
+                      <MoreInfoText>Click more to know more about the artist</MoreInfoText>
+                    ) : (
+                      <ArtistImage
+                        src={artistImages[index + 1]}
+                        alt={name}
+                        isSwapping={hoveredIndex === index || prevHoveredIndex === index} // Animate both hovered and previous image
+                        key={hoveredIndex === index ? `hovered-${index}` : `other-${index}`} // Unique key for image rerender
+                      />
+                    )}
                   </ImageWrapper>
                 </ArtistCard>
               ))}

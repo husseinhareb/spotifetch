@@ -1,4 +1,4 @@
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes,css } from 'styled-components';
 
 // Container that wraps the entire content on the home page
 export const Container = styled.div`
@@ -93,7 +93,9 @@ export const NoSongMessage = styled.p`
 
 //------------------------
 
-const fadeInOut = keyframes`
+
+// Animation keyframe for fading in/out
+export const fadeInOut = keyframes`
   0% {
     opacity: 0;
     transform: scale(0.9);
@@ -108,20 +110,24 @@ const fadeInOut = keyframes`
   }
 `;
 
-export const ArtistImage = styled.img`
+// Styles for the artist image with animation applied if the `isSwapping` prop is true
+export const ArtistImage = styled.img<{ isSwapping?: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.5s ease-in-out; /* Smooth transition */
+  transition: all 0.5s ease-in-out;
 
-  &.swap {
-    animation: ${fadeInOut} 0.8s ease-in-out; /* Apply animation when class 'swap' is active */
-  }
+  ${({ isSwapping }) =>
+    isSwapping &&
+    css`
+      animation: ${fadeInOut} 0.5s ease-in-out;
+    `}
 `;
 
+// Container for the entire Top Artists component
 export const TopArtistsContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -130,12 +136,14 @@ export const TopArtistsContainer = styled.div`
   width: 100%;
 `;
 
+// Wrapper for all artists
 export const ArtistsWrapper = styled.div`
   display: flex;
   width: 100%;
   max-width: 1200px;
 `;
 
+// Container for the top artist
 export const TopArtist = styled.div`
   flex: 1;
   display: flex;
@@ -148,14 +156,9 @@ export const TopArtist = styled.div`
     height: auto;
     object-fit: cover;
   }
-
-  p {
-    margin-top: 10px;
-    font-size: 16px;
-    text-align: center;
-  }
 `;
 
+// Container for other artist cards
 export const OtherArtists = styled.div`
   flex: 1;
   display: flex;
@@ -163,6 +166,7 @@ export const OtherArtists = styled.div`
   justify-content: space-between;
 `;
 
+// Styles for individual artist cards
 export const ArtistCard = styled.div`
   flex: 1 1 45%;
   display: flex;
@@ -174,53 +178,22 @@ export const ArtistCard = styled.div`
     height: auto;
     object-fit: cover;
   }
-
-  p {
-    margin-top: 10px;
-    font-size: 16px;
-    text-align: center;
-  }
 `;
 
+// Title for the component
 export const SecondTitle = styled.h1`
   text-align: center;
 `;
 
+// Wrapper for images to control relative positioning
 export const ImageWrapper = styled.div`
   position: relative;
   width: 100%;
   padding-bottom: 100%; /* Makes the wrapper a perfect square */
   overflow: hidden;
-
-  &:hover {
-    div {
-      opacity: 1;
-    }
-  }
 `;
 
-
-
-// Artist Name overlay that appears on hover of the swapped image
-export const ArtistName = styled.div`
-  position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 5px;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  font-size: 14px;
-  pointer-events: none;
-
-  /* Only show the artist name when the wrapper is hovered */
-  ${ImageWrapper}:hover & {
-    opacity: 1;
-  }
-`;
-
+// Overlay text that shows the artist's name
 export const ArtistNameOverlay = styled.div`
   position: absolute;
   bottom: 10px;
@@ -232,9 +205,25 @@ export const ArtistNameOverlay = styled.div`
   transition: opacity 0.3s ease-in-out;
   font-size: 1rem;
   pointer-events: none;
-
   z-index: 1;
 `;
+
+// Text that appears when hovering over an artist card
+export const MoreInfoText = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 1rem;
+  text-align: center;
+  box-sizing: border-box;
+  z-index: 1;
+`;
+
+
 //--------------------------------
 
 
