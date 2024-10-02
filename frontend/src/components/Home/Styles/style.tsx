@@ -189,24 +189,43 @@ export const SecondTitle = styled.h1`
 export const ImageWrapper = styled.div`
   position: relative;
   width: 100%;
-  padding-bottom: 100%; /* Makes the wrapper a perfect square */
+  padding-bottom: 100%; 
   overflow: hidden;
 `;
 
-// Overlay text that shows the artist's name
+// Animation keyframes for sliding in from the left
+export const slideInFromLeft = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
+// Updated ArtistNameOverlay with aligned text and word animation
 export const ArtistNameOverlay = styled.div`
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
+  text-align: left;
+  font-weight: bold;
+  font-size: 40px;
   color: #fff;
   padding: 5px 10px;
   border-radius: 5px;
-  transition: opacity 0.3s ease-in-out;
-  font-size: 1rem;
   pointer-events: none;
   z-index: 1;
+
+  div {
+    opacity: 0;
+    animation: ${slideInFromLeft} 0.5s ease forwards;
+  }
 `;
+
+
 
 // Text that appears when hovering over an artist card
 export const MoreInfoText = styled.div`

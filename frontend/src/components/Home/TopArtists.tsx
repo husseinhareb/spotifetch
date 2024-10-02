@@ -70,8 +70,17 @@ const TopArtists: React.FC = () => {
                   isSwapping={isSwapping}
                   key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'} // Key to force image rerender
                 />
-                <ArtistNameOverlay>
-                  {hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0]}
+                <ArtistNameOverlay key={hoveredIndex !== null ? `artist-name-${hoveredIndex}` : 'artist-name-default'}>
+                  {(hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0])
+                    .split(' ')
+                    .map((word, index) => (
+                      <div
+                        key={index}
+                        style={{ animationDelay: `${index * 0.3}s` }} // Delay each word by 0.3s
+                      >
+                        {word}
+                      </div>
+                    ))}
                 </ArtistNameOverlay>
               </ImageWrapper>
             </TopArtist>
