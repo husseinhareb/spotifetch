@@ -15,6 +15,7 @@ import {
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
   const [artistImages, setArtistImages] = useState<string[]>([]);
+  const [artistBio, setArtistBio] = useState<string[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [prevHoveredIndex, setPrevHoveredIndex] = useState<number | null>(null);
   const [isSwapping, setIsSwapping] = useState<boolean>(false);
@@ -27,11 +28,16 @@ const TopArtists: React.FC = () => {
         });
         if (response.ok) {
           const topArtists = await response.json();
-          const names = topArtists.top_artists.map((artist: any) => artist.artist_name);
-          const images = topArtists.top_artists.map((artist: any) => artist.image_url);
-
-          setArtistNames(names);
-          setArtistImages(images);
+          if (topArtists && topArtists.top_artists) {
+            const names = topArtists.top_artists.map((artist: any) => artist.artist_name);
+            const images = topArtists.top_artists.map((artist: any) => artist.image_url);
+            const bios = topArtists.top_artists.map((artist: any) => artist.description);
+            setArtistNames(names);
+            setArtistImages(images);
+            setArtistBio(bios);
+          }
+        } else {
+          console.error('Failed to fetch top artists:', response.statusText);
         }
       } catch (error) {
         console.error('Error fetching top artists', error);
@@ -64,14 +70,20 @@ const TopArtists: React.FC = () => {
               <ImageWrapper>
                 <ArtistImage
                   src={
-                    hoveredIndex !== null ? artistImages[hoveredIndex + 1] : artistImages[0]
+                    hoveredIndex !== null && hoveredIndex + 1 < artistImages.length
+                      ? artistImages[hoveredIndex + 1]
+                      : artistImages[0]
                   }
-                  alt={hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0]}
+                  alt={
+                    hoveredIndex !== null && hoveredIndex + 1 < artistNames.length
+                      ? artistNames[hoveredIndex + 1]
+                      : artistNames[0]
+                  }
                   isSwapping={isSwapping}
                   key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'} // Key to force image rerender
                 />
                 <ArtistNameOverlay key={hoveredIndex !== null ? `artist-name-${hoveredIndex}` : 'artist-name-default'}>
-                  {(hoveredIndex !== null ? artistNames[hoveredIndex + 1] : artistNames[0])
+                  {(hoveredIndex !== null && hoveredIndex + 1 < artistNames.length ? artistNames[hoveredIndex + 1] : artistNames[0])
                     .split(' ')
                     .map((word, index) => (
                       <div
@@ -95,7 +107,7 @@ const TopArtists: React.FC = () => {
                 >
                   <ImageWrapper>
                     {hoveredIndex === index ? (
-                      <MoreInfoText>Click more to know more about the artist</MoreInfoText>
+                      <MoreInfoText>{artistBio[index + 1]}</MoreInfoText>
                     ) : (
                       <ArtistImage
                         src={artistImages[index + 1]}

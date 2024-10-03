@@ -233,14 +233,19 @@ export const MoreInfoText = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  height: 100%; 
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
   font-size: 1rem;
   text-align: center;
   box-sizing: border-box;
   z-index: 1;
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  cursor: pointer;
 `;
+
 
 
 //--------------------------------

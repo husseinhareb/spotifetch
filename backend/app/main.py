@@ -6,6 +6,8 @@ import os
 from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+import re
+import requests
 
 # Load environment variables from .env file
 load_dotenv()
@@ -149,31 +151,46 @@ async def currently_playing(request: Request):
     else:
         return JSONResponse({"message": "No track currently playing"})
 
+
+def get_artist_description(artist_name):
+    api_key = os.getenv("LASTFM_KEY")
+    url = f"http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={artist_name}&api_key={api_key}&format=json"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if 'artist' in data and 'bio' in data['artist']:
+            summary = data['artist']['bio']['summary']
+            sentences = re.split(r'\. ', summary)
+            first_two_sentences = ". ".join(sentences[:2]) + "."
+            return first_two_sentences
+    return None
+
+# Update the /top_artists endpoint to include descriptions
 @app.get('/top_artists')
 async def top_artists(request: Request, time_range: str = 'medium_term', limit: int = 10):
-    # Get token info from session
     token_info = get_token(request)
     if not token_info:
         raise HTTPException(status_code=401, detail="Token not found or expired")
 
-    # Create Spotify client using the user's access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
-
-    # Get the current user's top artists based on the specified time range
     top_artists_data = sp.current_user_top_artists(time_range=time_range, limit=limit)
 
-    # Extract relevant information
-    top_artists = [
-        {
+    top_artists = []
+    for artist in top_artists_data['items']:
+        description = get_artist_description(artist['name'])
+        artist_data = {
             "artist_name": artist['name'],
             "genres": artist['genres'],
             "popularity": artist['popularity'],
-            "image_url": artist['images'][0]['url'] if artist['images'] else None
+            "image_url": artist['images'][0]['url'] if artist['images'] else None,
+            "description": description
         }
-        for artist in top_artists_data['items']
-    ]
+        top_artists.append(artist_data)
+
+    print("Top Artists Data:", top_artists)  # Debugging output
 
     return JSONResponse({"top_artists": top_artists})
+
 
 @app.get('/recently_played')
 async def recently_played(request: Request, limit: int = 30):
@@ -201,4 +218,5 @@ async def recently_played(request: Request, limit: int = 30):
     ]
 
     return JSONResponse({"recent_tracks": recent_tracks})
+
 
