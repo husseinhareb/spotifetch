@@ -49,14 +49,23 @@ const TopArtists: React.FC = () => {
 
   const handleMouseEnter = (index: number) => {
     setIsSwapping(true);
-    setPrevHoveredIndex(hoveredIndex); // Store the previous hovered index
-    setHoveredIndex(index); // Update to the newly hovered index
+    setPrevHoveredIndex(hoveredIndex);
+    setHoveredIndex(index);
   };
 
   const handleMouseLeave = () => {
     setIsSwapping(false);
-    setPrevHoveredIndex(hoveredIndex); // Store the last hovered index for smooth transition
-    setHoveredIndex(null); // No card hovered now
+    setPrevHoveredIndex(hoveredIndex);
+    setHoveredIndex(null);
+  };
+
+  const trimBioText = (text: string) => {
+    const words = text.split(' ');
+    const MAX_WORDS = 15; 
+    if (words.length > MAX_WORDS) {
+      return `${words.slice(0, MAX_WORDS - 3).join(' ')}... Click to read more`;
+    }
+    return text; 
   };
 
   return (
@@ -80,16 +89,13 @@ const TopArtists: React.FC = () => {
                       : artistNames[0]
                   }
                   isSwapping={isSwapping}
-                  key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'} // Key to force image rerender
+                  key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'}
                 />
                 <ArtistNameOverlay key={hoveredIndex !== null ? `artist-name-${hoveredIndex}` : 'artist-name-default'}>
                   {(hoveredIndex !== null && hoveredIndex + 1 < artistNames.length ? artistNames[hoveredIndex + 1] : artistNames[0])
                     .split(' ')
                     .map((word, index) => (
-                      <div
-                        key={index}
-                        style={{ animationDelay: `${index * 0.3}s` }} // Delay each word by 0.3s
-                      >
+                      <div key={index} style={{ animationDelay: `${index * 0.3}s` }}>
                         {word}
                       </div>
                     ))}
@@ -104,16 +110,19 @@ const TopArtists: React.FC = () => {
                   key={index}
                   onMouseEnter={() => handleMouseEnter(index)}
                   onMouseLeave={handleMouseLeave}
+                  style={{ position: 'relative', height: '200px' }} // Set a fixed height
                 >
                   <ImageWrapper>
                     {hoveredIndex === index ? (
-                      <MoreInfoText>{artistBio[index + 1]}</MoreInfoText>
+                      <MoreInfoText>
+                        {trimBioText(artistBio[index + 1])}
+                      </MoreInfoText>
                     ) : (
                       <ArtistImage
                         src={artistImages[index + 1]}
                         alt={name}
-                        isSwapping={hoveredIndex === index || prevHoveredIndex === index} // Animate both hovered and previous image
-                        key={hoveredIndex === index ? `hovered-${index}` : `other-${index}`} // Unique key for image rerender
+                        isSwapping={hoveredIndex === index || prevHoveredIndex === index}
+                        key={hoveredIndex === index ? `hovered-${index}` : `other-${index}`}
                       />
                     )}
                   </ImageWrapper>

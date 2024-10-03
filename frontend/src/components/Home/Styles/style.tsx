@@ -205,7 +205,7 @@ export const slideInFromLeft = keyframes`
   }
 `;
 
-// Updated ArtistNameOverlay with aligned text and word animation
+// Updated ArtistNameOverlay with aligned text, word animation, and thinner grey outline
 export const ArtistNameOverlay = styled.div`
   position: absolute;
   bottom: 10px;
@@ -219,11 +219,18 @@ export const ArtistNameOverlay = styled.div`
   pointer-events: none;
   z-index: 1;
 
+  // Adding text shadow to create a thinner grey outline effect
+  text-shadow: 1px 1px 0px rgba(128, 128, 128, 0.7),   
+               -1px -1px 0px rgba(128, 128, 128, 0.7),
+               1px -1px 0px rgba(128, 128, 128, 0.7),
+               -1px 1px 0px rgba(128, 128, 128, 0.7);
+
   div {
     opacity: 0;
     animation: ${slideInFromLeft} 0.5s ease forwards;
   }
 `;
+
 
 
 
@@ -236,7 +243,7 @@ export const MoreInfoText = styled.div`
   height: 100%; 
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.2rem; 
   text-align: center;
   box-sizing: border-box;
   z-index: 1;
@@ -244,7 +251,14 @@ export const MoreInfoText = styled.div`
   top: 0; 
   left: 0; 
   cursor: pointer;
+
+  overflow: hidden;
+  white-space: normal; 
+  padding: 10px;
+  text-overflow: ellipsis; 
 `;
+
+
 
 
 
