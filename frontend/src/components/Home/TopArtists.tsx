@@ -19,6 +19,7 @@ const TopArtists: React.FC = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [prevHoveredIndex, setPrevHoveredIndex] = useState<number | null>(null);
   const [isSwapping, setIsSwapping] = useState<boolean>(false);
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null); 
 
   useEffect(() => {
     const fetchTopArtists = async () => {
@@ -51,17 +52,19 @@ const TopArtists: React.FC = () => {
     setIsSwapping(true);
     setPrevHoveredIndex(hoveredIndex);
     setHoveredIndex(index);
+    setHoveredImage(artistImages[index + 1]); // Set the hovered image URL here
   };
 
   const handleMouseLeave = () => {
     setIsSwapping(false);
     setPrevHoveredIndex(hoveredIndex);
     setHoveredIndex(null);
+    setHoveredImage(null); // Reset hovered image URL
   };
 
   const trimBioText = (text: string) => {
     const words = text.split(' ');
-    const MAX_WORDS = 15; 
+    const MAX_WORDS = 19; 
     if (words.length > MAX_WORDS) {
       return `${words.slice(0, MAX_WORDS - 3).join(' ')}... Click to read more`;
     }
@@ -110,11 +113,11 @@ const TopArtists: React.FC = () => {
                   key={index}
                   onMouseEnter={() => handleMouseEnter(index)}
                   onMouseLeave={handleMouseLeave}
-                  style={{ position: 'relative', height: '200px' }} // Set a fixed height
+                  style={{ position: 'relative', height: '200px' }}
                 >
                   <ImageWrapper>
                     {hoveredIndex === index ? (
-                      <MoreInfoText>
+                      <MoreInfoText src={hoveredImage}>
                         {trimBioText(artistBio[index + 1])}
                       </MoreInfoText>
                     ) : (

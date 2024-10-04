@@ -232,30 +232,46 @@ export const ArtistNameOverlay = styled.div`
 `;
 
 
+interface MoreInfoTextProps {
+  src: string | null;
+}
 
-
-// Text that appears when hovering over an artist card
-export const MoreInfoText = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+export const MoreInfoText = styled.div<MoreInfoTextProps>`
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100%; 
-  background-color: rgba(0, 0, 0, 0.8);
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: #fff;
-  font-size: 1.2rem; 
+  font-size: 1.2rem;
   text-align: center;
   box-sizing: border-box;
-  z-index: 1;
-  position: absolute; 
-  top: 0; 
-  left: 0; 
   cursor: pointer;
-
   overflow: hidden;
-  white-space: normal; 
+  white-space: normal;
   padding: 10px;
-  text-overflow: ellipsis; 
+  text-overflow: ellipsis;
+
+  // Create a blurred background image using ::before
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: ${({ src }) => (src ? `url(${src})` : 'none')};
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px); 
+    z-index: -1;  
+  }
+
+  background-color: rgba(0, 0, 0, 0.8); 
 `;
 
 
