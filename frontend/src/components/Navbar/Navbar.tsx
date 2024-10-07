@@ -12,7 +12,6 @@ const Navbar: React.FC = () => {
   const setCountry = useSetCountry();
   const setProduct = useSetProduct();
 
-  // Adding profile image and username selectors
   const username = useUsername();
   const profileImage = useProfileImage();
 
@@ -30,7 +29,7 @@ const Navbar: React.FC = () => {
         const userInfo = await response.json();
         setUsername(userInfo.display_name);
         setEmail(userInfo.email);
-        setProfileImage(userInfo.images && userInfo.images.length > 0 ? userInfo.images[1].url : null);
+        setProfileImage(userInfo.images?.[1]?.url || null);
         setCountry(userInfo.country);
         setProduct(userInfo.product);
         setIsLoggedIn(true);
