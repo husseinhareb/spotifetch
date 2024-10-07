@@ -1,60 +1,64 @@
 import styled from "styled-components";
 
-// Styled Nav container with consistent alignment
+// Navbar container
 export const Nav = styled.nav`
   background-color: #1db954;
   display: flex;
-  height: 41px;
   justify-content: space-between;
-  align-items: center;
-  padding: 0 20px; /* Add padding to provide some space */
+  align-items: center; /* Vertically centers everything inside */
+  padding: 0 20px;
+  height: 50px; /* Increased the height slightly for better vertical alignment */
 `;
 
-// Title container with white text
+// Title container
 export const Title = styled.div`
   color: white;
+  font-size: 18px;
+  font-weight: bold;
 `;
 
-// Navigation list with horizontal layout
+// Navigation list for horizontal items
 export const NavList = styled.ul`
-  list-style: none;
   display: flex;
-  align-items: center;
+  list-style: none;
   margin: 0;
   padding: 0;
+  align-items: center; /* Vertically centers list items */
 `;
 
-// Each item in the navigation bar
+// Each nav item (li) container
 export const NavItem = styled.li`
+  margin-left: 20px;
   display: flex;
-  align-items: center;
-  margin-left: 20px; /* Space between items */
+  align-items: center; /* Ensure vertical alignment inside the item */
 `;
 
-// Styled button for navigation interactions
+// Button used for all navigation actions
 export const NavButton = styled.button`
-  color: white;
   background: none;
   border: none;
+  color: white;
   cursor: pointer;
-  padding: 0;
-  height: 100%; /* Ensure button fills the height of the navbar */
   display: flex;
-  align-items: center;
+  align-items: center; /* Center content vertically */
   justify-content: center;
+  padding: 0;
+  font-size: 14px;
   transition: background-color 0.3s;
 
   &:hover {
     text-decoration: underline;
-    background-color: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
+    background-color: rgba(255, 255, 255, 0.1);
   }
 `;
 
-// Styled component for profile picture
+// Styled profile thumbnail
 export const ProfileThumbnail = styled.img`
   border-radius: 50%;
   width: 32px;
   height: 32px;
   object-fit: cover;
   margin-right: 0.5rem;
+  display: inline-block; /* Ensures inline-block so it aligns with the text */
+  vertical-align: middle; /* Vertically align with the surrounding text */
 `;
