@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import {
+import { 
+  Title,
   Container,
+  SongDetails,
   Info,
+  ProgressTime,
+  ProgressBar,
+  ProgressContainer,
+  AlbumImage,
   NoSongMessage,
-  RecentlyPlayedTitle,
-  RecentlyPlayedList,
-  RecentlyPlayedItem,
-  RecentlyPlayedImage
-} from './Styles/style';
+  ButtonContainer,
+  Button,
+ } from './Styles/style';
 
 interface RecentTrack {
   track_name: string;
@@ -16,52 +20,109 @@ interface RecentTrack {
   played_at: string;
 }
 
-const RecentlyPlayed: React.FC = () => {
-  const [recentlyPlayed, setRecentlyPlayed] = useState<RecentTrack[]>([]);
+const CurrentlyPlaying: React.FC = () => {
+  const [currentTrack, setCurrentTrack] = useState<string | null>(null);
+  const [currentArtist, setCurrentArtist] = useState<string | null>(null);
+  const [albumImage, setAlbumImage] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [progressMs, setProgressMs] = useState<number | null>(0);
+  const [durationMs, setDurationMs] = useState<number | null>(0);
 
   useEffect(() => {
-
-    const fetchRecentlyPlayed = async () => {
+    const fetchCurrentSong = async () => {
       try {
-        const response = await fetch("http://localhost:8000/recently_played", {
+        const response = await fetch("http://localhost:8000/currently_playing", {
           credentials: "include",
         });
         if (response.ok) {
-          const recentTracksData = await response.json();
-          setRecentlyPlayed(recentTracksData.recent_tracks);
+          const songInfo = await response.json();
+          if (songInfo.track_name) {
+            setCurrentTrack(songInfo.track_name);
+            setCurrentArtist(songInfo.artist_name);
+            setAlbumImage(songInfo.album_image);
+            setIsPlaying(songInfo.is_playing);
+            setProgressMs(songInfo.progress_ms);
+            setDurationMs(songInfo.duration_ms);
+          }
         } else {
-          console.error("Failed to fetch recently played tracks");
+          console.error("Failed to fetch current song");
         }
       } catch (error) {
-        console.error("Error fetching recently played tracks", error);
+        console.error("Error fetching current song", error);
       }
     };
 
-    fetchRecentlyPlayed();
+    fetchCurrentSong();
 
+    const interval = setInterval(() => {
+      fetchCurrentSong();
+    }, 1000); // Fetch the current song every second to update the progress
+
+    return () => clearInterval(interval); // Clean up the interval on unmount
   }, []);
 
+  // Calculate progress as percentage
+  const calculateProgress = () => {
+    if (!progressMs || !durationMs) return 0;
+    return (progressMs / durationMs) * 100;
+  };
+
+  // Helper function to format time in mm:ss
+  const formatTime = (ms: number | null) => {
+    if (ms === null) return '0:00';
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  const handlePlay = async () => {
+    await fetch("http://localhost:8000/play", {
+      method: "POST",
+      credentials: "include",
+    });
+    setIsPlaying(true);
+  };
+
+  const handlePause = async () => {
+    await fetch("http://localhost:8000/pause", {
+      method: "POST",
+      credentials: "include",
+    });
+    setIsPlaying(false);
+  };
+
+  const handleNext = async () => {
+    await fetch("http://localhost:8000/next", {
+      method: "POST",
+      credentials: "include",
+    });
+  };
 
   return (
-    <Container>
-
-      <RecentlyPlayedTitle>Recently Played Tracks</RecentlyPlayedTitle>
-      <RecentlyPlayedList>
-        {recentlyPlayed.length > 0 ? (
-          recentlyPlayed.map((track, index) => (
-            <RecentlyPlayedItem key={index}>
-              {track.album_image && <RecentlyPlayedImage src={track.album_image} alt="Album cover" />}
-              <Info><strong>Track:</strong> {track.track_name}</Info>
-              <Info><strong>Artist:</strong> {track.artist_name}</Info>
-              <Info><strong>Played at:</strong> {new Date(track.played_at).toLocaleString()}</Info>
-            </RecentlyPlayedItem>
-          ))
-        ) : (
-          <NoSongMessage>No recently played tracks available.</NoSongMessage>
-        )}
-      </RecentlyPlayedList>
-    </Container>
+    <>
+      {isPlaying ? (
+        <SongDetails>
+          <Title>Currently Playing</Title>
+          <Info><strong>Track:</strong> {currentTrack}</Info>
+          <Info><strong>Artist:</strong> {currentArtist}</Info>
+          {albumImage && <AlbumImage src={albumImage} alt="Album cover" />}
+          <ProgressTime>
+            {formatTime(progressMs)} / {formatTime(durationMs)}
+          </ProgressTime>
+          <ProgressContainer>
+            <ProgressBar progress={calculateProgress()} />
+          </ProgressContainer>
+          <ButtonContainer>
+            <Button onClick={handlePause}>Pause</Button>
+            <Button onClick={handleNext}>Next</Button>
+          </ButtonContainer>
+        </SongDetails>
+      ) : (
+        <NoSongMessage>No song is currently playing.</NoSongMessage>
+      )}
+      {!isPlaying && <Button onClick={handlePlay}>Play</Button>}
+    </>
   );
 };
 
-export default RecentlyPlayed;
+export default CurrentlyPlaying;

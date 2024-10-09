@@ -340,4 +340,25 @@ export const RecentlyPlayedInfo = styled.div`
     color: #333;
   }
 `;
+// Example styles (add these to your existing styles)
+export const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+`;
+
+export const Button = styled.button`
+  padding: 10px 15px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #1db954; /* Spotify green */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #1ed760; /* Slightly lighter green on hover */
+  }
+`;
 

@@ -220,3 +220,33 @@ async def recently_played(request: Request, limit: int = 30):
     return JSONResponse({"recent_tracks": recent_tracks})
 
 
+
+@app.post('/play')
+async def play(request: Request):
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.start_playback()  # Start playback
+    return JSONResponse({"message": "Playback started"})
+
+@app.post('/pause')
+async def pause(request: Request):
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.pause_playback()  # Pause playback
+    return JSONResponse({"message": "Playback paused"})
+
+@app.post('/next')
+async def next_song(request: Request):
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp.next_track()  # Skip to the next track
+    return JSONResponse({"message": "Skipped to next track"})
