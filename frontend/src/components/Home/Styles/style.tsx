@@ -118,7 +118,6 @@ export const ArtistImage = styled.img<{ isSwapping?: boolean }>`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.5s ease-in-out;
 
   ${({ isSwapping }) =>
     isSwapping &&
