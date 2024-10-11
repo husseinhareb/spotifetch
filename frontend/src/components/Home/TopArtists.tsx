@@ -19,12 +19,16 @@ const TopArtists: React.FC = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [prevHoveredIndex, setPrevHoveredIndex] = useState<number | null>(null);
   const [isSwapping, setIsSwapping] = useState<boolean>(false);
-  const [hoveredImage, setHoveredImage] = useState<string | null>(null); 
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+  
+  // State to track the selected time range
+  const [timeRange, setTimeRange] = useState<string>('medium_term');
 
+  // Fetching artists based on timeRange
   useEffect(() => {
     const fetchTopArtists = async () => {
       try {
-        const response = await fetch('http://localhost:8000/top_artists', {
+        const response = await fetch(`http://localhost:8000/top_artists?time_range=${timeRange}`, {
           credentials: 'include',
         });
         if (response.ok) {
@@ -46,7 +50,7 @@ const TopArtists: React.FC = () => {
     };
 
     fetchTopArtists();
-  }, []);
+  }, [timeRange]); // Refetch whenever timeRange changes
 
   const handleMouseEnter = (index: number) => {
     setIsSwapping(true);
@@ -64,16 +68,29 @@ const TopArtists: React.FC = () => {
 
   const trimBioText = (text: string) => {
     const words = text.split(' ');
-    const MAX_WORDS = 19; 
+    const MAX_WORDS = 19;
     if (words.length > MAX_WORDS) {
       return `${words.slice(0, MAX_WORDS - 3).join(' ')}... Click to read more`;
     }
-    return text; 
+    return text;
   };
 
   return (
     <TopArtistsContainer>
       <SecondTitle>Top Artists</SecondTitle>
+      <div style={{ marginBottom: '20px' }}>
+        <label htmlFor="time-range-select">Select Time Range: </label>
+        <select
+          id="time-range-select"
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+        >
+          <option value="short_term">Last 4 Weeks</option>
+          <option value="medium_term">Last 6 Months</option>
+          <option value="long_term">All Time</option>
+        </select>
+      </div>
+
       <ArtistsWrapper>
         {artistNames.length > 0 && (
           <>
