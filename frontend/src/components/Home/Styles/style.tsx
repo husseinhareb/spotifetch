@@ -375,3 +375,10 @@ export const Button = styled.button`
   }
 `;
 
+// Label to indicate the currently playing song
+export const PlayingNowLabel = styled.p`
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #1db954; /* Spotify green */
+  margin-bottom: 5px;
+`;
