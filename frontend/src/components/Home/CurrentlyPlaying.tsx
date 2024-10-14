@@ -9,7 +9,7 @@ import {
   ProgressContainer,
   AlbumImage,
   NoSongMessage,
- } from './Styles/style';
+} from './Styles/style';
 
 interface RecentTrack {
   track_name: string;
@@ -26,6 +26,7 @@ const CurrentlyPlaying: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [progressMs, setProgressMs] = useState<number | null>(0);
   const [durationMs, setDurationMs] = useState<number | null>(0);
+  const [adPlaying, setAdPlaying] = useState<boolean>(false); // New state for ad playing
 
   useEffect(() => {
     const fetchCurrentSong = async () => {
@@ -33,6 +34,7 @@ const CurrentlyPlaying: React.FC = () => {
         const response = await fetch("http://localhost:8000/currently_playing", {
           credentials: "include",
         });
+        
         if (response.ok) {
           const songInfo = await response.json();
           if (songInfo.track_name) {
@@ -42,15 +44,27 @@ const CurrentlyPlaying: React.FC = () => {
             setIsPlaying(songInfo.is_playing);
             setProgressMs(songInfo.progress_ms);
             setDurationMs(songInfo.duration_ms);
+            setAdPlaying(false); // Reset ad playing state
+          } else {
+            setIsPlaying(false);
+            setAdPlaying(true); // Set ad playing if no track information
           }
         } else {
           console.error("Failed to fetch current song");
+          // Here we handle specific CORS issues
+          const errorMessage = await response.text();
+          if (errorMessage.includes("CORS header 'Access-Control-Allow-Origin' missing")) {
+            setIsPlaying(false); // No song is playing
+            setAdPlaying(true); // Set ad playing when CORS error occurs
+          }
         }
       } catch (error) {
         console.error("Error fetching current song", error);
+        // Handle case where the fetch fails
+        setIsPlaying(false);
+        setAdPlaying(true); // Assume ad is playing if there's a fetch error
       }
     };
-
 
     fetchCurrentSong();
 
@@ -77,7 +91,9 @@ const CurrentlyPlaying: React.FC = () => {
 
   return (
     <>
-      {isPlaying ? (
+      {adPlaying ? ( 
+        <NoSongMessage>An ad is currently playing.</NoSongMessage>
+      ) : isPlaying ? (
         <SongDetails>
           <Title>Currently Playing</Title>
           <Info><strong>Track:</strong> {currentTrack}</Info>
@@ -93,7 +109,6 @@ const CurrentlyPlaying: React.FC = () => {
       ) : (
         <NoSongMessage>No song is currently playing.</NoSongMessage>
       )}
-
     </>
   );
 };

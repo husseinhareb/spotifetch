@@ -139,7 +139,7 @@ export const TopArtistsContainer = styled.div`
 export const ArtistsWrapper = styled.div`
   display: flex;
   width: 100%;
-  max-width: 1200px;f
+  max-width: 1200px;
 `;
 
 // Container for the top artist
@@ -306,7 +306,7 @@ export const RecentlyPlayedList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1px;
-  width: 90%;
+  width: 100%;
 `;
 
 // Each item in the recently played list
@@ -315,34 +315,36 @@ export const RecentlyPlayedItem = styled.div`
   align-items: center;
   background-color: #fff;
   padding: 15px;
-  border-radius: 10px;
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease-in-out;
 
   &:hover {
-    transform: scale(1.02);  // Slightly increase the scale on hover for better UX
+    transform: scale(1.02);
   }
 `;
 
 // Album image for the recently played song
 export const RecentlyPlayedImage = styled.img`
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
   margin-right: 15px;
+  flex-shrink: 0; 
 `;
 
 // General information text for recently played tracks
 export const RecentlyPlayedInfo = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-
+  justify-content: flex-start;
+  align-items: flex-start; 
+  flex: 1; 
+  
   p {
     margin: 0;
     font-size: 1rem;
     color: #444;
+    text-align: left;
   }
 
   p strong {
@@ -362,14 +364,14 @@ export const Button = styled.button`
   padding: 10px 15px;
   font-size: 16px;
   color: #fff;
-  background-color: #1db954; /* Spotify green */
+  background-color: #1db954; 
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #1ed760; /* Slightly lighter green on hover */
+    background-color: #1ed760;
   }
 `;
 
