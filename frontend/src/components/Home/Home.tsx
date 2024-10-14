@@ -15,12 +15,12 @@ const Home: React.FC = () => {
 
 
   return (
-    <Container>
+    <div>
       <WelcomeMessage>Welcome home, {username}!</WelcomeMessage>
       <CurrentlyPlaying />
       <TopArtists />
       <RecentlyPlayed />
-    </Container>
+    </div>
   );
 };
 

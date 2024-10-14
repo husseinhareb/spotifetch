@@ -91,7 +91,7 @@ export const NoSongMessage = styled.p`
 `;
 
 
-//------------------------
+//TopArtists------------------------
 
 
 // Animation keyframe for fading in/out
@@ -293,25 +293,20 @@ export const BioOverlay = styled.div`
 
 
 
-//--------------------------------
-
-
+//Recently played--------------------------------
 // Section title for the recently played tracks
 export const RecentlyPlayedTitle = styled.h3`
-  font-size: 18px;
+  font-size: 1rem;
   font-weight: bold;
   color: #333;
-  margin-bottom: 10px;
-  text-align: center;
 `;
 
 // List container for recently played tracks
 export const RecentlyPlayedList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  max-width: 600px;
-  width: 100%;
+  gap: 1px;
+  width: 90%;
 `;
 
 // Each item in the recently played list
@@ -355,6 +350,7 @@ export const RecentlyPlayedInfo = styled.div`
     color: #333;
   }
 `;
+
 // Example styles (add these to your existing styles)
 export const ButtonContainer = styled.div`
   display: flex;
