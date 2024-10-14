@@ -10,6 +10,7 @@ import {
   ArtistImage,
   ArtistNameOverlay,
   MoreInfoText,
+  BioOverlay,
 } from './Styles/style';
 
 const TopArtists: React.FC = () => {
@@ -20,16 +21,16 @@ const TopArtists: React.FC = () => {
   const [prevHoveredIndex, setPrevHoveredIndex] = useState<number | null>(null);
   const [isSwapping, setIsSwapping] = useState<boolean>(false);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);  // Loading state
-  const [cachedData, setCachedData] = useState<any>({});  // Cache for artist data
+  const [loading, setLoading] = useState<boolean>(false);
+  const [cachedData, setCachedData] = useState<any>({});
   
   // State to track the selected time range
   const [timeRange, setTimeRange] = useState<string>('medium_term');
+  const [isTopArtistHovered, setIsTopArtistHovered] = useState<boolean>(false); // New state for top artist hover
 
   // Fetching artists based on timeRange
   useEffect(() => {
     const fetchTopArtists = async () => {
-      // If data for the selected time range is already cached, use it
       if (cachedData[timeRange]) {
         const { names, images, bios } = cachedData[timeRange];
         setArtistNames(names);
@@ -52,7 +53,6 @@ const TopArtists: React.FC = () => {
             const images = topArtists.top_artists.map((artist: any) => artist.image_url);
             const bios = topArtists.top_artists.map((artist: any) => artist.description);
 
-            // Cache the data for this time range
             setCachedData((prevCache: any) => ({
               ...prevCache,
               [timeRange]: { names, images, bios },
@@ -89,6 +89,14 @@ const TopArtists: React.FC = () => {
     setHoveredImage(null); // Reset hovered image URL
   };
 
+  const handleTopArtistMouseEnter = () => {
+    setIsTopArtistHovered(true);
+  };
+
+  const handleTopArtistMouseLeave = () => {
+    setIsTopArtistHovered(false);
+  };
+
   const trimBioText = (text: string) => {
     const words = text.split(' ');
     const MAX_WORDS = 19;
@@ -121,7 +129,10 @@ const TopArtists: React.FC = () => {
           {artistNames.length > 0 && (
             <>
               {/* Main Top Artist Section */}
-              <TopArtist>
+              <TopArtist 
+                onMouseEnter={handleTopArtistMouseEnter} 
+                onMouseLeave={handleTopArtistMouseLeave}
+              >
                 <ImageWrapper>
                   <ArtistImage
                     src={
@@ -135,6 +146,9 @@ const TopArtists: React.FC = () => {
                         : artistNames[0]
                     }
                     isSwapping={isSwapping}
+                    style={{
+                      filter: isTopArtistHovered ? 'blur(10px)' : 'none', // Apply blur if hovered
+                    }}
                     key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'}
                   />
                   <ArtistNameOverlay key={hoveredIndex !== null ? `artist-name-${hoveredIndex}` : 'artist-name-default'}>
@@ -146,6 +160,12 @@ const TopArtists: React.FC = () => {
                         </div>
                       ))}
                   </ArtistNameOverlay>
+                  {/* Bio Overlay for Top Artist */}
+                  {isTopArtistHovered && (
+                    <BioOverlay>
+                      {trimBioText(artistBio[0])} {/* Display trimmed bio for top artist */}
+                    </BioOverlay>
+                  )}
                 </ImageWrapper>
               </TopArtist>
 

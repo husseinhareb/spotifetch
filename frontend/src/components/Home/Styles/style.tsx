@@ -139,7 +139,7 @@ export const TopArtistsContainer = styled.div`
 export const ArtistsWrapper = styled.div`
   display: flex;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1200px;f
 `;
 
 // Container for the top artist
@@ -274,6 +274,22 @@ export const MoreInfoText = styled.div<MoreInfoTextProps>`
 `;
 
 
+export const BioOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7); // Semi-transparent background
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  padding: 10px;
+  text-align: center;
+  transition: opacity 0.3s;
+`;
 
 
 
