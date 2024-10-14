@@ -8,7 +8,8 @@ import {
   RecentlyPlayedItem,
   RecentlyPlayedImage,
   RecentlyPlayedInfo,
-  PlayingNowLabel, // New styled component for "Playing Now" label
+  PlayingNowLabel,
+  GifImage, // New styled component for the GIF
 } from './Styles/style';
 
 interface RecentTrack {
@@ -25,9 +26,9 @@ const RecentlyPlayed: React.FC = () => {
   const [currentArtist, setCurrentArtist] = useState<string | null>(null);
   const [albumImage, setAlbumImage] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [adPlaying, setAdPlaying] = useState<boolean>(false);
 
   useEffect(() => {
-    // Fetch Recently Played Tracks
     const fetchRecentlyPlayed = async () => {
       try {
         const response = await fetch("http://localhost:8000/recently_played", {
@@ -44,7 +45,6 @@ const RecentlyPlayed: React.FC = () => {
       }
     };
 
-    // Fetch Currently Playing Song
     const fetchCurrentSong = async () => {
       try {
         const response = await fetch("http://localhost:8000/currently_playing", {
@@ -57,13 +57,16 @@ const RecentlyPlayed: React.FC = () => {
             setCurrentArtist(songInfo.artist_name);
             setAlbumImage(songInfo.album_image);
             setIsPlaying(songInfo.is_playing);
+            setAdPlaying(false); // Reset ad playing state
           } else {
             setIsPlaying(false);
+            setAdPlaying(true); // Set ad playing if no track information
           }
         }
       } catch (error) {
         console.error("Error fetching current song", error);
         setIsPlaying(false);
+        setAdPlaying(true);
       }
     };
 
@@ -71,13 +74,12 @@ const RecentlyPlayed: React.FC = () => {
     fetchCurrentSong();
 
     const interval = setInterval(() => {
-      fetchCurrentSong(); // Refresh current song every second
+      fetchCurrentSong();
     }, 1000);
 
-    return () => clearInterval(interval); // Clean up on unmount
+    return () => clearInterval(interval);
   }, []);
 
-  // Utility function to format time played
   const formatPlayedTime = (playedAt: string) => {
     const playedDate = new Date(playedAt);
     const now = new Date();
@@ -98,7 +100,6 @@ const RecentlyPlayed: React.FC = () => {
     <>
       <RecentlyPlayedTitle>Recent Tracks</RecentlyPlayedTitle>
       <RecentlyPlayedList>
-        {/* Show Currently Playing song first if it exists */}
         {isPlaying && (
           <RecentlyPlayedItem>
             {albumImage && <RecentlyPlayedImage src={albumImage} alt="Album cover" />}
@@ -107,10 +108,10 @@ const RecentlyPlayed: React.FC = () => {
               <Info><strong>{currentTrack}</strong></Info>
               <Info>{currentArtist}</Info>
             </RecentlyPlayedInfo>
+            <GifImage src="/Equalizer.gif" alt="Playing animation" />
           </RecentlyPlayedItem>
         )}
 
-        {/* Display Recently Played Tracks */}
         {recentlyPlayed.length > 0 ? (
           recentlyPlayed.map((track, index) => (
             <RecentlyPlayedItem key={index}>
