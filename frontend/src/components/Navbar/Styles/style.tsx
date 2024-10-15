@@ -5,9 +5,14 @@ export const Nav = styled.nav`
   background-color: #1db954;
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Vertically centers everything inside */
+  align-items: center;
   padding: 0 20px;
-  height: 50px; /* Increased the height slightly for better vertical alignment */
+  height: 50px;
+
+  @media (max-width: 600px) {
+    flex-direction: row;
+    padding: 0 10px;
+  }
 `;
 
 // Title container
@@ -23,14 +28,30 @@ export const NavList = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
-  align-items: center; /* Vertically centers list items */
+  align-items: center;
+  background-color:red;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    display: none;
+  }
+`;
+
+// Responsive nav list for mobile view
+export const ResponsiveNavList = styled.div<{ isMenuOpen: boolean }>`
+  display: ${({ isMenuOpen }) => (isMenuOpen ? "block" : "none")};
+  width: 100%;
+  
+  @media (min-width: 601px) {
+    display: flex;
+    align-items: center;
+  }
 `;
 
 // Each nav item (li) container
 export const NavItem = styled.li`
   margin-left: 20px;
   display: flex;
-  align-items: center; /* Ensure vertical alignment inside the item */
+  align-items: center;
 `;
 
 // Button used for all navigation actions
@@ -40,14 +61,12 @@ export const NavButton = styled.button`
   color: white;
   cursor: pointer;
   display: flex;
-  align-items: center; /* Center content vertically */
+  align-items: center;
   justify-content: center;
-  padding: 0;
   font-size: 14px;
   transition: background-color 0.3s;
 
   &:hover {
-    text-decoration: underline;
     background-color: rgba(255, 255, 255, 0.1);
   }
 `;
@@ -59,6 +78,18 @@ export const ProfileThumbnail = styled.img`
   height: 32px;
   object-fit: cover;
   margin-right: 0.5rem;
-  display: inline-block; /* Ensures inline-block so it aligns with the text */
-  vertical-align: middle; /* Vertically align with the surrounding text */
+`;
+
+// Hamburger menu for mobile view
+export const HamburgerMenu = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 24px;
+  display: none;
+
+  @media (max-width: 600px) {
+    display: block;
+  }
 `;
