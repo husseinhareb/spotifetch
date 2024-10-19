@@ -8,11 +8,6 @@ export const Nav = styled.nav`
   align-items: center;
   padding: 0 20px;
   height: 50px;
-
-  @media (max-width: 600px) {
-    flex-direction: row;
-    padding: 0 10px;
-  }
 `;
 
 // Title container
@@ -29,22 +24,6 @@ export const NavList = styled.ul`
   margin: 0;
   padding: 0;
   align-items: center;
-  background-color:red;
-  @media (max-width: 600px) {
-    flex-direction: column;
-    display: none;
-  }
-`;
-
-// Responsive nav list for mobile view
-export const ResponsiveNavList = styled.div<{ isMenuOpen: boolean }>`
-  display: ${({ isMenuOpen }) => (isMenuOpen ? "block" : "none")};
-  width: 100%;
-  
-  @media (min-width: 601px) {
-    display: flex;
-    align-items: center;
-  }
 `;
 
 // Each nav item (li) container
@@ -78,18 +57,4 @@ export const ProfileThumbnail = styled.img`
   height: 32px;
   object-fit: cover;
   margin-right: 0.5rem;
-`;
-
-// Hamburger menu for mobile view
-export const HamburgerMenu = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 24px;
-  display: none;
-
-  @media (max-width: 600px) {
-    display: block;
-  }
 `;

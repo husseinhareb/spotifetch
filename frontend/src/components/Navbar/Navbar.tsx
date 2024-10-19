@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
-import {
-  Nav, Title, NavList, NavItem, NavButton, ProfileThumbnail, HamburgerMenu, ResponsiveNavList
-} from "./Styles/style"; // Include the new styled components
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { 
+  Nav, Title, NavList, NavItem, NavButton, ProfileThumbnail 
+} from "./Styles/style"; // Styled components
 import { useSetUsername, useSetEmail, useSetProfileImage, useSetCountry, useSetProduct, useUsername, useProfileImage } from "../../services/store";
 
 const Navbar: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false); // State to control the mobile menu visibility
   const setUsername = useSetUsername();
   const setEmail = useSetEmail();
   const setProfileImage = useSetProfileImage();
@@ -71,47 +70,40 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
   return (
     <Nav>
       <Title>
         <NavButton onClick={() => window.location.href = "/"}>Spotifetch</NavButton>
       </Title>
-      <HamburgerMenu onClick={toggleMenu}>
-        <FontAwesomeIcon icon={faBars} />
-      </HamburgerMenu>
-      <ResponsiveNavList isMenuOpen={isMenuOpen}>
-        <NavList>
-          <NavItem>
-            <NavButton onClick={() => window.location.href = "/"}>Home</NavButton>
-          </NavItem>
-          <NavItem>
-            <NavButton onClick={() => window.location.href = "/about"}>About</NavButton>
-          </NavItem>
-          {isLoggedIn ? (
-            <>
-              <NavItem>
-                <NavButton onClick={() => window.location.href = "/profile"}>
-                  {profileImage && (
-                    <ProfileThumbnail src={profileImage} alt="Profile Thumbnail" />
-                  )}
-                  {username}
-                </NavButton>
-              </NavItem>
-              <NavItem>
-                <NavButton onClick={handleLogout}>
-                  <FontAwesomeIcon icon={faRightFromBracket} />
-                </NavButton>
-              </NavItem>
-            </>
-          ) : (
+      <NavList>
+        <NavItem>
+          <NavButton onClick={() => window.location.href = "/"}>Home</NavButton>
+        </NavItem>
+        <NavItem>
+          <NavButton onClick={() => window.location.href = "/about"}>About</NavButton>
+        </NavItem>
+        {isLoggedIn ? (
+          <>
             <NavItem>
-              <NavButton onClick={handleLogin}>Login</NavButton>
+              <NavButton onClick={() => window.location.href = "/profile"}>
+                {profileImage && (
+                  <ProfileThumbnail src={profileImage} alt="Profile Thumbnail" />
+                )}
+                {username}
+              </NavButton>
             </NavItem>
-          )}
-        </NavList>
-      </ResponsiveNavList>
+            <NavItem>
+              <NavButton onClick={handleLogout}>
+                <FontAwesomeIcon icon={faRightFromBracket} />
+              </NavButton>
+            </NavItem>
+          </>
+        ) : (
+          <NavItem>
+            <NavButton onClick={handleLogin}>Login</NavButton>
+          </NavItem>
+        )}
+      </NavList>
     </Nav>
   );
 };
