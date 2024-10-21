@@ -165,7 +165,6 @@ def get_artist_description(artist_name):
             return first_two_sentences
     return None
 
-# Update the /top_artists endpoint to include descriptions
 @app.get('/top_artists')
 async def top_artists(request: Request, time_range: str = 'medium_term', limit: int = 10):
     token_info = get_token(request)
@@ -179,6 +178,7 @@ async def top_artists(request: Request, time_range: str = 'medium_term', limit: 
     for artist in top_artists_data['items']:
         description = get_artist_description(artist['name'])
         artist_data = {
+            "artist_id": artist['id'],  # Add artist ID here
             "artist_name": artist['name'],
             "genres": artist['genres'],
             "popularity": artist['popularity'],

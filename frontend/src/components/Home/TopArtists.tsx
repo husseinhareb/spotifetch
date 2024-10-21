@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import {
   ArtistCard,
   ArtistsWrapper,
@@ -12,7 +13,7 @@ import {
   MoreInfoText,
   BioOverlay,
 } from './Styles/style';
-import { Link } from 'react-router-dom';
+
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
   const [artistImages, setArtistImages] = useState<string[]>([]);
@@ -24,11 +25,9 @@ const TopArtists: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [cachedData, setCachedData] = useState<any>({});
   
-  // State to track the selected time range
   const [timeRange, setTimeRange] = useState<string>('medium_term');
-  const [isTopArtistHovered, setIsTopArtistHovered] = useState<boolean>(false); // New state for top artist hover
+  const [isTopArtistHovered, setIsTopArtistHovered] = useState<boolean>(false);
 
-  // Fetching artists based on timeRange
   useEffect(() => {
     const fetchTopArtists = async () => {
       if (cachedData[timeRange]) {
@@ -39,7 +38,7 @@ const TopArtists: React.FC = () => {
         return;
       }
 
-      setLoading(true); // Start loading
+      setLoading(true);
 
       try {
         const response = await fetch(`http://localhost:8000/top_artists?time_range=${timeRange}`, {
@@ -68,25 +67,25 @@ const TopArtists: React.FC = () => {
       } catch (error) {
         console.error('Error fetching top artists', error);
       } finally {
-        setLoading(false); // Stop loading
+        setLoading(false);
       }
     };
 
     fetchTopArtists();
-  }, [timeRange, cachedData]); // Refetch only when timeRange changes
+  }, [timeRange, cachedData]);
 
   const handleMouseEnter = (index: number) => {
     setIsSwapping(true);
     setPrevHoveredIndex(hoveredIndex);
     setHoveredIndex(index);
-    setHoveredImage(artistImages[index + 1]); // Set the hovered image URL here
+    setHoveredImage(artistImages[index + 1]);
   };
 
   const handleMouseLeave = () => {
     setIsSwapping(false);
     setPrevHoveredIndex(hoveredIndex);
     setHoveredIndex(null);
-    setHoveredImage(null); // Reset hovered image URL
+    setHoveredImage(null);
   };
 
   const handleTopArtistMouseEnter = () => {
@@ -97,11 +96,19 @@ const TopArtists: React.FC = () => {
     setIsTopArtistHovered(false);
   };
 
-  const trimBioText = (text: string) => {
+  // Trim text and include a clickable link for full artist bio
+  const trimBioText = (text: string, artistName: string) => {
     const words = text.split(' ');
     const MAX_WORDS = 19;
     if (words.length > MAX_WORDS) {
-      return `${words.slice(0, MAX_WORDS - 3).join(' ')}... Click to read more`;
+      return (
+        <>
+          {`${words.slice(0, MAX_WORDS - 3).join(' ')}... `}
+          <Link to={`/artist/${encodeURIComponent(artistName)}`} style={{ color: '#007bff', textDecoration: 'underline' }}>
+            Click to read more
+          </Link>
+        </>
+      );
     }
     return text;
   };
@@ -123,7 +130,7 @@ const TopArtists: React.FC = () => {
       </div>
 
       {loading ? (
-        <p>Loading...</p> // Show loading indicator while fetching
+        <p>Loading...</p>
       ) : (
         <ArtistsWrapper>
           {artistNames.length > 0 && (
@@ -147,7 +154,7 @@ const TopArtists: React.FC = () => {
                     }
                     isSwapping={isSwapping}
                     style={{
-                      filter: isTopArtistHovered ? 'blur(10px)' : 'none', // Apply blur if hovered
+                      filter: isTopArtistHovered ? 'blur(10px)' : 'none',
                     }}
                     key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'}
                   />
@@ -160,12 +167,10 @@ const TopArtists: React.FC = () => {
                         </div>
                       ))}
                   </ArtistNameOverlay>
-                  {/* Bio Overlay for Top Artist */}
                   {isTopArtistHovered && (
                     <BioOverlay>
-                    {trimBioText(artistBio[0])}
-                    <Link to={`/artist/${artistNames[0]}`}>More</Link> {/* Add link to More */}
-                  </BioOverlay>
+                      {trimBioText(artistBio[0], artistNames[0])} {/* Pass the artist name to trimBioText */}
+                    </BioOverlay>
                   )}
                 </ImageWrapper>
               </TopArtist>
@@ -182,7 +187,7 @@ const TopArtists: React.FC = () => {
                     <ImageWrapper>
                       {hoveredIndex === index ? (
                         <MoreInfoText src={hoveredImage}>
-                          {trimBioText(artistBio[index + 1])}
+                          {trimBioText(artistBio[index + 1], name)} {/* Pass artist name to trimBioText */}
                         </MoreInfoText>
                       ) : (
                         <ArtistImage
