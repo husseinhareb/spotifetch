@@ -8,6 +8,7 @@ import Navbar from './components/Navbar/Navbar';
 import Home from './components/Home/Home';
 import About from './components/About/About';
 import Profile from './components/Profile/Profile';
+import ArtistPage from './components/Artists/ArtistPage'; // Import the ArtistPage component
 
 const App: React.FC = () => {
   return (
@@ -18,6 +19,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/artist/:artistId" element={<ArtistPage />} /> {/* Add ArtistPage route */}
         </Routes>
       </div>
     </Router>

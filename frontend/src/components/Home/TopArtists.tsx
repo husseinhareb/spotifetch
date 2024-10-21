@@ -12,7 +12,7 @@ import {
   MoreInfoText,
   BioOverlay,
 } from './Styles/style';
-
+import { Link } from 'react-router-dom';
 const TopArtists: React.FC = () => {
   const [artistNames, setArtistNames] = useState<string[]>([]);
   const [artistImages, setArtistImages] = useState<string[]>([]);
@@ -163,8 +163,9 @@ const TopArtists: React.FC = () => {
                   {/* Bio Overlay for Top Artist */}
                   {isTopArtistHovered && (
                     <BioOverlay>
-                      {trimBioText(artistBio[0])} {/* Display trimmed bio for top artist */}
-                    </BioOverlay>
+                    {trimBioText(artistBio[0])}
+                    <Link to={`/artist/${artistNames[0]}`}>More</Link> {/* Add link to More */}
+                  </BioOverlay>
                   )}
                 </ImageWrapper>
               </TopArtist>

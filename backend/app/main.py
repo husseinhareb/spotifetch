@@ -250,3 +250,46 @@ async def next_song(request: Request):
     sp = spotipy.Spotify(auth=token_info['access_token'])
     sp.next_track()  # Skip to the next track
     return JSONResponse({"message": "Skipped to next track"})
+
+@app.get('/artist_info/{artist_id}')
+async def artist_info(request: Request, artist_id: str):
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+
+    # Fetch artist details
+    try:
+        artist_details = sp.artist(artist_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error fetching artist details: {str(e)}")
+
+    # Fetch top tracks
+    try:
+        top_tracks_data = sp.artist_top_tracks(artist_id, country='US')  # You can change the country as needed
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error fetching top tracks: {str(e)}")
+
+    # Extract necessary artist info
+    artist_info = {
+        "artist_name": artist_details['name'],
+        "genres": artist_details['genres'],
+        "popularity": artist_details['popularity'],
+        "image_url": artist_details['images'][0]['url'] if artist_details['images'] else None,
+    }
+
+    # Extract top tracks info
+    top_tracks = [
+        {
+            "track_name": track['name'],
+            "album_name": track['album']['name'],
+            "album_image": track['album']['images'][0]['url'] if track['album']['images'] else None,
+            "duration_ms": track['duration_ms'],
+            "popularity": track['popularity'],
+            "external_url": track['external_urls']['spotify'],
+        }
+        for track in top_tracks_data['tracks']
+    ]
+
+    return JSONResponse({"artist_info": artist_info, "top_tracks": top_tracks})

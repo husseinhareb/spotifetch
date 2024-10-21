@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import {
-  Nav, Title, NavList, NavItem, NavButton, ProfileThumbnail, HamburgerIcon, MobileMenu
+  Nav, Title, NavList, NavItem, NavButton, ProfileThumbnail, HamburgerIcon
 } from "./Styles/style"; // Styled components
 import { 
   useSetUsername, useSetEmail, useSetProfileImage, useSetCountry, useSetProduct, 
@@ -89,7 +89,7 @@ const Navbar: React.FC = () => {
         <FontAwesomeIcon icon={menuOpen ? faTimes : faBars} />
       </HamburgerIcon>
 
-      {/* Navigation Menu for Desktop */}
+      {/* Navigation Menu */}
       <NavList className={menuOpen ? 'active' : ''}>
         <NavItem>
           <NavButton onClick={() => window.location.href = "/"}>Home</NavButton>
@@ -119,37 +119,6 @@ const Navbar: React.FC = () => {
           </NavItem>
         )}
       </NavList>
-
-      {/* Mobile Menu (overlay for smaller screens) */}
-      <MobileMenu className={menuOpen ? 'active' : ''}>
-        <NavItem>
-          <NavButton onClick={() => window.location.href = "/"}>Home</NavButton>
-        </NavItem>
-        <NavItem>
-          <NavButton onClick={() => window.location.href = "/about"}>About</NavButton>
-        </NavItem>
-        {isLoggedIn ? (
-          <>
-            <NavItem>
-              <NavButton onClick={() => window.location.href = "/profile"}>
-                {profileImage && (
-                  <ProfileThumbnail src={profileImage} alt="Profile Thumbnail" />
-                )}
-                {username}
-              </NavButton>
-            </NavItem>
-            <NavItem>
-              <NavButton onClick={handleLogout}>
-                <FontAwesomeIcon icon={faRightFromBracket} />
-              </NavButton>
-            </NavItem>
-          </>
-        ) : (
-          <NavItem>
-            <NavButton onClick={handleLogin}>Login</NavButton>
-          </NavItem>
-        )}
-      </MobileMenu>
     </Nav>
   );
 };

@@ -18,7 +18,7 @@ export const Title = styled.div`
   font-weight: bold;
 `;
 
-// Navigation list for desktop view
+// Navigation list for desktop and mobile views
 export const NavList = styled.ul`
   display: flex;
   list-style: none;
@@ -28,30 +28,17 @@ export const NavList = styled.ul`
 
   @media (max-width: 768px) {
     display: none;
+    flex-direction: column;
+    background-color: #1db954;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    right: 0;
+    padding: 20px;
   }
-  
+
   &.active {
     display: flex;
-  }
-`;
-
-// Mobile menu for smaller screens
-export const MobileMenu = styled.div`
-  display: none;
-  position: absolute;
-  top: 50px;
-  left: 0;
-  right: 0;
-  background-color: #1db954;
-  flex-direction: column;
-  padding: 20px;
-  z-index: 999;
-
-  @media (max-width: 768px) {
-    display: none;
-    &.active {
-      display: flex;
-    }
   }
 `;
 
@@ -60,6 +47,11 @@ export const NavItem = styled.li`
   margin-left: 20px;
   display: flex;
   align-items: center;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    margin-bottom: 15px;
+  }
 `;
 
 // Button used for all navigation actions
