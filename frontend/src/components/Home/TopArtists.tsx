@@ -98,21 +98,22 @@ const TopArtists: React.FC = () => {
     setIsTopArtistHovered(false);
   };
 
-  const trimBioText = (text: string, artistId: string) => {
-    const words = text.split(' ');
-    const MAX_WORDS = 19;
-    if (words.length > MAX_WORDS) {
-      return (
-        <>
-          {`${words.slice(0, MAX_WORDS - 3).join(' ')}... `}
-          <Link to={`/artist/${encodeURIComponent(artistId)}`} style={{ color: '#007bff', textDecoration: 'underline' }}>
-            Click to read more
-          </Link>
-        </>
-      );
-    }
-    return text;
-  };
+// Updated trimBioText function
+const trimBioText = (text: string, artistId: string) => {
+  const words = text.split(' ');
+  const MAX_WORDS = 19;
+
+  // Create a single HTML string with the "Click to read more" link embedded
+  if (words.length > MAX_WORDS) {
+    const shortenedText = `${words.slice(0, MAX_WORDS - 3).join(' ')}... `;
+    const fullTextWithLink = `${shortenedText}<a href="/artist/${encodeURIComponent(artistId)}" style="color: #007bff; text-decoration: underline;">Click to read more</a>`;
+    return <span dangerouslySetInnerHTML={{ __html: fullTextWithLink }} />;
+  }
+
+  return text;
+};
+
+
 
   return (
     <TopArtistsContainer>
