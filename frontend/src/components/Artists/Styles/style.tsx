@@ -60,3 +60,17 @@ export const TrackItem = styled.li`
     margin-left: 10px;
   }
 `;
+
+export const ImageGallery = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+  gap: 10px;
+  margin: 20px 0;
+`;
+
+export const GalleryImage = styled.img`
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+`;

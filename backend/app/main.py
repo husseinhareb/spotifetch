@@ -30,6 +30,7 @@ app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
 client_id = os.getenv('SPOTIPY_CLIENT_ID')
 client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
+last_fm_api_key = os.getenv("LASTFM_KEY")
 
 # Spotify OAuth object with required scopes
 sp_oauth = SpotifyOAuth(
@@ -153,8 +154,7 @@ async def currently_playing(request: Request):
 
 
 def get_artist_description(artist_name):
-    api_key = os.getenv("LASTFM_KEY")
-    url = f"http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={artist_name}&api_key={api_key}&format=json"
+    url = f"http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={artist_name}&api_key={last_fm_api_key}&format=json"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -220,37 +220,6 @@ async def recently_played(request: Request, limit: int = 30):
     return JSONResponse({"recent_tracks": recent_tracks})
 
 
-
-@app.post('/play')
-async def play(request: Request):
-    token_info = get_token(request)
-    if not token_info:
-        raise HTTPException(status_code=401, detail="Token not found or expired")
-
-    sp = spotipy.Spotify(auth=token_info['access_token'])
-    sp.start_playback()  # Start playback
-    return JSONResponse({"message": "Playback started"})
-
-@app.post('/pause')
-async def pause(request: Request):
-    token_info = get_token(request)
-    if not token_info:
-        raise HTTPException(status_code=401, detail="Token not found or expired")
-
-    sp = spotipy.Spotify(auth=token_info['access_token'])
-    sp.pause_playback()  # Pause playback
-    return JSONResponse({"message": "Playback paused"})
-
-@app.post('/next')
-async def next_song(request: Request):
-    token_info = get_token(request)
-    if not token_info:
-        raise HTTPException(status_code=401, detail="Token not found or expired")
-
-    sp = spotipy.Spotify(auth=token_info['access_token'])
-    sp.next_track()  # Skip to the next track
-    return JSONResponse({"message": "Skipped to next track"})
-
 @app.get('/artist_info/{artist_id}')
 async def artist_info(request: Request, artist_id: str):
     token_info = get_token(request)
@@ -267,16 +236,25 @@ async def artist_info(request: Request, artist_id: str):
 
     # Fetch top tracks
     try:
-        top_tracks_data = sp.artist_top_tracks(artist_id, country='US')  # You can change the country as needed
+        top_tracks_data = sp.artist_top_tracks(artist_id, country='US')
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error fetching top tracks: {str(e)}")
 
-    # Extract necessary artist info
+    # Get the artist's name for Last.fm description fetching
+    artist_name = artist_details['name']
+    description = get_artist_description(artist_name)  # Fetch description from Last.fm
+
+    # Extract artist info and images
     artist_info = {
-        "artist_name": artist_details['name'],
+        "artist_name": artist_name,
         "genres": artist_details['genres'],
         "popularity": artist_details['popularity'],
-        "image_url": artist_details['images'][0]['url'] if artist_details['images'] else None,
+        "images": [image['url'] for image in artist_details['images']],
+        "description": description,  # Add the description
+        "track_images": [
+            track['album']['images'][0]['url'] 
+            for track in top_tracks_data['tracks'] if track['album']['images']
+        ][:5],  # Limit to 5 additional images
     }
 
     # Extract top tracks info
@@ -293,3 +271,32 @@ async def artist_info(request: Request, artist_id: str):
     ]
 
     return JSONResponse({"artist_info": artist_info, "top_tracks": top_tracks})
+
+@app.get('/artist_images/{artist_name}')
+async def get_artist_images(artist_name: str):
+    # Prepare the Last.fm API endpoint for fetching artist info (with main image)
+    url = "http://ws.audioscrobbler.com/2.0/"
+    params = {
+        "method": "artist.getInfo",
+        "artist": artist_name,
+        "api_key": last_fm_api_key,
+        "format": "json"
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        # Check if the main image is available
+        if "artist" in data and "image" in data["artist"]:
+            image_urls = [
+                img["#text"] for img in data["artist"]["image"] if img["#text"]
+            ]
+        else:
+            image_urls = []  # Fallback if no images are found
+
+        return JSONResponse({"images": image_urls})
+
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail="Error fetching images from Last.fm")
