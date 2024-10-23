@@ -178,7 +178,7 @@ async def top_artists(request: Request, time_range: str = 'medium_term', limit: 
     for artist in top_artists_data['items']:
         description = get_artist_description(artist['name'])
         artist_data = {
-            "artist_id": artist['id'],  # Add artist ID here
+            "artist_id": artist['id'], 
             "artist_name": artist['name'],
             "genres": artist['genres'],
             "popularity": artist['popularity'],

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link } from 'react-router-dom';
 import {
   ArtistCard,
   ArtistsWrapper,
@@ -14,27 +14,29 @@ import {
   BioOverlay,
 } from './Styles/style';
 
+interface Artist {
+  id: string;
+  name: string;
+  image: string;
+  bio: string;
+}
+
 const TopArtists: React.FC = () => {
-  const [artistNames, setArtistNames] = useState<string[]>([]);
-  const [artistImages, setArtistImages] = useState<string[]>([]);
-  const [artistBio, setArtistBio] = useState<string[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [prevHoveredIndex, setPrevHoveredIndex] = useState<number | null>(null);
   const [isSwapping, setIsSwapping] = useState<boolean>(false);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [cachedData, setCachedData] = useState<any>({});
-  
   const [timeRange, setTimeRange] = useState<string>('medium_term');
   const [isTopArtistHovered, setIsTopArtistHovered] = useState<boolean>(false);
 
+  // Fetch artists
   useEffect(() => {
     const fetchTopArtists = async () => {
       if (cachedData[timeRange]) {
-        const { names, images, bios } = cachedData[timeRange];
-        setArtistNames(names);
-        setArtistImages(images);
-        setArtistBio(bios);
+        setArtists(cachedData[timeRange]);
         return;
       }
 
@@ -46,20 +48,20 @@ const TopArtists: React.FC = () => {
         });
 
         if (response.ok) {
-          const topArtists = await response.json();
-          if (topArtists && topArtists.top_artists) {
-            const names = topArtists.top_artists.map((artist: any) => artist.artist_name);
-            const images = topArtists.top_artists.map((artist: any) => artist.image_url);
-            const bios = topArtists.top_artists.map((artist: any) => artist.description);
+          const topArtistsData = await response.json();
+          if (topArtistsData && topArtistsData.top_artists) {
+            const artists = topArtistsData.top_artists.map((artist: any) => ({
+              id: artist.artist_id,
+              name: artist.artist_name,
+              image: artist.image_url,
+              bio: artist.description,
+            }));
 
             setCachedData((prevCache: any) => ({
               ...prevCache,
-              [timeRange]: { names, images, bios },
+              [timeRange]: artists,
             }));
-
-            setArtistNames(names);
-            setArtistImages(images);
-            setArtistBio(bios);
+            setArtists(artists);
           }
         } else {
           console.error('Failed to fetch top artists:', response.statusText);
@@ -78,7 +80,7 @@ const TopArtists: React.FC = () => {
     setIsSwapping(true);
     setPrevHoveredIndex(hoveredIndex);
     setHoveredIndex(index);
-    setHoveredImage(artistImages[index + 1]);
+    setHoveredImage(artists[index + 1]?.image || null);
   };
 
   const handleMouseLeave = () => {
@@ -96,15 +98,14 @@ const TopArtists: React.FC = () => {
     setIsTopArtistHovered(false);
   };
 
-  // Trim text and include a clickable link for full artist bio
-  const trimBioText = (text: string, artistName: string) => {
+  const trimBioText = (text: string, artistId: string) => {
     const words = text.split(' ');
     const MAX_WORDS = 19;
     if (words.length > MAX_WORDS) {
       return (
         <>
           {`${words.slice(0, MAX_WORDS - 3).join(' ')}... `}
-          <Link to={`/artist/${encodeURIComponent(artistName)}`} style={{ color: '#007bff', textDecoration: 'underline' }}>
+          <Link to={`/artist/${encodeURIComponent(artistId)}`} style={{ color: '#007bff', textDecoration: 'underline' }}>
             Click to read more
           </Link>
         </>
@@ -133,9 +134,8 @@ const TopArtists: React.FC = () => {
         <p>Loading...</p>
       ) : (
         <ArtistsWrapper>
-          {artistNames.length > 0 && (
+          {artists.length > 0 && (
             <>
-              {/* Main Top Artist Section */}
               <TopArtist 
                 onMouseEnter={handleTopArtistMouseEnter} 
                 onMouseLeave={handleTopArtistMouseLeave}
@@ -143,14 +143,14 @@ const TopArtists: React.FC = () => {
                 <ImageWrapper>
                   <ArtistImage
                     src={
-                      hoveredIndex !== null && hoveredIndex + 1 < artistImages.length
-                        ? artistImages[hoveredIndex + 1]
-                        : artistImages[0]
+                      hoveredIndex !== null && hoveredIndex + 1 < artists.length
+                        ? artists[hoveredIndex + 1].image
+                        : artists[0].image
                     }
                     alt={
-                      hoveredIndex !== null && hoveredIndex + 1 < artistNames.length
-                        ? artistNames[hoveredIndex + 1]
-                        : artistNames[0]
+                      hoveredIndex !== null && hoveredIndex + 1 < artists.length
+                        ? artists[hoveredIndex + 1].name
+                        : artists[0].name
                     }
                     isSwapping={isSwapping}
                     style={{
@@ -159,7 +159,7 @@ const TopArtists: React.FC = () => {
                     key={hoveredIndex !== null ? `top-${hoveredIndex}` : 'top-default'}
                   />
                   <ArtistNameOverlay key={hoveredIndex !== null ? `artist-name-${hoveredIndex}` : 'artist-name-default'}>
-                    {(hoveredIndex !== null && hoveredIndex + 1 < artistNames.length ? artistNames[hoveredIndex + 1] : artistNames[0])
+                    {(hoveredIndex !== null && hoveredIndex + 1 < artists.length ? artists[hoveredIndex + 1].name : artists[0].name)
                       .split(' ')
                       .map((word, index) => (
                         <div key={index} style={{ animationDelay: `${index * 0.3}s` }}>
@@ -169,15 +169,14 @@ const TopArtists: React.FC = () => {
                   </ArtistNameOverlay>
                   {isTopArtistHovered && (
                     <BioOverlay>
-                      {trimBioText(artistBio[0], artistNames[0])} {/* Pass the artist name to trimBioText */}
+                      {trimBioText(artists[0].bio, artists[0].id)}
                     </BioOverlay>
                   )}
                 </ImageWrapper>
               </TopArtist>
 
-              {/* Other Artists Section */}
               <OtherArtists>
-                {artistNames.slice(1, 5).map((name, index) => (
+                {artists.slice(1, 5).map((artist, index) => (
                   <ArtistCard
                     key={index}
                     onMouseEnter={() => handleMouseEnter(index)}
@@ -187,12 +186,12 @@ const TopArtists: React.FC = () => {
                     <ImageWrapper>
                       {hoveredIndex === index ? (
                         <MoreInfoText src={hoveredImage}>
-                          {trimBioText(artistBio[index + 1], name)} {/* Pass artist name to trimBioText */}
+                          {trimBioText(artist.bio, artist.id)}
                         </MoreInfoText>
                       ) : (
                         <ArtistImage
-                          src={artistImages[index + 1]}
-                          alt={name}
+                          src={artist.image}
+                          alt={artist.name}
                           isSwapping={hoveredIndex === index || prevHoveredIndex === index}
                           key={hoveredIndex === index ? `hovered-${index}` : `other-${index}`}
                         />
