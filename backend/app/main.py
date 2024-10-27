@@ -274,7 +274,6 @@ async def artist_info(request: Request, artist_id: str):
 
 @app.get('/artist_images/{artist_name}')
 async def get_artist_images(artist_name: str):
-    # Prepare the Last.fm API endpoint for fetching artist info (with main image)
     url = "http://ws.audioscrobbler.com/2.0/"
     params = {
         "method": "artist.getInfo",
@@ -288,14 +287,17 @@ async def get_artist_images(artist_name: str):
         response.raise_for_status()
         data = response.json()
 
-        # Check if the main image is available
+        # Extract multiple images
+        image_urls = []
         if "artist" in data and "image" in data["artist"]:
             image_urls = [
                 img["#text"] for img in data["artist"]["image"] if img["#text"]
-            ]
-        else:
-            image_urls = []  # Fallback if no images are found
+            ][:10]  # Limit to first 10 images
 
+        # Return images or fallback if empty
+        if not image_urls:
+            return JSONResponse({"images": ["https://via.placeholder.com/150"] * 10})
+        print({"images": image_urls})  # Debugging to confirm Last.fm response structure
         return JSONResponse({"images": image_urls})
 
     except requests.RequestException as e:

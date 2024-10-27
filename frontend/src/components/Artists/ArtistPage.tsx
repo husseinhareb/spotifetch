@@ -15,6 +15,7 @@ const ArtistPage: React.FC = () => {
   const [lastFmImages, setLastFmImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Fetch artist info and Last.fm images
   useEffect(() => {
     const fetchArtistInfo = async () => {
       try {
@@ -24,6 +25,7 @@ const ArtistPage: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setArtistInfo(data);
+          return data.artist_info.artist_name;  // Return artist name for Last.fm fetch
         } else {
           console.error('Failed to fetch artist info:', response.statusText);
         }
@@ -32,9 +34,9 @@ const ArtistPage: React.FC = () => {
       }
     };
 
-    const fetchLastFmImages = async () => {
+    const fetchLastFmImages = async (artistName: string) => {
       try {
-        const response = await fetch(`http://localhost:8000/artist_images/${artistId}`);
+        const response = await fetch(`http://localhost:8000/artist_images/${artistName}`);
         if (response.ok) {
           const data = await response.json();
           setLastFmImages(data.images);
@@ -48,8 +50,14 @@ const ArtistPage: React.FC = () => {
       }
     };
 
-    fetchArtistInfo();
-    fetchLastFmImages();
+    const loadArtistData = async () => {
+      const artistName = await fetchArtistInfo();
+      if (artistName) {
+        fetchLastFmImages(artistName);
+      }
+    };
+
+    loadArtistData();
   }, [artistId]);
 
   if (loading) {
@@ -63,13 +71,15 @@ const ArtistPage: React.FC = () => {
   return (
     <ArtistDetailsContainer>
       <h1>{artistInfo.artist_info.artist_name}</h1>
-      <ArtistImage src={artistInfo.artist_info.images[0]} alt={artistInfo.artist_info.artist_name} />
+      <ArtistImage src={artistInfo.artist_info.images[0] || "https://via.placeholder.com/150"} alt={artistInfo.artist_info.artist_name} />
       <p>{artistInfo.artist_info.genres.join(', ')}</p>
       <p>Popularity: {artistInfo.artist_info.popularity}</p>
       <p>Description: {artistInfo.artist_info.description}</p>
+
+      {/* Gallery of images */}
       <h2>Gallery</h2>
       <ImageGallery>
-        {lastFmImages.map((imageUrl, index) => (
+        {(lastFmImages.length ? lastFmImages : ["https://via.placeholder.com/150"]).map((imageUrl, index) => (
           <GalleryImage key={index} src={imageUrl} alt={`Image of ${artistInfo.artist_info.artist_name} ${index + 1}`} />
         ))}
       </ImageGallery>
@@ -80,7 +90,7 @@ const ArtistPage: React.FC = () => {
         {artistInfo.top_tracks.map((track: any) => (
           <TrackItem key={track.external_url}>
             <p>{track.track_name} - {track.album_name}</p>
-            <img src={track.album_image} alt={track.album_name} />
+            <img src={track.album_image || "https://via.placeholder.com/150"} alt={track.album_name} />
           </TrackItem>
         ))}
       </TrackList>
