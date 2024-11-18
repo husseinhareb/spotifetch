@@ -8,6 +8,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import re
 import requests
+from pymongo import MongoClient
+from datetime import datetime
 
 # Load environment variables from .env file
 load_dotenv()
@@ -31,6 +33,13 @@ client_id = os.getenv('SPOTIPY_CLIENT_ID')
 client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
 redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
 last_fm_api_key = os.getenv("LASTFM_KEY")
+
+# MongoDB configuration
+mongo_uri = os.getenv('MONGO_URI')
+mongo_db_name = os.getenv('MONGO_DB_NAME')
+client = MongoClient(mongo_uri)
+db = client[mongo_db_name]
+songs_collection = db['songs']
 
 # Spotify OAuth object with required scopes
 sp_oauth = SpotifyOAuth(
@@ -86,7 +95,6 @@ def get_token(request: Request):
 async def welcome(request: Request):
     # Get token info from the session
     token_info = get_token(request)
-    print(f"Token info for welcome: {token_info}")  # Debugging print
 
     if not token_info:
         return RedirectResponse(url='/')
@@ -96,12 +104,9 @@ async def welcome(request: Request):
 
     # Get current user's information
     user_info = sp.current_user()
-    print(f"User info obtained: {user_info}")  # Debugging print
 
     # Redirect to the React frontend with a query parameter for the username
     redirect_url = f'http://localhost:3000/?username={user_info["display_name"]}&email={user_info.get("email", "Not provided")}'
-    print(f"Redirecting to: {redirect_url}")  # Debugging print
-
     return RedirectResponse(url=redirect_url)
 
 @app.get('/user_info')
@@ -146,12 +151,18 @@ async def currently_playing(request: Request):
             "album_image": current_track['item']['album']['images'][0]['url'] if current_track['item']['album']['images'] else None,
             "is_playing": current_track['is_playing'],
             "progress_ms": current_track['progress_ms'],  # Current progress in the song
-            "duration_ms": current_track['item']['duration_ms']  # Total duration of the song
+            "duration_ms": current_track['item']['duration_ms'],  # Total duration of the song
+            "played_at": datetime.now()
         }
+
+        # Save the currently playing song to MongoDB
+        user_info = sp.current_user()
+        track_info["user_id"] = user_info["id"]
+        songs_collection.insert_one(track_info)
+
         return JSONResponse(track_info)
     else:
         return JSONResponse({"message": "No track currently playing"})
-
 
 def get_artist_description(artist_name):
     url = f"http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={artist_name}&api_key={last_fm_api_key}&format=json"
@@ -187,10 +198,7 @@ async def top_artists(request: Request, time_range: str = 'medium_term', limit: 
         }
         top_artists.append(artist_data)
 
-    print("Top Artists Data:", top_artists)  # Debugging output
-
     return JSONResponse({"top_artists": top_artists})
-
 
 @app.get('/recently_played')
 async def recently_played(request: Request, limit: int = 30):
@@ -218,7 +226,6 @@ async def recently_played(request: Request, limit: int = 30):
     ]
 
     return JSONResponse({"recent_tracks": recent_tracks})
-
 
 @app.get('/artist_info/{artist_id}')
 async def artist_info(request: Request, artist_id: str):
@@ -291,14 +298,23 @@ async def get_artist_images(artist_name: str):
         image_urls = []
         if "artist" in data and "image" in data["artist"]:
             image_urls = [
-                img["#text"] for img in data["artist"]["image"] if img["#text"]
-            ][:10]  # Limit to first 10 images
+                img["#text"]
+                for img in data["artist"]["image"]
+                if img["#text"] and "2a96cbd8b46e442fc41c2b86b821562f" not in img["#text"]
+            ][:10]  # Limit to first 10 valid images
 
         # Return images or fallback if empty
         if not image_urls:
             return JSONResponse({"images": ["https://via.placeholder.com/150"] * 10})
-        print({"images": image_urls})  # Debugging to confirm Last.fm response structure
         return JSONResponse({"images": image_urls})
 
     except requests.RequestException as e:
         raise HTTPException(status_code=500, detail="Error fetching images from Last.fm")
+
+@app.get('/api/recently_played_db')
+async def recently_played_db():
+    try:
+        songs = list(songs_collection.find({}, {"_id": 0}).sort("played_at", -1).limit(30))
+        return {"recent_tracks": songs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")

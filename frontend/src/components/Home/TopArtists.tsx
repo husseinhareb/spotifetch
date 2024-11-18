@@ -12,7 +12,7 @@ import {
   ArtistNameOverlay,
   MoreInfoText,
   BioOverlay,
-} from './Styles/style';
+} from './Styles/TopArtistsStyle';
 
 interface Artist {
   id: string;
