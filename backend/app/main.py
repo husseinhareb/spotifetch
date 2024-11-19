@@ -1,53 +1,112 @@
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import RedirectResponse, JSONResponse
-from starlette.middleware.sessions import SessionMiddleware
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os
+from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
-import re
-import requests
 from pymongo import MongoClient
 from datetime import datetime
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+import os
+import asyncio
 
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
+# Initialize FastAPI app
 app = FastAPI()
 
-# CORS middleware
+# Middleware for CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Match your frontend origin exactly
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Secret key for session management
+# Middleware for session management
 app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
 
-# Spotify API credentials from environment variables
-client_id = os.getenv('SPOTIPY_CLIENT_ID')
-client_secret = os.getenv('SPOTIPY_CLIENT_SECRET')
-redirect_uri = os.getenv('SPOTIPY_REDIRECT_URI')
-last_fm_api_key = os.getenv("LASTFM_KEY")
-
-# MongoDB configuration
-mongo_uri = os.getenv('MONGO_URI')
-mongo_db_name = os.getenv('MONGO_DB_NAME')
+# MongoDB setup
+mongo_uri = os.getenv("MONGO_URI")
+mongo_db_name = os.getenv("MONGO_DB_NAME")
 client = MongoClient(mongo_uri)
 db = client[mongo_db_name]
-songs_collection = db['songs']
+songs_collection = db["songs"]
 
-# Spotify OAuth object with required scopes
+# Spotify API credentials
+client_id = os.getenv("SPOTIPY_CLIENT_ID")
+client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
+redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
+
+# Spotify OAuth setup
 sp_oauth = SpotifyOAuth(
     client_id=client_id,
     client_secret=client_secret,
     redirect_uri=redirect_uri,
-    scope='user-read-private user-top-read user-read-playback-state user-read-currently-playing user-read-email user-read-recently-played'
+    scope="user-read-private user-top-read user-read-playback-state user-read-currently-playing user-read-email user-read-recently-played",
 )
+
+async def fetch_currently_playing():
+    while True:
+        try:
+            token_info = sp_oauth.get_cached_token()
+            if not token_info:
+                print("No token found. User authentication is required.")
+            elif sp_oauth.is_token_expired(token_info):
+                token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+
+            sp = spotipy.Spotify(auth=token_info["access_token"])
+            current_track = sp.current_playback()
+
+            if current_track and current_track["is_playing"]:
+                track_info = {
+                    "track_id": current_track["item"]["id"],
+                    "track_name": current_track["item"]["name"],
+                    "artist_name": ", ".join(
+                        [artist["name"] for artist in current_track["item"]["artists"]]
+                    ),
+                    "album_name": current_track["item"]["album"]["name"],
+                    "album_image": current_track["item"]["album"]["images"][0]["url"]
+                    if current_track["item"]["album"]["images"]
+                    else None,
+                    "is_playing": current_track["is_playing"],
+                    "progress_ms": current_track["progress_ms"],
+                    "duration_ms": current_track["item"]["duration_ms"],
+                    "played_at": datetime.now(),
+                }
+
+                user_info = sp.current_user()
+                track_info["user_id"] = user_info["id"]
+
+                existing_song = songs_collection.find_one(
+                    {"track_id": track_info["track_id"], "user_id": track_info["user_id"]}
+                )
+                if not existing_song:
+                    songs_collection.insert_one(track_info)
+                    print(f"Saved song: {track_info['track_name']}")
+                else:
+                    print("Song already exists in the database.")
+            else:
+                print("No track currently playing.")
+        except Exception as e:
+            print(f"Error fetching currently playing song: {str(e)}")
+
+        # Wait 30 seconds before running again
+        await asyncio.sleep(30)
+
+@app.on_event("startup")
+async def startup_event():
+    # Start the background task to fetch currently playing song every 30 seconds
+    asyncio.create_task(fetch_currently_playing())
+
+@app.get('/')
+async def index():
+    return {"message": "Welcome to Spotifetch"}
+
+# Rest of your endpoints...
+
 
 @app.get('/')
 async def index():
@@ -129,40 +188,6 @@ async def logout(request: Request):
     request.session.pop('token_info', None)
     return RedirectResponse(url='/')
 
-@app.get('/currently_playing')
-async def currently_playing(request: Request):
-    # Get token info from session
-    token_info = get_token(request)
-    if not token_info:
-        raise HTTPException(status_code=401, detail="Token not found or expired")
-
-    # Create Spotify client using the user's access token
-    sp = spotipy.Spotify(auth=token_info['access_token'])
-
-    # Get the currently playing track
-    current_track = sp.current_playback()
-
-    if current_track and current_track['is_playing']:
-        # Extract necessary information from the currently playing track
-        track_info = {
-            "track_name": current_track['item']['name'],
-            "artist_name": ", ".join([artist['name'] for artist in current_track['item']['artists']]),
-            "album_name": current_track['item']['album']['name'],
-            "album_image": current_track['item']['album']['images'][0]['url'] if current_track['item']['album']['images'] else None,
-            "is_playing": current_track['is_playing'],
-            "progress_ms": current_track['progress_ms'],  # Current progress in the song
-            "duration_ms": current_track['item']['duration_ms'],  # Total duration of the song
-            "played_at": datetime.now()
-        }
-
-        # Save the currently playing song to MongoDB
-        user_info = sp.current_user()
-        track_info["user_id"] = user_info["id"]
-        songs_collection.insert_one(track_info)
-
-        return JSONResponse(track_info)
-    else:
-        return JSONResponse({"message": "No track currently playing"})
 
 def get_artist_description(artist_name):
     url = f"http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist={artist_name}&api_key={last_fm_api_key}&format=json"
@@ -318,3 +343,39 @@ async def recently_played_db():
         return {"recent_tracks": songs}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
+
+
+@app.get("/currently_playing")
+async def currently_playing(request: Request):
+    token_info = get_token(request)
+    if not token_info:
+        raise HTTPException(status_code=401, detail="Token not found or expired")
+    sp = spotipy.Spotify(auth=token_info["access_token"])
+    current_track = sp.current_playback()
+    if current_track and current_track["is_playing"]:
+        track_info = {
+            "track_id": current_track["item"]["id"],
+            "track_name": current_track["item"]["name"],
+            "artist_name": ", ".join(
+                [artist["name"] for artist in current_track["item"]["artists"]]
+            ),
+            "album_name": current_track["item"]["album"]["name"],
+            "album_image": current_track["item"]["album"]["images"][0]["url"]
+            if current_track["item"]["album"]["images"]
+            else None,
+            "is_playing": current_track["is_playing"],
+            "progress_ms": current_track["progress_ms"],
+            "duration_ms": current_track["item"]["duration_ms"],
+            "played_at": datetime.now(),
+        }
+        user_info = sp.current_user()
+        track_info["user_id"] = user_info["id"]
+        existing_song = songs_collection.find_one(
+            {"track_id": track_info["track_id"], "user_id": user_info["id"]}
+        )
+        if not existing_song:
+            songs_collection.insert_one(track_info)
+        return JSONResponse(track_info)
+    else:
+        return JSONResponse({"message": "No track currently playing"})
+
