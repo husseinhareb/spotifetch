@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime,timedelta
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os
@@ -65,37 +65,22 @@ async def fetch_currently_playing():
                 token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
 
             sp = spotipy.Spotify(auth=token_info["access_token"])
-            current_playback = sp.current_playback()
+            # Fetch the user's recently played tracks
+            recent_tracks_data = sp.current_user_recently_played(limit=1)
 
-            if current_playback and current_playback["is_playing"]:
-                current_track = current_playback["item"]
-
-                # Fetch artist genres
-                artist_ids = [artist["id"] for artist in current_track["artists"]]
-                artist_genres = []
-                for artist_id in artist_ids:
-                    artist_details = sp.artist(artist_id)
-                    artist_genres.extend(artist_details.get("genres", []))
-
-                # Extract detailed track information
+            if recent_tracks_data["items"]:
+                recent_track = recent_tracks_data["items"][0]
                 track_info = {
-                    "track_id": current_track["id"],
-                    "track_name": current_track["name"],
-                    "artist_name": ", ".join([artist["name"] for artist in current_track["artists"]]),
-                    "artist_ids": artist_ids,
-                    "artist_genres": list(set(artist_genres)),  # Remove duplicates
-                    "album_name": current_track["album"]["name"],
-                    "album_image": current_track["album"]["images"][0]["url"] if current_track["album"]["images"] else None,
-                    "album_id": current_track["album"]["id"],
-                    "is_playing": current_playback["is_playing"],
-                    "progress_ms": current_playback["progress_ms"],
-                    "duration_ms": current_track["duration_ms"],
-                    "played_at": datetime.now().isoformat(),  # Serialize datetime
-                    "popularity": current_track["popularity"],
-                    "explicit": current_track["explicit"],
-                    "track_url": current_track["external_urls"]["spotify"],
-                    "device": current_playback["device"]["name"] if "device" in current_playback else None,
-                    "volume_percent": current_playback["device"]["volume_percent"] if "device" in current_playback else None,
+                    "track_id": recent_track["track"]["id"],
+                    "track_name": recent_track["track"]["name"],
+                    "artist_name": ", ".join([artist["name"] for artist in recent_track["track"]["artists"]]),
+                    "album_name": recent_track["track"]["album"]["name"],
+                    "album_image": recent_track["track"]["album"]["images"][0]["url"] if recent_track["track"]["album"]["images"] else None,
+                    "duration_ms": recent_track["track"]["duration_ms"],
+                    "played_at": recent_track["played_at"],  # Timestamp from Spotify API
+                    "popularity": recent_track["track"].get("popularity", 0),
+                    "explicit": recent_track["track"]["explicit"],
+                    "track_url": recent_track["track"]["external_urls"]["spotify"],
                 }
 
                 user_info = sp.current_user()
@@ -103,20 +88,13 @@ async def fetch_currently_playing():
                 track_info["user_name"] = user_info["display_name"]
                 track_info["user_email"] = user_info.get("email", "Not provided")
 
-                # Check for existing song in the database
-                existing_song = songs_collection.find_one(
-                    {"track_id": track_info["track_id"], "user_id": track_info["user_id"]}
-                )
-                if not existing_song:
-                    # Insert the track into the database
-                    songs_collection.insert_one(track_info)
-                    print(f"Saved song: {track_info['track_name']}")
-                else:
-                    print("Song already exists in the database.")
+                # Add the track to the database without checking duplicates
+                songs_collection.insert_one(track_info)
+                print(f"Saved song: {track_info['track_name']} at {track_info['played_at']}")
             else:
-                print("No track currently playing.")
+                print("No recently played tracks found.")
         except Exception as e:
-            print(f"Error fetching currently playing song: {str(e)}")
+            print(f"Error fetching currently played song: {str(e)}")
 
         # Wait 30 seconds before running again
         await asyncio.sleep(30)
