@@ -9,6 +9,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import os
 import asyncio
+import requests
+import re
 
 # Load environment variables
 load_dotenv()
@@ -34,11 +36,12 @@ mongo_db_name = os.getenv("MONGO_DB_NAME")
 client = MongoClient(mongo_uri)
 db = client[mongo_db_name]
 songs_collection = db["songs"]
-
 # Spotify API credentials
 client_id = os.getenv("SPOTIPY_CLIENT_ID")
 client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
 redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
+#LASTFM API cerdentials
+last_fm_api_key = os.getenv("LASTFM_KEY")
 
 # Spotify OAuth setup
 sp_oauth = SpotifyOAuth(
@@ -54,36 +57,58 @@ async def fetch_currently_playing():
             token_info = sp_oauth.get_cached_token()
             if not token_info:
                 print("No token found. User authentication is required.")
-            elif sp_oauth.is_token_expired(token_info):
+                await asyncio.sleep(30)
+                continue
+
+            # Refresh the token if expired
+            if sp_oauth.is_token_expired(token_info):
                 token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
 
             sp = spotipy.Spotify(auth=token_info["access_token"])
-            current_track = sp.current_playback()
+            current_playback = sp.current_playback()
 
-            if current_track and current_track["is_playing"]:
+            if current_playback and current_playback["is_playing"]:
+                current_track = current_playback["item"]
+
+                # Fetch artist genres
+                artist_ids = [artist["id"] for artist in current_track["artists"]]
+                artist_genres = []
+                for artist_id in artist_ids:
+                    artist_details = sp.artist(artist_id)
+                    artist_genres.extend(artist_details.get("genres", []))
+
+                # Extract detailed track information
                 track_info = {
-                    "track_id": current_track["item"]["id"],
-                    "track_name": current_track["item"]["name"],
-                    "artist_name": ", ".join(
-                        [artist["name"] for artist in current_track["item"]["artists"]]
-                    ),
-                    "album_name": current_track["item"]["album"]["name"],
-                    "album_image": current_track["item"]["album"]["images"][0]["url"]
-                    if current_track["item"]["album"]["images"]
-                    else None,
-                    "is_playing": current_track["is_playing"],
-                    "progress_ms": current_track["progress_ms"],
-                    "duration_ms": current_track["item"]["duration_ms"],
-                    "played_at": datetime.now(),
+                    "track_id": current_track["id"],
+                    "track_name": current_track["name"],
+                    "artist_name": ", ".join([artist["name"] for artist in current_track["artists"]]),
+                    "artist_ids": artist_ids,
+                    "artist_genres": list(set(artist_genres)),  # Remove duplicates
+                    "album_name": current_track["album"]["name"],
+                    "album_image": current_track["album"]["images"][0]["url"] if current_track["album"]["images"] else None,
+                    "album_id": current_track["album"]["id"],
+                    "is_playing": current_playback["is_playing"],
+                    "progress_ms": current_playback["progress_ms"],
+                    "duration_ms": current_track["duration_ms"],
+                    "played_at": datetime.now().isoformat(),  # Serialize datetime
+                    "popularity": current_track["popularity"],
+                    "explicit": current_track["explicit"],
+                    "track_url": current_track["external_urls"]["spotify"],
+                    "device": current_playback["device"]["name"] if "device" in current_playback else None,
+                    "volume_percent": current_playback["device"]["volume_percent"] if "device" in current_playback else None,
                 }
 
                 user_info = sp.current_user()
                 track_info["user_id"] = user_info["id"]
+                track_info["user_name"] = user_info["display_name"]
+                track_info["user_email"] = user_info.get("email", "Not provided")
 
+                # Check for existing song in the database
                 existing_song = songs_collection.find_one(
                     {"track_id": track_info["track_id"], "user_id": track_info["user_id"]}
                 )
                 if not existing_song:
+                    # Insert the track into the database
                     songs_collection.insert_one(track_info)
                     print(f"Saved song: {track_info['track_name']}")
                 else:
@@ -366,8 +391,9 @@ async def currently_playing(request: Request):
             "is_playing": current_track["is_playing"],
             "progress_ms": current_track["progress_ms"],
             "duration_ms": current_track["item"]["duration_ms"],
-            "played_at": datetime.now(),
+            "played_at": datetime.now().isoformat(),  # Convert datetime to string
         }
+
         user_info = sp.current_user()
         track_info["user_id"] = user_info["id"]
         existing_song = songs_collection.find_one(
