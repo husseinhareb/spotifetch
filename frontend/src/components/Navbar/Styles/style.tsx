@@ -8,7 +8,11 @@ export const Nav = styled.nav`
   align-items: center;
   padding: 0 20px;
   height: 50px;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 `;
 
 // Title container

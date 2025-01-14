@@ -1,5 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Container,
+  Heading,
+  Message,
+  TrackList,
+  TrackItem,
+  AlbumImage,
+  TrackDetails,
+  TrackName,
+  ArtistName,
+  AlbumName,
+  PlayedAt,
+} from "./Styles/style";
 
 // Define the TypeScript type for a song
 interface Song {
@@ -33,37 +46,71 @@ const YourData: React.FC = () => {
     fetchRecentTracks();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <Message>Loading...</Message>;
+  if (error) return <Message>{error}</Message>;
+
+  const groupTracksByDate = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+
+    return {
+      today: recentTracks.filter((track) => track.played_at.startsWith(today)),
+      yesterday: recentTracks.filter((track) => track.played_at.startsWith(yesterday)),
+      older: recentTracks.filter(
+        (track) => !track.played_at.startsWith(today) && !track.played_at.startsWith(yesterday)
+      ),
+    };
+  };
+
+  const { today, yesterday, older } = groupTracksByDate();
+
+  const renderTracks = (tracks: Song[]) => (
+    <TrackList>
+      {tracks.map((track, index) => (
+        <TrackItem key={index}>
+          {track.album_image && (
+            <AlbumImage
+              src={track.album_image}
+              alt={`${track.track_name} album cover`}
+            />
+          )}
+          <TrackDetails>
+            <TrackName>{track.track_name}</TrackName> by <ArtistName>{track.artist_name}</ArtistName>
+            <br />
+            <AlbumName>{track.album_name}</AlbumName>
+            <br />
+            <PlayedAt>Played at: {new Date(track.played_at).toLocaleTimeString()}</PlayedAt>
+          </TrackDetails>
+        </TrackItem>
+      ))}
+    </TrackList>
+  );
 
   return (
-    <div>
-      <h2>Recently Played Songs</h2>
-      {recentTracks.length === 0 ? (
-        <p>No recently played songs found.</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {recentTracks.map((track, index) => (
-            <li key={index} style={{ display: "flex", marginBottom: "1rem" }}>
-              {track.album_image && (
-                <img
-                  src={track.album_image}
-                  alt={`${track.track_name} album cover`}
-                  style={{ width: "50px", height: "50px", marginRight: "1rem" }}
-                />
-              )}
-              <div>
-                <strong>{track.track_name}</strong> by {track.artist_name}
-                <br />
-                <em>{track.album_name}</em>
-                <br />
-                <small>Played at: {new Date(track.played_at).toLocaleString()}</small>
-              </div>
-            </li>
-          ))}
-        </ul>
+    <Container>
+      <Heading>Library</Heading>
+      {today.length > 0 && (
+        <div>
+          <Heading>Today</Heading>
+          {renderTracks(today)}
+        </div>
       )}
-    </div>
+      {yesterday.length > 0 && (
+        <div>
+          <Heading>Yesterday</Heading>
+          {renderTracks(yesterday)}
+        </div>
+      )}
+      {older.length > 0 && (
+        <div>
+          <Heading>Older</Heading>
+          {renderTracks(older)}
+        </div>
+      )}
+      {today.length === 0 && yesterday.length === 0 && older.length === 0 && (
+        <Message>No recently played songs found.</Message>
+      )}
+    </Container>
   );
 };
 

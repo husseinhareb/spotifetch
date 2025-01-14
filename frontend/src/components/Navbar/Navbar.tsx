@@ -94,9 +94,11 @@ const Navbar: React.FC = () => {
         <NavItem>
           <NavButton onClick={() => window.location.href = "/"}>Home</NavButton>
         </NavItem>
-        <NavItem>
-          <NavButton onClick={() => window.location.href = "/yourData"}>Your Data</NavButton>
-        </NavItem>
+        {isLoggedIn && (
+          <NavItem>
+            <NavButton onClick={() => window.location.href = "/yourData"}>Your Data</NavButton>
+          </NavItem>
+        )}
         <NavItem>
           <NavButton onClick={() => window.location.href = "/about"}>About</NavButton>
         </NavItem>

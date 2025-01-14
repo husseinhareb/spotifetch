@@ -11,13 +11,6 @@ import {
   NoSongMessage,
 } from './Styles/style';
 
-interface RecentTrack {
-  track_name: string;
-  artist_name: string;
-  album_image: string | null;
-  played_at: string;
-}
-
 const CurrentlyPlaying: React.FC = () => {
 
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
@@ -26,7 +19,6 @@ const CurrentlyPlaying: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [progressMs, setProgressMs] = useState<number | null>(0);
   const [durationMs, setDurationMs] = useState<number | null>(0);
-  const [adPlaying, setAdPlaying] = useState<boolean>(false); // New state for ad playing
 
   useEffect(() => {
     const fetchCurrentSong = async () => {
@@ -44,25 +36,16 @@ const CurrentlyPlaying: React.FC = () => {
             setIsPlaying(songInfo.is_playing);
             setProgressMs(songInfo.progress_ms);
             setDurationMs(songInfo.duration_ms);
-            setAdPlaying(false); // Reset ad playing state
           } else {
             setIsPlaying(false);
-            setAdPlaying(true); // Set ad playing if no track information
           }
         } else {
           console.error("Failed to fetch current song");
-          // Here we handle specific CORS issues
-          const errorMessage = await response.text();
-          if (errorMessage.includes("CORS header 'Access-Control-Allow-Origin' missing")) {
-            setIsPlaying(false); // No song is playing
-            setAdPlaying(true); // Set ad playing when CORS error occurs
-          }
+          setIsPlaying(false);
         }
       } catch (error) {
         console.error("Error fetching current song", error);
-        // Handle case where the fetch fails
         setIsPlaying(false);
-        setAdPlaying(true); // Assume ad is playing if there's a fetch error
       }
     };
 
@@ -91,9 +74,7 @@ const CurrentlyPlaying: React.FC = () => {
 
   return (
     <>
-      {adPlaying ? ( 
-        <NoSongMessage>An ad is currently playing.</NoSongMessage>
-      ) : isPlaying ? (
+      {isPlaying ? (
         <SongDetails>
           <Title>Currently Playing</Title>
           <Info><strong>Track:</strong> {currentTrack}</Info>
