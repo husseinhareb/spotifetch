@@ -36,10 +36,12 @@ mongo_db_name = os.getenv("MONGO_DB_NAME")
 client = MongoClient(mongo_uri)
 db = client[mongo_db_name]
 songs_collection = db["songs"]
+
 # Spotify API credentials
 client_id = os.getenv("SPOTIPY_CLIENT_ID")
 client_secret = os.getenv("SPOTIPY_CLIENT_SECRET")
 redirect_uri = os.getenv("SPOTIPY_REDIRECT_URI")
+
 #LASTFM API cerdentials
 last_fm_api_key = os.getenv("LASTFM_KEY")
 
@@ -60,12 +62,10 @@ async def fetch_currently_playing():
                 await asyncio.sleep(30)
                 continue
 
-            # Refresh the token if expired
             if sp_oauth.is_token_expired(token_info):
                 token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
 
             sp = spotipy.Spotify(auth=token_info["access_token"])
-            # Fetch the user's recently played tracks
             recent_tracks_data = sp.current_user_recently_played(limit=1)
 
             if recent_tracks_data["items"]:
@@ -83,33 +83,22 @@ async def fetch_currently_playing():
                     "track_url": recent_track["track"]["external_urls"]["spotify"],
                 }
 
-                user_info = sp.current_user()
-                track_info["user_id"] = user_info["id"]
-                track_info["user_name"] = user_info["display_name"]
-                track_info["user_email"] = user_info.get("email", "Not provided")
-
-                # Add the track to the database without checking duplicates
-                songs_collection.insert_one(track_info)
-                print(f"Saved song: {track_info['track_name']} at {track_info['played_at']}")
+                if songs_collection.find_one({"track_id": track_info["track_id"], "played_at": track_info["played_at"]}):
+                    print(f"Duplicate song: {track_info['track_name']} at {track_info['played_at']} - Skipping insertion.")
+                else:
+                    songs_collection.insert_one(track_info)
+                    print(f"Saved song: {track_info['track_name']} at {track_info['played_at']}")
             else:
                 print("No recently played tracks found.")
         except Exception as e:
             print(f"Error fetching currently played song: {str(e)}")
 
-        # Wait 30 seconds before running again
         await asyncio.sleep(30)
 
 @app.on_event("startup")
 async def startup_event():
     # Start the background task to fetch currently playing song every 30 seconds
     asyncio.create_task(fetch_currently_playing())
-
-@app.get('/')
-async def index():
-    return {"message": "Welcome to Spotifetch"}
-
-# Rest of your endpoints...
-
 
 @app.get('/')
 async def index():
@@ -342,10 +331,39 @@ async def get_artist_images(artist_name: str):
 @app.get('/api/recently_played_db')
 async def recently_played_db():
     try:
-        songs = list(songs_collection.find({}, {"_id": 0}).sort("played_at", -1).limit(30))
-        return {"recent_tracks": songs}
+        # Fetch the most recent tracks
+        recent_tracks = list(songs_collection.find({}, {"_id": 0}).sort("played_at", -1).limit(30))
+
+        # Avoid saving duplicates: Fetch the most recent played_at timestamp from the database
+        latest_saved = songs_collection.find_one(sort=[("played_at", -1)])
+        latest_saved_time = latest_saved["played_at"] if latest_saved else None
+
+        # Fetch new tracks from Spotify
+        token_info = sp_oauth.get_cached_token()
+        if not token_info:
+            raise HTTPException(status_code=401, detail="Token not found or expired")
+
+        sp = spotipy.Spotify(auth=token_info["access_token"])
+        recent_tracks_data = sp.current_user_recently_played(limit=50)
+
+        for track in recent_tracks_data['items']:
+            # Only add tracks that are more recent than the latest saved
+            if not latest_saved_time or track['played_at'] > latest_saved_time:
+                track_info = {
+                    "track_id": track["track"]["id"],
+                    "track_name": track["track"]["name"],
+                    "artist_name": ", ".join([artist["name"] for artist in track["track"]["artists"]]),
+                    "album_name": track["track"]["album"]["name"],
+                    "album_image": track["track"]["album"]["images"][0]["url"] if track["track"]["album"]["images"] else None,
+                    "played_at": track["played_at"],
+                }
+                songs_collection.insert_one(track_info)
+                print(f"Inserted new track: {track_info['track_name']} at {track_info['played_at']}")
+
+        return {"recent_tracks": recent_tracks}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
+
 
 
 @app.get("/currently_playing")
