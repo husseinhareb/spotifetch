@@ -329,42 +329,49 @@ async def get_artist_images(artist_name: str):
         raise HTTPException(status_code=500, detail="Error fetching images from Last.fm")
 
 @app.get('/api/recently_played_db')
-async def recently_played_db():
+async def recently_played_db(skip: int = 0, limit: int = 30):
     try:
-        # Fetch the most recent tracks
-        recent_tracks = list(songs_collection.find({}, {"_id": 0}).sort("played_at", -1).limit(30))
+        # Step 1: If skip = 0, we attempt to fetch new data from Spotify first.
+        if skip == 0:
+            token_info = sp_oauth.get_cached_token()
+            if not token_info:
+                raise HTTPException(status_code=401, detail="Token not found or expired")
 
-        # Avoid saving duplicates: Fetch the most recent played_at timestamp from the database
-        latest_saved = songs_collection.find_one(sort=[("played_at", -1)])
-        latest_saved_time = latest_saved["played_at"] if latest_saved else None
+            sp = spotipy.Spotify(auth=token_info["access_token"])
+            recent_tracks_data = sp.current_user_recently_played(limit=50)
 
-        # Fetch new tracks from Spotify
-        token_info = sp_oauth.get_cached_token()
-        if not token_info:
-            raise HTTPException(status_code=401, detail="Token not found or expired")
+            # Find the latest saved track in the database
+            latest_saved = songs_collection.find_one(sort=[("played_at", -1)])
+            latest_saved_time = latest_saved["played_at"] if latest_saved else None
 
-        sp = spotipy.Spotify(auth=token_info["access_token"])
-        recent_tracks_data = sp.current_user_recently_played(limit=50)
+            for item in recent_tracks_data['items']:
+                track = item['track']
+                played_at = item['played_at']
 
-        for track in recent_tracks_data['items']:
-            # Only add tracks that are more recent than the latest saved
-            if not latest_saved_time or track['played_at'] > latest_saved_time:
-                track_info = {
-                    "track_id": track["track"]["id"],
-                    "track_name": track["track"]["name"],
-                    "artist_name": ", ".join([artist["name"] for artist in track["track"]["artists"]]),
-                    "album_name": track["track"]["album"]["name"],
-                    "album_image": track["track"]["album"]["images"][0]["url"] if track["track"]["album"]["images"] else None,
-                    "played_at": track["played_at"],
-                }
-                songs_collection.insert_one(track_info)
-                print(f"Inserted new track: {track_info['track_name']} at {track_info['played_at']}")
+                # Only insert if more recent than the latest saved track
+                if not latest_saved_time or played_at > latest_saved_time:
+                    track_info = {
+                        "track_id": track["id"],
+                        "track_name": track["name"],
+                        "artist_name": ", ".join([artist["name"] for artist in track["artists"]]),
+                        "album_name": track["album"]["name"],
+                        "album_image": track["album"]["images"][0]["url"] if track["album"]["images"] else None,
+                        "played_at": played_at,
+                    }
+                    songs_collection.insert_one(track_info)
+
+        # Step 2: Query songs from the DB using skip & limit, sorted by played_at descending
+        recent_tracks = list(
+            songs_collection.find({}, {"_id": 0})
+            .sort("played_at", -1)
+            .skip(skip)
+            .limit(limit)
+        )
 
         return {"recent_tracks": recent_tracks}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
-
-
 
 @app.get("/currently_playing")
 async def currently_playing(request: Request):

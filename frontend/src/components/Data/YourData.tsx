@@ -10,10 +10,11 @@ import {
   TrackDetails,
   TrackName,
   ArtistName,
-  AlbumName,
   PlayedAt,
 } from "./Styles/style";
 
+import { formatPlayedTime } from '../../helpers/timeUtils';
+ 
 // Define the TypeScript type for a song
 interface Song {
   track_name: string;
@@ -27,42 +28,53 @@ const YourData: React.FC = () => {
   const [recentTracks, setRecentTracks] = useState<Song[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [skip, setSkip] = useState<number>(0); // Pagination skip value
+  const [hasMore, setHasMore] = useState<boolean>(true); // Check if more data is available
 
   // Fetch recently played songs from the database
-  useEffect(() => {
-    const fetchRecentTracks = async () => {
-      try {
-        const response = await axios.get<{ recent_tracks: Song[] }>(
-          "http://localhost:8000/api/recently_played_db"
-        );
-        setRecentTracks(response.data.recent_tracks);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch recently played songs");
-        setLoading(false);
-      }
-    };
+  const fetchRecentTracks = async () => {
+    if (!hasMore) return;
 
+    try {
+      setLoading(true);
+      const response = await axios.get<{ recent_tracks: Song[] }>(
+        `http://localhost:8000/api/recently_played_db?skip=${skip}`
+      );
+      const fetchedTracks = response.data.recent_tracks;
+
+      if (fetchedTracks.length > 0) {
+        setRecentTracks((prev) => [...prev, ...fetchedTracks]);
+        setSkip((prev) => prev + fetchedTracks.length);
+      } else {
+        setHasMore(false); // No more data to fetch
+      }
+    } catch (err) {
+      setError("Failed to fetch recently played songs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRecentTracks();
   }, []);
 
-  if (loading) return <Message>Loading...</Message>;
-  if (error) return <Message>{error}</Message>;
-
-  const groupTracksByDate = () => {
-    const today = new Date().toISOString().split("T")[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-
-    return {
-      today: recentTracks.filter((track) => track.played_at.startsWith(today)),
-      yesterday: recentTracks.filter((track) => track.played_at.startsWith(yesterday)),
-      older: recentTracks.filter(
-        (track) => !track.played_at.startsWith(today) && !track.played_at.startsWith(yesterday)
-      ),
-    };
+  // Infinite scroll handler
+  const handleScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop >=
+      document.documentElement.offsetHeight - 100
+    ) {
+      fetchRecentTracks();
+    }
   };
 
-  const { today, yesterday, older } = groupTracksByDate();
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [skip, hasMore]);
+
+  if (error) return <Message>{error}</Message>;
 
   const renderTracks = (tracks: Song[]) => (
     <TrackList>
@@ -75,11 +87,11 @@ const YourData: React.FC = () => {
             />
           )}
           <TrackDetails>
-            <TrackName>{track.track_name}</TrackName> by <ArtistName>{track.artist_name}</ArtistName>
-            <br />
-            <AlbumName>{track.album_name}</AlbumName>
-            <br />
-            <PlayedAt>Played at: {new Date(track.played_at).toLocaleTimeString()}</PlayedAt>
+            <TrackName>{track.track_name}</TrackName>
+            <ArtistName>{track.artist_name}</ArtistName>
+            <PlayedAt>
+              {formatPlayedTime(track.played_at)}
+            </PlayedAt>
           </TrackDetails>
         </TrackItem>
       ))}
@@ -89,27 +101,9 @@ const YourData: React.FC = () => {
   return (
     <Container>
       <Heading>Library</Heading>
-      {today.length > 0 && (
-        <div>
-          <Heading>Today</Heading>
-          {renderTracks(today)}
-        </div>
-      )}
-      {yesterday.length > 0 && (
-        <div>
-          <Heading>Yesterday</Heading>
-          {renderTracks(yesterday)}
-        </div>
-      )}
-      {older.length > 0 && (
-        <div>
-          <Heading>Older</Heading>
-          {renderTracks(older)}
-        </div>
-      )}
-      {today.length === 0 && yesterday.length === 0 && older.length === 0 && (
-        <Message>No recently played songs found.</Message>
-      )}
+      {renderTracks(recentTracks)}
+      {loading && <Message>Loading...</Message>}
+      {!hasMore && !loading && <Message>No more songs to load.</Message>}
     </Container>
   );
 };

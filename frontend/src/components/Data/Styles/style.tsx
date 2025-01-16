@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  margin: 2rem;
+  margin: 1.5rem;
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
@@ -10,7 +10,7 @@ export const Container = styled.div`
 export const Heading = styled.h2`
   font-size: 24px;
   color: #333;
-  margin: 1.5rem 0;
+  margin: 1rem 0; 
   border-bottom: 1px solid #ccc;
   padding-bottom: 0.5rem;
 `;
@@ -19,7 +19,7 @@ export const Message = styled.p`
   font-size: 16px;
   color: #666;
   text-align: center;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
 `;
 
 export const TrackList = styled.ul`
@@ -28,67 +28,26 @@ export const TrackList = styled.ul`
   margin: 0;
 `;
 
-export const TrackItem = styled.li`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f0f0f0;
-`;
-
 export const AlbumImage = styled.img`
-  width: 50px;
-  height: 50px;
-  margin-right: 1rem;
-  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  margin-right: 0.5rem; 
   object-fit: cover;
-`;
-
-export const TrackDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`;
-
-export const TrackName = styled.strong`
-  font-size: 16px;
-  color: #000;
-  margin-bottom: 0.2rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-export const ArtistName = styled.span`
-  font-size: 14px;
-  color: #555;
-  margin-right: auto;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 export const AlbumName = styled.em`
   font-size: 14px;
   color: #777;
-  margin-top: 0.2rem;
+  margin-top: 0.05rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`;
-
-export const PlayedAt = styled.small`
-  font-size: 12px;
-  color: #999;
-  white-space: nowrap;
-  margin-left: auto;
 `;
 
 export const PlayIcon = styled.button`
   background: none;
   border: none;
   color: #333;
-  margin-right: 1rem;
   font-size: 18px;
   cursor: pointer;
   display: flex;
@@ -98,4 +57,51 @@ export const PlayIcon = styled.button`
   &:hover {
     color: #1db954;
   }
+`;
+
+
+export const TrackItem = styled.li`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid #f0f0f0;
+`;
+
+export const TrackDetails = styled.div`
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+`;
+
+export const TrackName = styled.strong`
+  font-size: 16px;
+  color: #000;
+  margin-right: 1rem; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1; 
+`;
+
+export const ArtistName = styled.span`
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+`;
+
+export const PlayedAt = styled.small`
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+  text-align: right; 
+  flex: 0; 
+  margin-left: auto;
 `;
