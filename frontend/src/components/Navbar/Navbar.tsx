@@ -96,7 +96,7 @@ const Navbar: React.FC = () => {
         </NavItem>
         {isLoggedIn && (
           <NavItem>
-            <NavButton onClick={() => window.location.href = "/yourData"}>Your Data</NavButton>
+            <NavButton onClick={() => window.location.href = "/library"}>Library</NavButton>
           </NavItem>
         )}
         <NavItem>

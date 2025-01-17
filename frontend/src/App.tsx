@@ -8,7 +8,7 @@ import Home from './components/Home/Home';
 import About from './components/About/About';
 import Profile from './components/Profile/Profile';
 import ArtistPage from './components/Artists/ArtistPage'; // Import the ArtistPage component
-import YourData from './components/Library/Library';
+import Library from './components/Library/Library';
 
 const App: React.FC = () => {
   return (
@@ -21,7 +21,7 @@ const App: React.FC = () => {
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/artist/:artistId" element={<ArtistPage />} />
-            <Route path="/yourData" element={<YourData />} />
+            <Route path="/library" element={<Library />} />
           </Routes>
         </ContentWrapper>
       </div>

@@ -53,7 +53,7 @@ const CurrentlyPlaying: React.FC = () => {
 
     const interval = setInterval(() => {
       fetchCurrentSong();
-    }, 1000); // Fetch the current song every second to update the progress
+    }, 10000); // Fetch the current song every second to update the progress
 
     return () => clearInterval(interval); // Clean up the interval on unmount
   }, []);

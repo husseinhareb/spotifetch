@@ -16,6 +16,7 @@ import {
   NavBar,NavLink
 } from "./Styles/style";
 import { formatPlayedTime } from '../../helpers/timeUtils';
+import { useUsername } from "../../services/store";
  
 // Define the TypeScript type for a song
 interface Song {
@@ -26,24 +27,25 @@ interface Song {
   played_at: string;
 }
 
-const YourData: React.FC = () => {
+const Library: React.FC = () => {
   const [recentTracks, setRecentTracks] = useState<Song[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState<number>(0); // Pagination skip value
   const [hasMore, setHasMore] = useState<boolean>(true); // Check if more data is available
+  const username = useUsername();
 
   // Fetch recently played songs from the database
-  const fetchRecentTracks = async () => {
+  const fetchRecentTracks = async (username: string) => {
     if (!hasMore) return;
-
+  
     try {
       setLoading(true);
       const response = await axios.get<{ recent_tracks: Song[] }>(
-        `http://localhost:8000/tracks/api/recently_played_db?skip=${skip}`
+        `http://localhost:8000/user/${username}/library/recently_played?skip=${skip}`
       );
       const fetchedTracks = response.data.recent_tracks;
-
+  
       if (fetchedTracks.length > 0) {
         setRecentTracks((prev) => [...prev, ...fetchedTracks]);
         setSkip((prev) => prev + fetchedTracks.length);
@@ -56,9 +58,10 @@ const YourData: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
-    fetchRecentTracks();
+    fetchRecentTracks(username);
   }, []);
 
   // Infinite scroll handler
@@ -67,7 +70,7 @@ const YourData: React.FC = () => {
       window.innerHeight + document.documentElement.scrollTop >=
       document.documentElement.offsetHeight - 100
     ) {
-      fetchRecentTracks();
+      fetchRecentTracks(username);
     }
   };
 
@@ -135,4 +138,4 @@ const YourData: React.FC = () => {
   );
 };
 
-export default YourData;
+export default Library;
