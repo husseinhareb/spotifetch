@@ -19,7 +19,7 @@ const ArtistPage: React.FC = () => {
   useEffect(() => {
     const fetchArtistInfo = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/artist_info/${artistId}`, {
+        const response = await fetch(`http://localhost:8000/auth/artist_info/${artistId}`, {
           credentials: 'include',
         });
         if (response.ok) {
@@ -36,7 +36,7 @@ const ArtistPage: React.FC = () => {
 
     const fetchLastFmImages = async (artistName: string) => {
       try {
-        const response = await fetch(`http://localhost:8000/artist_images/${artistName}`);
+        const response = await fetch(`http://localhost:8000/auth/artist_images/${artistName}`);
         if (response.ok) {
           const data = await response.json();
           setLastFmImages(data.images);

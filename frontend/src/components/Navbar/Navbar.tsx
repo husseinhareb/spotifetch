@@ -26,7 +26,7 @@ const Navbar: React.FC = () => {
 
   const checkLoginStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8000/user_info", { credentials: "include" });
+      const response = await fetch("http://localhost:8000/auth/user_info", { credentials: "include" });
       if (response.ok) {
         const userInfo = await response.json();
         setUsername(userInfo.display_name);
@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://localhost:8000/login", { method: "GET", credentials: "include" });
+      const response = await fetch("http://localhost:8000/auth/login", { method: "GET", credentials: "include" });
       const { auth_url } = await response.json();
       window.location.href = auth_url;
     } catch (error) {
@@ -66,7 +66,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/logout", { method: "GET", credentials: "include" });
+      await fetch("http://localhost:8000/auth/logout", { method: "GET", credentials: "include" });
       setIsLoggedIn(false);
       resetUserDetails();
     } catch (error) {

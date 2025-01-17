@@ -23,7 +23,7 @@ const CurrentlyPlaying: React.FC = () => {
   useEffect(() => {
     const fetchCurrentSong = async () => {
       try {
-        const response = await fetch("http://localhost:8000/currently_playing", {
+        const response = await fetch("http://localhost:8000/tracks/currently_playing", {
           credentials: "include",
         });
         

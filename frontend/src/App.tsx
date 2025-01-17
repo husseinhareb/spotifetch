@@ -20,8 +20,8 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/artist/:artistId" element={<ArtistPage />} /> {/* Add ArtistPage route */}
-            <Route path="/yourData" element={<YourData />} /> {/* Add ArtistPage route */}
+            <Route path="/artist/:artistId" element={<ArtistPage />} />
+            <Route path="/yourData" element={<YourData />} />
           </Routes>
         </ContentWrapper>
       </div>

@@ -43,7 +43,7 @@ const TopArtists: React.FC = () => {
       setLoading(true);
 
       try {
-        const response = await fetch(`http://localhost:8000/top_artists?time_range=${timeRange}`, {
+        const response = await fetch(`http://localhost:8000/artists/top_artists?time_range=${timeRange}`, {
           credentials: 'include',
         });
 

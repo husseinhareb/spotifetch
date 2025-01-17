@@ -31,7 +31,7 @@ const RecentlyPlayed: React.FC = () => {
   useEffect(() => {
     const fetchRecentlyPlayed = async () => {
       try {
-        const response = await fetch("http://localhost:8000/recently_played", {
+        const response = await fetch("http://localhost:8000/tracks/recently_played", {
           credentials: "include",
         });
         if (response.ok) {
@@ -47,7 +47,7 @@ const RecentlyPlayed: React.FC = () => {
 
     const fetchCurrentSong = async () => {
       try {
-        const response = await fetch("http://localhost:8000/currently_playing", {
+        const response = await fetch("http://localhost:8000/tracks/currently_playing", {
           credentials: "include",
         });
         if (response.ok) {

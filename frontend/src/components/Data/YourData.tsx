@@ -38,7 +38,7 @@ const YourData: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get<{ recent_tracks: Song[] }>(
-        `http://localhost:8000/api/recently_played_db?skip=${skip}`
+        `http://localhost:8000/tracks/api/recently_played_db?skip=${skip}`
       );
       const fetchedTracks = response.data.recent_tracks;
 
