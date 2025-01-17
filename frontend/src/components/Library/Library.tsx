@@ -11,8 +11,10 @@ import {
   TrackName,
   ArtistName,
   PlayedAt,
+  NavList,
+  NavItem,
+  NavBar,NavLink
 } from "./Styles/style";
-
 import { formatPlayedTime } from '../../helpers/timeUtils';
  
 // Define the TypeScript type for a song
@@ -101,6 +103,31 @@ const YourData: React.FC = () => {
   return (
     <Container>
       <Heading>Library</Heading>
+      <NavBar>
+      <NavList>
+        <NavItem>
+          <NavLink>
+            Recently Listened
+          </NavLink>
+        </NavItem>
+        <NavItem>
+          <NavLink>
+            Songs
+          </NavLink>
+        </NavItem>
+        <NavItem>
+          <NavLink>
+            Artists
+          </NavLink>
+        </NavItem>
+        <NavItem>
+          <NavLink>
+            Albums
+          </NavLink>
+        </NavItem>
+      </NavList>
+    </NavBar>
+
       {renderTracks(recentTracks)}
       {loading && <Message>Loading...</Message>}
       {!hasMore && !loading && <Message>No more songs to load.</Message>}

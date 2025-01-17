@@ -3,9 +3,12 @@
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 import spotipy
+from datetime import datetime, timedelta
 
 from ..services.spotify_services import sp_oauth
 from ..config import settings
+
+from ..db.database import users_collection
 
 router = APIRouter()
 
@@ -48,6 +51,27 @@ async def callback(request: Request):
 
     # Save token info in session
     request.session["token_info"] = token_info
+
+    sp = spotipy.Spotify(auth=token_info["access_token"])
+    user_info = sp.current_user()
+
+    # Extract user details
+    user_data = {
+        "user_id": user_info["id"],
+        "username": user_info["display_name"],
+        "email": user_info.get("email", None),
+        "profile_image": user_info["images"][0]["url"] if user_info["images"] else None,
+        "country": user_info.get("country", None),
+        "product": user_info.get("product", None),
+        "created_at": datetime.now().isoformat(),
+    }
+
+    # Check if the user already exists
+    existing_user = users_collection.find_one({"user_id": user_data["user_id"]})
+    if not existing_user:
+        # Insert the new user into the collection
+        users_collection.insert_one(user_data)
+        print(f"New user created: {user_data['username']}")
 
     return RedirectResponse(url="/auth/welcome")
 

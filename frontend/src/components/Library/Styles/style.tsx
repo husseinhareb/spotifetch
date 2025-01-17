@@ -105,3 +105,36 @@ export const PlayedAt = styled.small`
   flex: 0; 
   margin-left: auto;
 `;
+
+
+export const NavBar = styled.nav`
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  background-color: #fafafa; 
+  padding: 0.5rem 1rem;
+`;
+
+export const NavList = styled.ul`
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+`;
+
+export const NavItem = styled.li`
+  display: flex;
+  align-items: center;
+`;
+
+export const NavLink = styled.a`
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #333;
+  }
+`;

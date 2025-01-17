@@ -8,7 +8,7 @@ import Home from './components/Home/Home';
 import About from './components/About/About';
 import Profile from './components/Profile/Profile';
 import ArtistPage from './components/Artists/ArtistPage'; // Import the ArtistPage component
-import YourData from './components/Data/YourData';
+import YourData from './components/Library/Library';
 
 const App: React.FC = () => {
   return (
