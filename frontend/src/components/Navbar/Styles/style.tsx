@@ -14,7 +14,9 @@ export const Nav = styled.nav`
   right: 0;
   z-index: 1000;
 `;
-
+export const ContentWrapper = styled.div`
+  margin-top: 50px;
+`;
 // Title container
 export const Title = styled.div`
   color: white;

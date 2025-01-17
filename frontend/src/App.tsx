@@ -1,8 +1,7 @@
-// frontend/src/components/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
 import Navbar from './components/Navbar/Navbar';
+import { ContentWrapper } from './components/Navbar/Styles/style'; // Import the wrapper
 
 // Import your other components/pages here
 import Home from './components/Home/Home';
@@ -16,17 +15,18 @@ const App: React.FC = () => {
     <Router>
       <div className="App">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/artist/:artistId" element={<ArtistPage />} /> {/* Add ArtistPage route */}
-          <Route path="/yourData" element={<YourData />} /> {/* Add ArtistPage route */}
-
-        </Routes>
+        <ContentWrapper>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/artist/:artistId" element={<ArtistPage />} /> {/* Add ArtistPage route */}
+            <Route path="/yourData" element={<YourData />} /> {/* Add ArtistPage route */}
+          </Routes>
+        </ContentWrapper>
       </div>
     </Router>
   );
-}
+};
 
 export default App;
