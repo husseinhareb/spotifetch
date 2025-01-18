@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
-import { ContentWrapper } from './components/Navbar/Styles/style'; // Import the wrapper
+import { ContentWrapper } from './components/Navbar/Styles/style'; // Ensure this is styled correctly
 
 // Import your other components/pages here
 import Home from './components/Home/Home';
@@ -21,7 +21,7 @@ const App: React.FC = () => {
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/artist/:artistId" element={<ArtistPage />} />
-            <Route path="/library" element={<Library />} />
+            <Route path="/library/" element={<Library />} />
           </Routes>
         </ContentWrapper>
       </div>
