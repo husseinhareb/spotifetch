@@ -4,14 +4,16 @@ import { faRightFromBracket, faBars, faTimes } from "@fortawesome/free-solid-svg
 import {
   Nav, Title, NavList, NavItem, NavButton, ProfileThumbnail, HamburgerIcon
 } from "./Styles/style"; // Styled components
-import { 
+
+import {
   useSetUsername, useSetEmail, useSetProfileImage, useSetCountry, useSetProduct, 
-  useUsername, useProfileImage 
+  useUsername, useProfileImage, useSetIsLoggedIn, useStore 
 } from "../../services/store";
 
 const Navbar: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const isLoggedIn = useStore((state) => state.isLoggedIn);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const setIsLoggedIn = useSetIsLoggedIn();
   const setUsername = useSetUsername();
   const setEmail = useSetEmail();
   const setProfileImage = useSetProfileImage();
@@ -26,7 +28,9 @@ const Navbar: React.FC = () => {
 
   const checkLoginStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8000/auth/user_info", { credentials: "include" });
+      const response = await fetch("http://localhost:8000/auth/login", {
+        credentials: "include",
+      });
       if (response.ok) {
         const userInfo = await response.json();
         setUsername(userInfo.display_name);
@@ -34,7 +38,7 @@ const Navbar: React.FC = () => {
         setProfileImage(userInfo.images?.[1]?.url || null);
         setCountry(userInfo.country);
         setProduct(userInfo.product);
-        setIsLoggedIn(true);
+        setIsLoggedIn(true); // Update Zustand store
       } else {
         setIsLoggedIn(false);
         resetUserDetails();
@@ -53,7 +57,6 @@ const Navbar: React.FC = () => {
     setCountry("N/A");
     setProduct("N/A");
   };
-
   const handleLogin = async () => {
     try {
       const response = await fetch("http://localhost:8000/auth/login", { method: "GET", credentials: "include" });
@@ -66,8 +69,11 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/auth/logout", { method: "GET", credentials: "include" });
-      setIsLoggedIn(false);
+      await fetch("http://localhost:8000/auth/logout", {
+        method: "GET",
+        credentials: "include",
+      });
+      setIsLoggedIn(false); // Update Zustand store
       resetUserDetails();
     } catch (error) {
       console.error("Logout failed", error);

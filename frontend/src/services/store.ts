@@ -10,6 +10,7 @@ interface Store {
   currentArtist: string;
   albumImage: string | null;
   isPlaying: boolean;
+  isLoggedIn: boolean;
   topArtists: { name: string; genres: string[]; imageUrl: string | null }[];
   setUsername: (username: string) => void;
   setEmail: (email: string) => void;
@@ -20,6 +21,7 @@ interface Store {
   setCurrentArtist: (artist: string) => void;
   setAlbumImage: (image: string | null) => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  setIsLoggedIn: (status: boolean) => void; // <-- Add a setter
   setTopArtists: (
     artists: { name: string; genres: string[]; imageUrl: string | null }[]
   ) => void;
@@ -35,6 +37,7 @@ export const useStore = create<Store>((set) => ({
   currentArtist: "N/A",
   albumImage: null,
   isPlaying: false,
+  isLoggedIn: false,
   topArtists: [],
   setUsername: (username) => set({ username }),
   setEmail: (email) => set({ email }),
@@ -46,6 +49,7 @@ export const useStore = create<Store>((set) => ({
   setAlbumImage: (image) => set({ albumImage: image }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setTopArtists: (artists) => set({ topArtists: artists }),
+  setIsLoggedIn: (status) => set({ isLoggedIn: status }), // Setter for isLoggedIn
 }));
 
 // Selectors for accessing state
@@ -59,7 +63,7 @@ export const useCurrentArtist = () => useStore((state) => state.currentArtist);
 export const useAlbumImage = () => useStore((state) => state.albumImage);
 export const useIsPlaying = () => useStore((state) => state.isPlaying);
 export const useTopArtists = () => useStore((state) => state.topArtists);
-
+export const useIsLoggedIn = () => useStore((state) => state.isLoggedIn); // Selector for isLoggedIn
 // Setters for updating state
 export const useSetUsername = () => useStore((state) => state.setUsername);
 export const useSetEmail = () => useStore((state) => state.setEmail);
@@ -71,3 +75,4 @@ export const useSetCurrentArtist = () => useStore((state) => state.setCurrentArt
 export const useSetAlbumImage = () => useStore((state) => state.setAlbumImage);
 export const useSetIsPlaying = () => useStore((state) => state.setIsPlaying);
 export const useSetTopArtists = () => useStore((state) => state.setTopArtists);
+export const useSetIsLoggedIn = () => useStore((state) => state.setIsLoggedIn); // Setter for isLoggedIn
