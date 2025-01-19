@@ -38,8 +38,9 @@ const RecentlyPlayed: React.FC = () => {
     try {
       setLoading(true);
       const response = await axios.get<{ recent_tracks: Song[] }>(
-        `http://localhost:8000/user/${username}/RecentlyPlayed/recently_played?skip=${skip}`
+        `http://localhost:8000/tracks/user/${username}/library/recently_played_db?skip=${skip}`
       );
+      
       const fetchedTracks = response.data.recent_tracks;
 
       if (fetchedTracks.length > 0) {
@@ -55,11 +56,11 @@ const RecentlyPlayed: React.FC = () => {
     }
   };
 
-  // Fetch tracks when component mounts
   useEffect(() => {
+    if (username === "N/A") return; // Skip calling the API if username is not set
     fetchRecentTracks(username);
   }, [username]);
-
+  
   // Infinite scroll handler
   const handleScroll = () => {
     if (

@@ -21,7 +21,7 @@ const App: React.FC = () => {
             <Route path="/about" element={<About />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/artist/:artistId" element={<ArtistPage />} />
-            <Route path="/library/" element={<Library />} />
+            <Route path="/library//*" element={<Library />} />
           </Routes>
         </ContentWrapper>
       </div>

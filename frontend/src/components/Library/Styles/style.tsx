@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Link } from 'react-router-dom';
 
 export const Container = styled.div`
   margin: 1.5rem;
@@ -127,14 +128,9 @@ export const NavItem = styled.li`
   align-items: center;
 `;
 
-export const NavLink = styled.a`
-  display: flex;
-  align-items: center;
+export const NavLink = styled(Link)`
+  color: #000000;
   text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.3s;
-
-  &:hover {
-    color: #333;
-  }
+  padding: 8px;
+  /* Add your own styles here */
 `;

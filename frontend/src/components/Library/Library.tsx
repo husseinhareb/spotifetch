@@ -1,12 +1,18 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import RecentlyPlayed from './RecentlyPlayed';
-import Songs from './Songs';
-import Artists from './Artists';
-import Albums from './Albums';
-import { 
-  NavBar, NavList, NavItem, NavLink, Container, Heading 
-} from './Styles/style'; // Import your styled components
+// Library.tsx
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import RecentlyPlayed from "./RecentlyPlayed";
+import Songs from "./Songs";
+import Artists from "./Artists";
+import Albums from "./Albums";
+import {
+  NavBar,
+  NavList,
+  NavItem,
+  NavLink,
+  Container,
+  Heading,
+} from "./Styles/style";
 
 const Library: React.FC = () => {
   return (
@@ -17,26 +23,27 @@ const Library: React.FC = () => {
       <NavBar>
         <NavList>
           <NavItem>
-            <NavLink href="recently-played">Recently Played</NavLink>
+            {/* Use "to" instead of "href" if you want client-side routing */}
+            <NavLink to="recently-played">Recently Played</NavLink>
           </NavItem>
           <NavItem>
-            <NavLink href="songs">Songs</NavLink>
+            <NavLink to="songs">Songs</NavLink>
           </NavItem>
           <NavItem>
-            <NavLink href="artists">Artists</NavLink>
+            <NavLink to="artists">Artists</NavLink>
           </NavItem>
           <NavItem>
-            <NavLink href="albums">Albums</NavLink>
+            <NavLink to="albums">Albums</NavLink>
           </NavItem>
         </NavList>
       </NavBar>
 
       {/* Nested Routes */}
       <Routes>
-        {/* Default route */}
+        {/* Index route => /library/ */}
         <Route index element={<RecentlyPlayed />} />
 
-        {/* Define child routes */}
+        {/* Child routes => /library/recently-played, /library/songs, etc. */}
         <Route path="recently-played" element={<RecentlyPlayed />} />
         <Route path="songs" element={<Songs />} />
         <Route path="artists" element={<Artists />} />
