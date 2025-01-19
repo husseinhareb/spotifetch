@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
 from datetime import datetime
+from typing import List, Dict, Any
 import spotipy
 
 from ..services.spotify_services import sp_oauth
@@ -11,13 +12,10 @@ from .auth import get_token
 
 router = APIRouter()
 
+
 @router.get("/user/{username}/library/recently_played")
 async def recently_played(request: Request, username: str, limit: int = 30):
-    """
-    Retrieves recently played tracks from Spotify directly (live).
-    The `username` parameter can be used if you want to differentiate
-    or validate which user is making the request.
-    """
+
     token_info = get_token(request)
     if not token_info:
         raise HTTPException(status_code=401, detail="Token not found or expired")
@@ -39,23 +37,29 @@ async def recently_played(request: Request, username: str, limit: int = 30):
 
     return JSONResponse({"recent_tracks": recent_tracks})
 
+
+
+
 @router.get("/user/{username}/library/recently_played_db")
-async def recently_played_db(username: str, skip: int = 0, limit: int = 30):
-    """
-    Retrieves recently played tracks from the database for a given user, 
-    with an option to fetch/insert new tracks if skip=0.
-    """
+async def recently_played_db(username: str, skip: int = 0, limit: int = 30) -> Dict[str, Any]:
+
     try:
-        # If skip=0, attempt to fetch new data from Spotify first
+        # 1. If skip=0, attempt to fetch new data from Spotify first
         if skip == 0:
             token_info = sp_oauth.get_cached_token()
             if not token_info:
-                raise HTTPException(status_code=401, detail="Token not found or expired")
+                raise HTTPException(
+                    status_code=401,
+                    detail="Spotify token not found or expired. Please re-authenticate."
+                )
 
             sp = spotipy.Spotify(auth=token_info["access_token"])
             recent_tracks_data = sp.current_user_recently_played(limit=50)
 
-            latest_saved = songs_collection.find_one(sort=[("played_at", -1)])
+            latest_saved = songs_collection.find_one(
+                {"username": username},  # Filter only this user's tracks
+                sort=[("played_at", -1)]
+            )
             latest_saved_time = latest_saved["played_at"] if latest_saved else None
 
             for item in recent_tracks_data["items"]:
@@ -67,33 +71,44 @@ async def recently_played_db(username: str, skip: int = 0, limit: int = 30):
                     track_info = {
                         "track_id": track["id"],
                         "track_name": track["name"],
-                        "artist_name": ", ".join([artist["name"] for artist in track["artists"]]),
+                        "artist_name": ", ".join(
+                            artist["name"] for artist in track["artists"]
+                        ),
                         "album_name": track["album"]["name"],
-                        "album_image": track["album"]["images"][0]["url"] if track["album"]["images"] else None,
+                        "album_image": (
+                            track["album"]["images"][0]["url"]
+                            if track["album"]["images"] else None
+                        ),
                         "played_at": played_at,
-                        # Optional: store the username here if you want to filter by user in the DB
                         "username": username,
                     }
                     songs_collection.insert_one(track_info)
 
-        # Query songs from DB
-        recent_tracks = list(
+        # 2. Query songs from DB, filtering by username
+        recent_tracks_cursor = (
             songs_collection.find(
-                {
-                    # If you are storing "username" in your document, you can filter by username:
-                    # "username": username
-                }, 
-                {"_id": 0}
+                {"username": username},
+                {"_id": 0}   # Exclude Mongo's _id field from the result
             )
             .sort("played_at", -1)
             .skip(skip)
             .limit(limit)
         )
+        recent_tracks = list(recent_tracks_cursor)
 
         return {"recent_tracks": recent_tracks}
 
+    except HTTPException:
+        # If we manually raise an HTTPException, just re-raise it
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching data: {str(e)}")
+        # Catch-all for unexpected errors
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching data: {str(e)}"
+        )
+
+
 
 @router.get("/songs_most_played")
 def songs_most_played():
@@ -106,28 +121,36 @@ def songs_most_played():
         {
             "$group": {
                 "_id": "$track_id",
-                "doc": {"$first": "$$ROOT"},  # store first doc to get track details
+                # Store the entire doc (the first occurrence of this track_id)
+                "doc": {"$first": "$$ROOT"},
+                # Count how many documents share the same track_id
                 "play_count": {"$sum": 1}
             }
         },
+        # Sort the grouped results in descending order of play_count
         {"$sort": {"play_count": -1}}
     ]
 
     try:
         results = list(songs_collection.aggregate(pipeline))
 
-        # Convert aggregated results into a list of songs
         songs = []
         for r in results:
             doc = r["doc"]
             doc["play_count"] = r["play_count"]
+
+            if "_id" in doc:
+                doc["_id"] = str(doc["_id"])
+
             songs.append(doc)
 
         return {"songs": songs}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-        
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}") 
+
+
+
 router.get("/currently_playing")
 async def currently_playing(request: Request):
     """
