@@ -14,9 +14,12 @@ export const Nav = styled.nav`
   right: 0;
   z-index: 1000;
 `;
+
+// Push page content below navbar
 export const ContentWrapper = styled.div`
   margin-top: 50px;
 `;
+
 // Title container
 export const Title = styled.div`
   color: white;
@@ -58,6 +61,11 @@ export const NavItem = styled.li`
     margin-left: 0;
     margin-bottom: 15px;
   }
+`;
+
+// Special nav item that pushes itself (and subsequent items) to the far right
+export const NavItemRight = styled(NavItem)`
+  margin-left: auto;
 `;
 
 // Button used for all navigation actions

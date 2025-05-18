@@ -1,18 +1,39 @@
+// src/components/Navbar/Navbar.tsx
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import {
-  Nav, Title, NavList, NavItem, NavButton, ProfileThumbnail, HamburgerIcon
-} from "./Styles/style"; // Styled components
-
+  Nav,
+  Title,
+  NavList,
+  NavItem,
+  NavItemRight,
+  NavButton,
+  ProfileThumbnail,
+  HamburgerIcon
+} from "./Styles/style";
 import {
-  useSetUsername, useSetEmail, useSetProfileImage, useSetCountry, useSetProduct, 
-  useUsername, useProfileImage, useSetIsLoggedIn, useStore 
+  useSetUsername,
+  useSetEmail,
+  useSetProfileImage,
+  useSetCountry,
+  useSetProduct,
+  useUsername,
+  useProfileImage,
+  useSetIsLoggedIn,
+  useStore
 } from "../../services/store";
+import {
+  checkLoginStatus as fetchLoginStatus,
+  getLoginUrl,
+  logout as performLogout,
+  UserInfo
+} from "../../repositories/authRepository";
 
 const Navbar: React.FC = () => {
   const isLoggedIn = useStore((state) => state.isLoggedIn);
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const setIsLoggedIn = useSetIsLoggedIn();
   const setUsername = useSetUsername();
   const setEmail = useSetEmail();
@@ -23,28 +44,19 @@ const Navbar: React.FC = () => {
   const profileImage = useProfileImage();
 
   useEffect(() => {
-    checkLoginStatus();
+    loadLoginStatus();
   }, []);
 
-  const checkLoginStatus = async () => {
+  const loadLoginStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
-        credentials: "include",
-      });
-      if (response.ok) {
-        const userInfo = await response.json();
-        setUsername(userInfo.display_name);
-        setEmail(userInfo.email);
-        setProfileImage(userInfo.images?.[1]?.url || null);
-        setCountry(userInfo.country);
-        setProduct(userInfo.product);
-        setIsLoggedIn(true); // Update Zustand store
-      } else {
-        setIsLoggedIn(false);
-        resetUserDetails();
-      }
-    } catch (error) {
-      console.error("Error checking login status", error);
+      const userInfo: UserInfo = await fetchLoginStatus();
+      setUsername(userInfo.display_name);
+      setEmail(userInfo.email);
+      setProfileImage(userInfo.images?.[1]?.url || null);
+      setCountry(userInfo.country);
+      setProduct(userInfo.product);
+      setIsLoggedIn(true);
+    } catch {
       setIsLoggedIn(false);
       resetUserDetails();
     }
@@ -57,63 +69,68 @@ const Navbar: React.FC = () => {
     setCountry("N/A");
     setProduct("N/A");
   };
+
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://localhost:8000/auth/login", { method: "GET", credentials: "include" });
-      const { auth_url } = await response.json();
+      const { auth_url } = await getLoginUrl();
       window.location.href = auth_url;
-    } catch (error) {
-      console.error("Login failed", error);
+    } catch (err) {
+      console.error("Login failed", err);
     }
   };
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:8000/auth/logout", {
-        method: "GET",
-        credentials: "include",
-      });
-      setIsLoggedIn(false); // Update Zustand store
+      await performLogout();
+      setIsLoggedIn(false);
       resetUserDetails();
-    } catch (error) {
-      console.error("Logout failed", error);
+    } catch (err) {
+      console.error("Logout failed", err);
     }
   };
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  const toggleMenu = () => setMenuOpen(open => !open);
 
   return (
     <Nav>
       <Title>
-        <NavButton onClick={() => window.location.href = "/"}>Spotifetch</NavButton>
+        <NavButton onClick={() => window.location.href = "/"}>
+          Spotifetch
+        </NavButton>
       </Title>
 
-      {/* Hamburger Icon for Mobile */}
       <HamburgerIcon onClick={toggleMenu}>
         <FontAwesomeIcon icon={menuOpen ? faTimes : faBars} />
       </HamburgerIcon>
 
-      {/* Navigation Menu */}
-      <NavList className={menuOpen ? 'active' : ''}>
-        <NavItem>
-          <NavButton onClick={() => window.location.href = "/"}>Home</NavButton>
-        </NavItem>
+      <NavList className={menuOpen ? "active" : ""}>
+        {/* Right‐aligned Home button */}
+        <NavItemRight>
+          <NavButton onClick={() => window.location.href = "/"}>
+            Home
+          </NavButton>
+        </NavItemRight>
+
         {isLoggedIn && (
           <NavItem>
-            <NavButton onClick={() => window.location.href = "/library"}>Library</NavButton>
+            <NavButton onClick={() => window.location.href = "/library"}>
+              Library
+            </NavButton>
           </NavItem>
         )}
+
         <NavItem>
-          <NavButton onClick={() => window.location.href = "/about"}>About</NavButton>
+          <NavButton onClick={() => window.location.href = "/about"}>
+            About
+          </NavButton>
         </NavItem>
+
         {isLoggedIn ? (
           <>
             <NavItem>
               <NavButton onClick={() => window.location.href = "/profile"}>
                 {profileImage && (
-                  <ProfileThumbnail src={profileImage} alt="Profile Thumbnail" />
+                  <ProfileThumbnail src={profileImage} alt="Profile" />
                 )}
                 {username}
               </NavButton>
