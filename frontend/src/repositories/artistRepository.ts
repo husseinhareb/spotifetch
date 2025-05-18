@@ -1,30 +1,32 @@
 // src/repositories/artistRepository.ts
 import axios from 'axios';
 
-export interface ArtistInfo {
-  artist_info: {
-    artist_name: string;
-    images: string[];
-    genres: string[];
-    popularity: number;
-    description: string;
-  };
-  top_tracks: Array<{
-    track_name: string;
-    album_name: string;
-    album_image: string;
-    external_url: string;
-  }>;
+// New: the shape we’ll use in TopArtists.tsx
+export interface Artist {
+  id: string;
+  name: string;
+  image: string;
+  bio: string;
 }
 
-export async function fetchArtistInfo(artistId: string): Promise<ArtistInfo> {
-  const resp = await axios.get<ArtistInfo>(`/auth/artist_info/${artistId}`, {
-    withCredentials: true,
-  });
-  return resp.data;
+// Fetch the top artists for a time range
+export async function fetchTopArtists(timeRange: string): Promise<Artist[]> {
+  const resp = await axios.get<{ top_artists: any[] }>(
+    `http://localhost:8000/artists/top_artists?time_range=${timeRange}`,
+    { withCredentials: true }
+  );
+  if (resp.status !== 200) {
+    throw new Error(`Failed to load top artists (${resp.status})`);
+  }
+  return resp.data.top_artists.map(a => ({
+    id: a.artist_id,
+    name: a.artist_name,
+    image: a.image_url,
+    bio: a.description,
+  }));
 }
 
-export async function fetchLastFmImages(artistName: string): Promise<string[]> {
-  const resp = await axios.get<{ images: string[] }>(`/auth/artist_images/${artistName}`);
-  return resp.data.images;
-}
+// (Keep your other two exports here:)
+export interface ArtistInfo { /* … */ }
+export async function fetchArtistInfo(artistId: string): Promise<ArtistInfo> { /* … */ }
+export async function fetchLastFmImages(artistName: string): Promise<string[]> { /* … */ }

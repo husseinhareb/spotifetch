@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+// src/components/RecentlyPlayed/RecentlyPlayed.tsx
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Container,
   Message,
@@ -13,97 +13,74 @@ import {
 } from "./Styles/style";
 import { formatPlayedTime } from "../../helpers/timeUtils";
 import { useUsername } from "../../services/store";
-
-// Define the TypeScript type for a song
-interface Song {
-  track_name: string;
-  artist_name: string;
-  album_name: string;
-  album_image: string;
-  played_at: string;
-}
+import { fetchRecentTracks, Song } from "../../repositories/trackRepository";
 
 const RecentlyPlayed: React.FC = () => {
   const [recentTracks, setRecentTracks] = useState<Song[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [skip, setSkip] = useState<number>(0); // Pagination skip value
-  const [hasMore, setHasMore] = useState<boolean>(true); // Check if more data is available
+  const [skip, setSkip] = useState<number>(0);
+  const [hasMore, setHasMore] = useState<boolean>(true);
   const username = useUsername();
 
-  // Fetch recently played songs from the database
-  const fetchRecentTracks = async (username: string) => {
-    if (!hasMore) return;
+  const loadMore = useCallback(async () => {
+    if (!hasMore || username === "N/A") return;
 
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await axios.get<{ recent_tracks: Song[] }>(
-        `http://localhost:8000/tracks/user/${username}/library/recently_played_db?skip=${skip}`
-      );
-      
-      const fetchedTracks = response.data.recent_tracks;
-
-      if (fetchedTracks.length > 0) {
-        setRecentTracks((prev) => [...prev, ...fetchedTracks]);
-        setSkip((prev) => prev + fetchedTracks.length);
+      const fetched = await fetchRecentTracks(username, skip);
+      if (fetched.length > 0) {
+        setRecentTracks((prev) => [...prev, ...fetched]);
+        setSkip((prev) => prev + fetched.length);
       } else {
-        setHasMore(false); // No more data to fetch
+        setHasMore(false);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to fetch recently played songs");
     } finally {
       setLoading(false);
     }
-  };
+  }, [hasMore, username, skip]);
 
   useEffect(() => {
-    if (username === "N/A") return; // Skip calling the API if username is not set
-    fetchRecentTracks(username);
-  }, [username]);
-  
-  // Infinite scroll handler
-  const handleScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop >=
-      document.documentElement.offsetHeight - 100
-    ) {
-      fetchRecentTracks(username);
-    }
-  };
+    loadMore();
+  }, [username, loadMore]);
 
-  // Attach scroll listener
   useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+          document.documentElement.offsetHeight - 100 &&
+        !loading
+      ) {
+        loadMore();
+      }
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [skip, hasMore]);
+  }, [loading, loadMore]);
 
   if (error) return <Message>{error}</Message>;
 
-  const renderTracks = (tracks: Song[]) => (
-    <TrackList>
-      {tracks.map((track, index) => (
-        <TrackItem key={index}>
-          {track.album_image && (
-            <AlbumImage
-              src={track.album_image}
-              alt={`${track.track_name} album cover`}
-            />
-          )}
-          <TrackDetails>
-            <TrackName>{track.track_name}</TrackName>
-            <ArtistName>{track.artist_name}</ArtistName>
-            <PlayedAt>
-              {formatPlayedTime(track.played_at)}
-            </PlayedAt>
-          </TrackDetails>
-        </TrackItem>
-      ))}
-    </TrackList>
-  );
-
   return (
     <Container>
-      {renderTracks(recentTracks)}
+      <TrackList>
+        {recentTracks.map((track, idx) => (
+          <TrackItem key={idx}>
+            {track.album_image && (
+              <AlbumImage
+                src={track.album_image}
+                alt={`${track.track_name} album cover`}
+              />
+            )}
+            <TrackDetails>
+              <TrackName>{track.track_name}</TrackName>
+              <ArtistName>{track.artist_name}</ArtistName>
+              <PlayedAt>{formatPlayedTime(track.played_at)}</PlayedAt>
+            </TrackDetails>
+          </TrackItem>
+        ))}
+      </TrackList>
       {loading && <Message>Loading...</Message>}
       {!hasMore && !loading && <Message>No more songs to load.</Message>}
     </Container>
