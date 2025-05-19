@@ -21,6 +21,9 @@ import {
   useUsername,
   useProfileImage,
   useSetIsLoggedIn,
+  useIsLoggedIn,
+  useAuthChecked,
+  useSetAuthChecked,
   useStore
 } from "../../services/store";
 import {
@@ -31,44 +34,59 @@ import {
 } from "../../repositories/authRepository";
 
 const Navbar: React.FC = () => {
-  const isLoggedIn = useStore((state) => state.isLoggedIn);
+  const isLoggedIn = useIsLoggedIn();
+  const authChecked = useAuthChecked();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const setIsLoggedIn = useSetIsLoggedIn();
+  const setAuthChecked = useSetAuthChecked();
   const setUsername = useSetUsername();
   const setEmail = useSetEmail();
   const setProfileImage = useSetProfileImage();
   const setCountry = useSetCountry();
   const setProduct = useSetProduct();
+
   const username = useUsername();
   const profileImage = useProfileImage();
 
+  // Bootstrap authentication state once on mount
   useEffect(() => {
-    loadLoginStatus();
-  }, []);
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const name = params.get("username");
+      const mail = params.get("email");
 
-  const loadLoginStatus = async () => {
-    try {
-      const userInfo: UserInfo = await fetchLoginStatus();
-      setUsername(userInfo.display_name);
-      setEmail(userInfo.email);
-      setProfileImage(userInfo.images?.[1]?.url || null);
-      setCountry(userInfo.country);
-      setProduct(userInfo.product);
-      setIsLoggedIn(true);
-    } catch {
-      setIsLoggedIn(false);
-      resetUserDetails();
-    }
-  };
+      if (name) {
+        // Came back from Spotify OAuth redirect
+        setUsername(name);
+        setEmail(mail || "");
+        setIsLoggedIn(true);
+        window.history.replaceState({}, "", "/");
+      } else {
+        // No callback params → check existing session
+        try {
+          const userInfo: UserInfo = await fetchLoginStatus();
+          setUsername(userInfo.display_name);
+          setEmail(userInfo.email);
+          setProfileImage(userInfo.images?.[1]?.url || null);
+          setCountry(userInfo.country);
+          setProduct(userInfo.product);
+          setIsLoggedIn(true);
+        } catch {
+          setIsLoggedIn(false);
+          // reset user details on failure
+          setUsername("N/A");
+          setEmail("N/A");
+          setProfileImage(null);
+          setCountry("N/A");
+          setProduct("N/A");
+        }
+      }
 
-  const resetUserDetails = () => {
-    setUsername("N/A");
-    setEmail("N/A");
-    setProfileImage(null);
-    setCountry("N/A");
-    setProduct("N/A");
-  };
+      // Mark that we've finished the auth check
+      setAuthChecked(true);
+    })();
+  }, [setUsername, setEmail, setProfileImage, setCountry, setProduct, setIsLoggedIn, setAuthChecked]);
 
   const handleLogin = async () => {
     try {
@@ -83,18 +101,26 @@ const Navbar: React.FC = () => {
     try {
       await performLogout();
       setIsLoggedIn(false);
-      resetUserDetails();
+      // clear stored user details
+      setUsername("N/A");
+      setEmail("N/A");
+      setProfileImage(null);
+      setCountry("N/A");
+      setProduct("N/A");
     } catch (err) {
       console.error("Logout failed", err);
     }
   };
 
-  const toggleMenu = () => setMenuOpen(open => !open);
+  const toggleMenu = () => setMenuOpen(prev => !prev);
+
+  // While auth check is pending, don't render the navbar to avoid flicker
+  if (!authChecked) return null;
 
   return (
     <Nav>
       <Title>
-        <NavButton onClick={() => window.location.href = "/"}>
+        <NavButton onClick={() => (window.location.href = "/")}>
           Spotifetch
         </NavButton>
       </Title>
@@ -104,23 +130,22 @@ const Navbar: React.FC = () => {
       </HamburgerIcon>
 
       <NavList className={menuOpen ? "active" : ""}>
-        {/* Right‐aligned Home button */}
         <NavItemRight>
-          <NavButton onClick={() => window.location.href = "/"}>
+          <NavButton onClick={() => (window.location.href = "/")}>
             Home
           </NavButton>
         </NavItemRight>
 
         {isLoggedIn && (
           <NavItem>
-            <NavButton onClick={() => window.location.href = "/library"}>
+            <NavButton onClick={() => (window.location.href = "/library")}>
               Library
             </NavButton>
           </NavItem>
         )}
 
         <NavItem>
-          <NavButton onClick={() => window.location.href = "/about"}>
+          <NavButton onClick={() => (window.location.href = "/about")}>
             About
           </NavButton>
         </NavItem>
@@ -128,7 +153,7 @@ const Navbar: React.FC = () => {
         {isLoggedIn ? (
           <>
             <NavItem>
-              <NavButton onClick={() => window.location.href = "/profile"}>
+              <NavButton onClick={() => (window.location.href = "/profile")}>
                 {profileImage && (
                   <ProfileThumbnail src={profileImage} alt="Profile" />
                 )}

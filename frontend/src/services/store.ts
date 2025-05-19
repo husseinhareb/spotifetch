@@ -11,6 +11,7 @@ interface Store {
   albumImage: string | null;
   isPlaying: boolean;
   isLoggedIn: boolean;
+  authChecked: boolean;                     // ← new
   topArtists: { name: string; genres: string[]; imageUrl: string | null }[];
   setUsername: (username: string) => void;
   setEmail: (email: string) => void;
@@ -22,6 +23,7 @@ interface Store {
   setAlbumImage: (image: string | null) => void;
   setIsPlaying: (isPlaying: boolean) => void;
   setIsLoggedIn: (status: boolean) => void; // <-- Add a setter
+  setAuthChecked: (checked: boolean) => void; // ← new
   setTopArtists: (
     artists: { name: string; genres: string[]; imageUrl: string | null }[]
   ) => void;
@@ -38,6 +40,7 @@ export const useStore = create<Store>((set) => ({
   albumImage: null,
   isPlaying: false,
   isLoggedIn: false,
+  authChecked: false,
   topArtists: [],
   setUsername: (username) => set({ username }),
   setEmail: (email) => set({ email }),
@@ -50,6 +53,7 @@ export const useStore = create<Store>((set) => ({
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setTopArtists: (artists) => set({ topArtists: artists }),
   setIsLoggedIn: (status) => set({ isLoggedIn: status }), // Setter for isLoggedIn
+  setAuthChecked: (checked) => set({ authChecked: checked }), // ← new
 }));
 
 // Selectors for accessing state
@@ -75,4 +79,8 @@ export const useSetCurrentArtist = () => useStore((state) => state.setCurrentArt
 export const useSetAlbumImage = () => useStore((state) => state.setAlbumImage);
 export const useSetIsPlaying = () => useStore((state) => state.setIsPlaying);
 export const useSetTopArtists = () => useStore((state) => state.setTopArtists);
-export const useSetIsLoggedIn = () => useStore((state) => state.setIsLoggedIn); // Setter for isLoggedIn
+export const useSetIsLoggedIn = () => useStore((state) => state.setIsLoggedIn); 
+
+// at the bottom, alongside your other exports:
+export const useAuthChecked = () => useStore((s) => s.authChecked);
+export const useSetAuthChecked = () => useStore((s) => s.setAuthChecked);
