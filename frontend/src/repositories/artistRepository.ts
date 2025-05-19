@@ -1,7 +1,6 @@
-// src/repositories/artistRepository.ts
 import axios from 'axios';
 
-// New: the shape we’ll use in TopArtists.tsx
+// The simplified artist type for TopArtists component
 export interface Artist {
   id: string;
   name: string;
@@ -9,7 +8,7 @@ export interface Artist {
   bio: string;
 }
 
-// Fetch the top artists for a time range
+// Fetch top artists list with id, name, image, bio
 export async function fetchTopArtists(timeRange: string): Promise<Artist[]> {
   const resp = await axios.get<{ top_artists: any[] }>(
     `http://localhost:8000/artists/top_artists?time_range=${timeRange}`,
@@ -18,7 +17,7 @@ export async function fetchTopArtists(timeRange: string): Promise<Artist[]> {
   if (resp.status !== 200) {
     throw new Error(`Failed to load top artists (${resp.status})`);
   }
-  return resp.data.top_artists.map(a => ({
+  return resp.data.top_artists.map((a: any) => ({
     id: a.artist_id,
     name: a.artist_name,
     image: a.image_url,
@@ -26,7 +25,50 @@ export async function fetchTopArtists(timeRange: string): Promise<Artist[]> {
   }));
 }
 
-// (Keep your other two exports here:)
-export interface ArtistInfo { /* … */ }
-export async function fetchArtistInfo(artistId: string): Promise<ArtistInfo> { /* … */ }
-export async function fetchLastFmImages(artistName: string): Promise<string[]> { /* … */ }
+// Detailed artist info from backend
+export interface ArtistInfo {
+  artist_info: {
+    artist_name: string;
+    images: string[];
+    genres: string[];
+    popularity: number;
+    description: string;
+  };
+  top_tracks: Array<{
+    track_name: string;
+    album_name: string;
+    album_image: string;
+    external_url: string;
+  }>;
+}
+
+/**
+ * Fetch detailed artist information (profile + top tracks)
+ */
+export async function fetchArtistInfo(
+  artistId: string
+): Promise<ArtistInfo> {
+  const resp = await axios.get<ArtistInfo>(
+    `http://localhost:8000/auth/artist_info/${artistId}`,
+    { withCredentials: true }
+  );
+  if (resp.status !== 200) {
+    throw new Error(`Failed to load artist info (${resp.status})`);
+  }
+  return resp.data;
+}
+
+/**
+ * Fetch additional images for an artist from Last.fm via backend proxy
+ */
+export async function fetchLastFmImages(
+  artistName: string
+): Promise<string[]> {
+  const resp = await axios.get<{ images: string[] }>(
+    `http://localhost:8000/auth/artist_images/${artistName}`
+  );
+  if (resp.status !== 200) {
+    throw new Error(`Failed to load Last.fm images (${resp.status})`);
+  }
+  return resp.data.images;
+}

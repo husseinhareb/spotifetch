@@ -1,4 +1,4 @@
-// src/helpers/bioUtils.ts
+// Rename this file to src/helpers/bioUtils.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -15,11 +15,11 @@ export function trimBioWithLink(
 
   const preview = words.slice(0, maxWords - 3).join(' ') + '... ';
   return (
-    <span>
+    <>
       {preview}
       <Link to={`/artist/${encodeURIComponent(artistId)}`} style={{ color: '#007bff' }}>
         Click to read more
       </Link>
-    </span>
+    </>
   );
 }
