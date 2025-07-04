@@ -151,7 +151,7 @@ def songs_most_played():
 
 
 
-router.get("/currently_playing")
+@router.get("/currently_playing")
 async def currently_playing(request: Request):
     """
     Returns the currently playing track for the current user and inserts it into the DB if not already present.

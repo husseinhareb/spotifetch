@@ -75,7 +75,7 @@ const RecentlyPlayed: React.FC = () => {
 
     const interval = setInterval(() => {
       fetchCurrentSong();
-    }, 1000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
