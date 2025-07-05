@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .services.spotify_services import fetch_currently_playing
-from .routers import auth, tracks, artists
+from .routers import artist, auth, track
 
 def create_app() -> FastAPI:
     app = FastAPI()
@@ -27,8 +27,8 @@ def create_app() -> FastAPI:
 
     # Include routers
     app.include_router(auth.router, prefix="/auth", tags=["auth"])
-    app.include_router(tracks.router, prefix="/tracks", tags=["tracks"])
-    app.include_router(artists.router, prefix="/artists", tags=["artists"])
+    app.include_router(track.router, prefix="/tracks", tags=["tracks"])
+    app.include_router(artist.router, prefix="/artists", tags=["artists"])
 
     @app.on_event("startup")
     async def startup_event():
