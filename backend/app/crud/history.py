@@ -10,25 +10,31 @@ def save_history(entry: HistoryCreate) -> HistoryOut:
     Insert the play event if it's not already recorded,
     then return the cleaned-up record.
     """
-    # avoid duplicates
+    # Build a pure-Python dict, converting any HttpUrl → str
+    doc = entry.dict()
+    if doc.get("album_image") is not None:
+        doc["album_image"] = str(doc["album_image"])
+
+    # Avoid duplicates
     exists = history_collection.find_one({
         "user_id": entry.user_id,
         "track_id": entry.track_id,
-        "played_at": entry.played_at
+        "played_at": entry.played_at,
     })
     if not exists:
-        history_collection.insert_one(entry.dict())
+        history_collection.insert_one(doc)
 
-    # fetch back (excluding internal fields)
+    # Fetch back without any internal fields
     raw = history_collection.find_one(
         {
             "user_id": entry.user_id,
             "track_id": entry.track_id,
-            "played_at": entry.played_at
+            "played_at": entry.played_at,
         },
         {"_id": 0, "user_id": 0}
     )
     return HistoryOut(**raw)
+
 
 def get_user_history(
     user_id: str,
