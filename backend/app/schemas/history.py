@@ -1,3 +1,5 @@
+# app/schemas/history.py
+
 from pydantic import BaseModel, HttpUrl
 from datetime import datetime
 from typing import Optional
@@ -10,9 +12,6 @@ class HistoryCreate(BaseModel):
     album_name: str
     album_image: Optional[HttpUrl]
     played_at: datetime
-
-class HistoryInDB(HistoryCreate):
-    id: str  # str(ObjectId)
 
 class HistoryOut(BaseModel):
     track_id: str

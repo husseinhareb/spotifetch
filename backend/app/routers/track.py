@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Request, HTTPException, Query
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 import spotipy
 
 from ..services.spotify_services import sp_oauth
@@ -55,4 +56,5 @@ async def currently_playing(request: Request):
     info = sync_currently_playing(client)
     if not info:
         return JSONResponse({"message": "No track currently playing"})
-    return JSONResponse(info)
+    # jsonable_encoder will convert ObjectId → str, datetimes → isoformat, etc.
+    return JSONResponse(content=jsonable_encoder(info))
