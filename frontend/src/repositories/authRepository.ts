@@ -1,5 +1,6 @@
 // src/repositories/authRepository.ts
 import axios from 'axios';
+import { api } from './apiConfig';
 
 export interface UserInfo {
   display_name: string;
@@ -10,10 +11,7 @@ export interface UserInfo {
 }
 
 // create *one* axios instance for your backend
-const api = axios.create({
-  baseURL: 'http://localhost:8000',  // your FastAPI server
-  withCredentials: true,             // include cookies
-});
+
 
 export async function checkLoginStatus(): Promise<UserInfo> {
   // NOTE: calls /auth/user_info, *not* /auth/login

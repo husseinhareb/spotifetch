@@ -13,7 +13,7 @@ import {
 } from "./Styles/style";
 import { formatPlayedTime } from "../../helpers/timeUtils";
 import { useUsername } from "../../services/store";
-import { fetchRecentTracks, Song } from "../../repositories/trackRepository";
+import { fetchUserHistory, Song } from "../../repositories/historyRepository";
 
 const RecentlyPlayed: React.FC = () => {
   const [recentTracks, setRecentTracks] = useState<Song[]>([]);
@@ -28,7 +28,7 @@ const RecentlyPlayed: React.FC = () => {
 
     setLoading(true);
     try {
-      const fetched = await fetchRecentTracks(username, skip);
+      const fetched = await fetchUserHistory(username, skip);
       if (fetched.length > 0) {
         setRecentTracks((prev) => [...prev, ...fetched]);
         setSkip((prev) => prev + fetched.length);

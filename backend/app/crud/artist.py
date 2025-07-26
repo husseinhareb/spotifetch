@@ -1,4 +1,4 @@
-# app/crud/artist_crud.py
+# app/crud/artist.py
 
 import requests
 import re
