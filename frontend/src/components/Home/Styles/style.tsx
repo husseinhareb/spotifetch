@@ -186,3 +186,6 @@ export const GifImage = styled.img`
   margin-left: 15px;
   object-fit: cover;
 `;
+
+
+
