@@ -14,17 +14,17 @@ import {
 } from "./Styles/style";
 import {
   useSetUsername,
+  useSetUserId,           // ← import setter
   useSetEmail,
   useSetProfileImage,
   useSetCountry,
   useSetProduct,
-  useUsername,
-  useProfileImage,
   useSetIsLoggedIn,
   useIsLoggedIn,
   useAuthChecked,
   useSetAuthChecked,
-  useStore
+  useUsername,
+  useProfileImage,
 } from "../../services/store";
 import {
   checkLoginStatus as fetchLoginStatus,
@@ -34,38 +34,45 @@ import {
 } from "../../repositories/authRepository";
 
 const Navbar: React.FC = () => {
-  const isLoggedIn = useIsLoggedIn();
-  const authChecked = useAuthChecked();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const isLoggedIn     = useIsLoggedIn();
+  const authChecked    = useAuthChecked();
+  const username       = useUsername();
+  const profileImage   = useProfileImage();
 
-  const setIsLoggedIn = useSetIsLoggedIn();
+  const setUserId      = useSetUserId();       // ← setter for Spotify ID
+  const setUsername    = useSetUsername();
+  const setEmail       = useSetEmail();
+  const setProfileImage= useSetProfileImage();
+  const setCountry     = useSetCountry();
+  const setProduct     = useSetProduct();
+  const setIsLoggedIn  = useSetIsLoggedIn();
   const setAuthChecked = useSetAuthChecked();
-  const setUsername = useSetUsername();
-  const setEmail = useSetEmail();
-  const setProfileImage = useSetProfileImage();
-  const setCountry = useSetCountry();
-  const setProduct = useSetProduct();
 
-  const username = useUsername();
-  const profileImage = useProfileImage();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Bootstrap authentication state once on mount
   useEffect(() => {
     (async () => {
       const params = new URLSearchParams(window.location.search);
-      const name = params.get("username");
-      const mail = params.get("email");
+      const name  = params.get("username");
+      const mail  = params.get("email");
+      const id    = params.get("id");          // ← assume OAuth redirect includes ?id=<spotify_user_id>
 
-      if (name) {
-        // Came back from Spotify OAuth redirect
+      if (name && id) {
+        // ↳ Came back from Spotify OAuth redirect
+        setUserId(id);
         setUsername(name);
         setEmail(mail || "");
         setIsLoggedIn(true);
+
+        // clean up URL
         window.history.replaceState({}, "", "/");
       } else {
-        // No callback params → check existing session
+        // ↳ No callback params → check existing session on server
         try {
-          const userInfo: UserInfo = await fetchLoginStatus();
+          const userInfo: UserInfo & { id: string } = await fetchLoginStatus();
+          // populate store
+          setUserId(userInfo.id);
           setUsername(userInfo.display_name);
           setEmail(userInfo.email);
           setProfileImage(userInfo.images?.[1]?.url || null);
@@ -73,20 +80,30 @@ const Navbar: React.FC = () => {
           setProduct(userInfo.product);
           setIsLoggedIn(true);
         } catch {
-          setIsLoggedIn(false);
-          // reset user details on failure
+          // not logged in
+          setUserId("N/A");
           setUsername("N/A");
           setEmail("N/A");
           setProfileImage(null);
           setCountry("N/A");
           setProduct("N/A");
+          setIsLoggedIn(false);
         }
       }
 
-      // Mark that we've finished the auth check
+      // indicate auth check is done
       setAuthChecked(true);
     })();
-  }, [setUsername, setEmail, setProfileImage, setCountry, setProduct, setIsLoggedIn, setAuthChecked]);
+  }, [
+    setUserId,
+    setUsername,
+    setEmail,
+    setProfileImage,
+    setCountry,
+    setProduct,
+    setIsLoggedIn,
+    setAuthChecked,
+  ]);
 
   const handleLogin = async () => {
     try {
@@ -100,21 +117,21 @@ const Navbar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await performLogout();
-      setIsLoggedIn(false);
-      // clear stored user details
+      // clear store
+      setUserId("N/A");
       setUsername("N/A");
       setEmail("N/A");
       setProfileImage(null);
       setCountry("N/A");
       setProduct("N/A");
+      setIsLoggedIn(false);
     } catch (err) {
       console.error("Logout failed", err);
     }
   };
 
-  const toggleMenu = () => setMenuOpen(prev => !prev);
+  const toggleMenu = () => setMenuOpen((o) => !o);
 
-  // While auth check is pending, don't render the navbar to avoid flicker
   if (!authChecked) return null;
 
   return (
@@ -131,32 +148,24 @@ const Navbar: React.FC = () => {
 
       <NavList className={menuOpen ? "active" : ""}>
         <NavItemRight>
-          <NavButton onClick={() => (window.location.href = "/")}>
-            Home
-          </NavButton>
+          <NavButton onClick={() => (window.location.href = "/")}>Home</NavButton>
         </NavItemRight>
 
         {isLoggedIn && (
           <NavItem>
-            <NavButton onClick={() => (window.location.href = "/library")}>
-              Library
-            </NavButton>
+            <NavButton onClick={() => (window.location.href = "/library")}>Library</NavButton>
           </NavItem>
         )}
 
         <NavItem>
-          <NavButton onClick={() => (window.location.href = "/about")}>
-            About
-          </NavButton>
+          <NavButton onClick={() => (window.location.href = "/about")}>About</NavButton>
         </NavItem>
 
         {isLoggedIn ? (
           <>
             <NavItem>
               <NavButton onClick={() => (window.location.href = "/profile")}>
-                {profileImage && (
-                  <ProfileThumbnail src={profileImage} alt="Profile" />
-                )}
+                {profileImage && <ProfileThumbnail src={profileImage} alt="Profile" />}
                 {username}
               </NavButton>
             </NavItem>

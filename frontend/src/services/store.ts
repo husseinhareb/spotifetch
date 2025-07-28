@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 interface Store {
   username: string;
+  userId: string;                     
   email: string;
   profileImage: string | null;
   country: string;
@@ -11,8 +12,9 @@ interface Store {
   albumImage: string | null;
   isPlaying: boolean;
   isLoggedIn: boolean;
-  authChecked: boolean;                     // ← new
+  authChecked: boolean;                     
   topArtists: { name: string; genres: string[]; imageUrl: string | null }[];
+  setUserId: (userId: string) => void,
   setUsername: (username: string) => void;
   setEmail: (email: string) => void;
   setProfileImage: (profileImage: string | null) => void;
@@ -22,14 +24,15 @@ interface Store {
   setCurrentArtist: (artist: string) => void;
   setAlbumImage: (image: string | null) => void;
   setIsPlaying: (isPlaying: boolean) => void;
-  setIsLoggedIn: (status: boolean) => void; // <-- Add a setter
-  setAuthChecked: (checked: boolean) => void; // ← new
+  setIsLoggedIn: (status: boolean) => void; 
+  setAuthChecked: (checked: boolean) => void; 
   setTopArtists: (
     artists: { name: string; genres: string[]; imageUrl: string | null }[]
   ) => void;
 }
 
 export const useStore = create<Store>((set) => ({
+  userId: "N/A",
   username: "N/A",
   email: "N/A",
   profileImage: null,
@@ -42,6 +45,7 @@ export const useStore = create<Store>((set) => ({
   isLoggedIn: false,
   authChecked: false,
   topArtists: [],
+  setUserId: (userId) => set({userId}),
   setUsername: (username) => set({ username }),
   setEmail: (email) => set({ email }),
   setProfileImage: (profileImage) => set({ profileImage }),
@@ -52,11 +56,12 @@ export const useStore = create<Store>((set) => ({
   setAlbumImage: (image) => set({ albumImage: image }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setTopArtists: (artists) => set({ topArtists: artists }),
-  setIsLoggedIn: (status) => set({ isLoggedIn: status }), // Setter for isLoggedIn
-  setAuthChecked: (checked) => set({ authChecked: checked }), // ← new
+  setIsLoggedIn: (status) => set({ isLoggedIn: status }), 
+  setAuthChecked: (checked) => set({ authChecked: checked }),
 }));
 
 // Selectors for accessing state
+export const useUserId = () => useStore((s) => s.userId);
 export const useUsername = () => useStore((state) => state.username);
 export const useEmail = () => useStore((state) => state.email);
 export const useProfileImage = () => useStore((state) => state.profileImage);
@@ -67,8 +72,9 @@ export const useCurrentArtist = () => useStore((state) => state.currentArtist);
 export const useAlbumImage = () => useStore((state) => state.albumImage);
 export const useIsPlaying = () => useStore((state) => state.isPlaying);
 export const useTopArtists = () => useStore((state) => state.topArtists);
-export const useIsLoggedIn = () => useStore((state) => state.isLoggedIn); // Selector for isLoggedIn
+export const useIsLoggedIn = () => useStore((state) => state.isLoggedIn); 
 // Setters for updating state
+export const useSetUserId = () => useStore((s) => s.setUserId);
 export const useSetUsername = () => useStore((state) => state.setUsername);
 export const useSetEmail = () => useStore((state) => state.setEmail);
 export const useSetProfileImage = () => useStore((state) => state.setProfileImage);

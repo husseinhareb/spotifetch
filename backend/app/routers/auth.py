@@ -3,24 +3,18 @@
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 import spotipy
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from ..services.spotify_services import sp_oauth
-from ..config import settings
-
 from ..db.database import users_collection
 
 router = APIRouter()
 
 def get_token(request: Request):
-    """
-    Helper function to get token from session and refresh if needed.
-    """
-    token_info = request.session.get("token_info", None)
+    token_info = request.session.get("token_info")
     if not token_info:
         return None
 
-    # Refresh if expired
     if sp_oauth.is_token_expired(token_info):
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
         request.session["token_info"] = token_info
@@ -29,18 +23,11 @@ def get_token(request: Request):
 
 @router.get("/login")
 async def login():
-    """
-    Generates the Spotify authorization URL and returns it.
-    """
     auth_url = sp_oauth.get_authorize_url()
     return JSONResponse({"auth_url": auth_url})
 
 @router.get("/callback")
 async def callback(request: Request):
-    """
-    Callback endpoint that Spotify redirects to after user authorizes.
-    Exchanges the 'code' for an access token.
-    """
     code = request.query_params.get("code")
     if not code:
         raise HTTPException(status_code=400, detail="Authorization code not found")
@@ -49,37 +36,29 @@ async def callback(request: Request):
     if not token_info:
         raise HTTPException(status_code=400, detail="Failed to obtain access token")
 
-    # Save token info in session
     request.session["token_info"] = token_info
 
     sp = spotipy.Spotify(auth=token_info["access_token"])
     user_info = sp.current_user()
+    user_id = user_info["id"]
 
-    # Extract user details
     user_data = {
-        "user_id": user_info["id"],
-        "username": user_info["display_name"],
-        "email": user_info.get("email", None),
-        "profile_image": user_info["images"][0]["url"] if user_info["images"] else None,
-        "country": user_info.get("country", None),
-        "product": user_info.get("product", None),
-        "created_at": datetime.now().isoformat(),
+        "user_id": user_id,
+        "username": user_info.get("display_name"),
+        "email": user_info.get("email"),
+        "profile_image": user_info["images"][0]["url"] if user_info.get("images") else None,
+        "country": user_info.get("country"),
+        "product": user_info.get("product"),
+        "created_at": datetime.utcnow().isoformat(),
     }
 
-    # Check if the user already exists
-    existing_user = users_collection.find_one({"user_id": user_data["user_id"]})
-    if not existing_user:
-        # Insert the new user into the collection
+    if not users_collection.find_one({"user_id": user_id}):
         users_collection.insert_one(user_data)
-        print(f"New user created: {user_data['username']}")
 
     return RedirectResponse(url="/auth/welcome")
 
 @router.get("/welcome")
 async def welcome(request: Request):
-    """
-    After successful Spotify auth, redirect the user to your frontend.
-    """
     token_info = get_token(request)
     if not token_info:
         return RedirectResponse(url="/")
@@ -87,27 +66,35 @@ async def welcome(request: Request):
     sp = spotipy.Spotify(auth=token_info["access_token"])
     user_info = sp.current_user()
 
-    redirect_url = f"http://localhost:3000/?username={user_info['display_name']}&email={user_info.get('email', 'Not provided')}"
+    # now include `id` in the query string
+    redirect_url = (
+        "http://localhost:3000/"
+        f"?id={user_info['id']}"
+        f"&username={user_info.get('display_name','')}"
+        f"&email={user_info.get('email','')}"
+    )
     return RedirectResponse(url=redirect_url)
 
 @router.get("/logout")
 async def logout(request: Request):
-    """
-    Logs user out by removing token from session.
-    """
     request.session.pop("token_info", None)
     return RedirectResponse(url="/")
 
 @router.get("/user_info")
 async def user_info(request: Request):
-    """
-    Returns the current authenticated user's Spotify profile info.
-    """
     token_info = get_token(request)
     if not token_info:
-        raise HTTPException(status_code=401, detail="Token not found or expired")
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
     sp = spotipy.Spotify(auth=token_info["access_token"])
     profile = sp.current_user()
 
-    return JSONResponse(profile)
+    # return just the fields your front-end `UserInfo` expects
+    return JSONResponse({
+        "id": profile["id"],
+        "display_name": profile.get("display_name"),
+        "email": profile.get("email"),
+        "images": profile.get("images", []),
+        "country": profile.get("country"),
+        "product": profile.get("product"),
+    })

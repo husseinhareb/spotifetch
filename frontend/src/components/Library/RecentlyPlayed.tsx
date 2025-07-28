@@ -12,7 +12,7 @@ import {
   PlayedAt,
 } from "./Styles/style";
 import { formatPlayedTime } from "../../helpers/timeUtils";
-import { useUsername } from "../../services/store";
+import { useUserId } from "../../services/store";
 import { fetchUserHistory, Song } from "../../repositories/historyRepository";
 
 const RecentlyPlayed: React.FC = () => {
@@ -21,7 +21,7 @@ const RecentlyPlayed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const username = useUsername();
+  const username = useUserId();
 
   const loadMore = useCallback(async () => {
     if (!hasMore || username === "N/A") return;

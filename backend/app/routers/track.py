@@ -1,6 +1,6 @@
 # app/routers/tracks.py
 
-from fastapi import APIRouter, Request, HTTPException, Query
+from fastapi import APIRouter, Request, HTTPException, Query, Response, status
 from fastapi.responses import JSONResponse
 import spotipy
 
@@ -27,7 +27,7 @@ def require_spotify_client(request: Request) -> spotipy.Spotify:
 async def recently_played(
     request: Request,
     username: str,
-    limit: int = Query(30, ge=1)
+    limit: int = Query(30, ge=1),
 ):
     client = require_spotify_client(request)
     tracks = fetch_recently_played_spotify(client, limit=limit)
@@ -39,7 +39,7 @@ async def recently_played_db(
     request: Request,
     username: str,
     skip: int = Query(0, ge=0),
-    limit: int = Query(30, ge=1)
+    limit: int = Query(30, ge=1),
 ):
     client = require_spotify_client(request)
     # on first page, sync Spotify → Mongo
@@ -61,8 +61,8 @@ async def currently_playing(request: Request):
     info = sync_currently_playing(client)
 
     if not info:
-        # 204 No Content is semantically appropriate when nothing is playing
-        return JSONResponse(status_code=204, content=None)
+        # Truly empty 204: no body, no Content-Length header
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    # info is already a plain dict of str/int/bool
+    # For playing‐now data, let JSONResponse compute its own headers
     return JSONResponse(content=info)
