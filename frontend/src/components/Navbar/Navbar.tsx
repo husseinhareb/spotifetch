@@ -1,5 +1,6 @@
 // src/components/Navbar/Navbar.tsx
 import React, { useState, useEffect } from "react";
+import { NavLink as RouterLink, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -14,7 +15,7 @@ import {
 } from "./Styles/style";
 import {
   useSetUsername,
-  useSetUserId,           // ← import setter
+  useSetUserId,
   useSetEmail,
   useSetProfileImage,
   useSetCountry,
@@ -39,7 +40,7 @@ const Navbar: React.FC = () => {
   const username       = useUsername();
   const profileImage   = useProfileImage();
 
-  const setUserId      = useSetUserId();       // ← setter for Spotify ID
+  const setUserId      = useSetUserId();
   const setUsername    = useSetUsername();
   const setEmail       = useSetEmail();
   const setProfileImage= useSetProfileImage();
@@ -49,29 +50,26 @@ const Navbar: React.FC = () => {
   const setAuthChecked = useSetAuthChecked();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // Bootstrap authentication state once on mount
   useEffect(() => {
     (async () => {
       const params = new URLSearchParams(window.location.search);
-      const name  = params.get("username");
-      const mail  = params.get("email");
-      const id    = params.get("id");          // ← assume OAuth redirect includes ?id=<spotify_user_id>
+      const name = params.get("username");
+      const mail = params.get("email");
+      const id   = params.get("id");
 
       if (name && id) {
-        // ↳ Came back from Spotify OAuth redirect
+        // OAuth callback
         setUserId(id);
         setUsername(name);
         setEmail(mail || "");
         setIsLoggedIn(true);
-
-        // clean up URL
         window.history.replaceState({}, "", "/");
       } else {
-        // ↳ No callback params → check existing session on server
+        // check existing session
         try {
           const userInfo: UserInfo & { id: string } = await fetchLoginStatus();
-          // populate store
           setUserId(userInfo.id);
           setUsername(userInfo.display_name);
           setEmail(userInfo.email);
@@ -91,7 +89,6 @@ const Navbar: React.FC = () => {
         }
       }
 
-      // indicate auth check is done
       setAuthChecked(true);
     })();
   }, [
@@ -117,7 +114,6 @@ const Navbar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await performLogout();
-      // clear store
       setUserId("N/A");
       setUsername("N/A");
       setEmail("N/A");
@@ -125,49 +121,57 @@ const Navbar: React.FC = () => {
       setCountry("N/A");
       setProduct("N/A");
       setIsLoggedIn(false);
+      // after logout, send back to home
+      navigate("/", { replace: true });
     } catch (err) {
       console.error("Logout failed", err);
     }
   };
-
-  const toggleMenu = () => setMenuOpen((o) => !o);
 
   if (!authChecked) return null;
 
   return (
     <Nav>
       <Title>
-        <NavButton onClick={() => (window.location.href = "/")}>
+        <RouterLink to="/" style={{ textDecoration: "none", color: "inherit" }}>
           Spotifetch
-        </NavButton>
+        </RouterLink>
       </Title>
 
-      <HamburgerIcon onClick={toggleMenu}>
+      <HamburgerIcon onClick={() => setMenuOpen(o => !o)}>
         <FontAwesomeIcon icon={menuOpen ? faTimes : faBars} />
       </HamburgerIcon>
 
       <NavList className={menuOpen ? "active" : ""}>
         <NavItemRight>
-          <NavButton onClick={() => (window.location.href = "/")}>Home</NavButton>
+          <RouterLink to="/">
+            <NavButton>Home</NavButton>
+          </RouterLink>
         </NavItemRight>
 
         {isLoggedIn && (
           <NavItem>
-            <NavButton onClick={() => (window.location.href = "/library")}>Library</NavButton>
+            <RouterLink to="/library">
+              <NavButton>Library</NavButton>
+            </RouterLink>
           </NavItem>
         )}
 
         <NavItem>
-          <NavButton onClick={() => (window.location.href = "/about")}>About</NavButton>
+          <RouterLink to="/about">
+            <NavButton>About</NavButton>
+          </RouterLink>
         </NavItem>
 
         {isLoggedIn ? (
           <>
             <NavItem>
-              <NavButton onClick={() => (window.location.href = "/profile")}>
-                {profileImage && <ProfileThumbnail src={profileImage} alt="Profile" />}
-                {username}
-              </NavButton>
+              <RouterLink to="/profile">
+                <NavButton>
+                  {profileImage && <ProfileThumbnail src={profileImage} alt="Profile" />}
+                  {username}
+                </NavButton>
+              </RouterLink>
             </NavItem>
             <NavItem>
               <NavButton onClick={handleLogout}>
