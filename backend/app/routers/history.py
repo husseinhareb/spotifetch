@@ -8,8 +8,8 @@ import spotipy
 from fastapi.encoders import jsonable_encoder
 
 from ..services.spotify_services import sp_oauth
-from ..schemas.history import HistoryCreate, HistoryOut
-from ..crud.history import save_history, get_user_history
+from ..schemas.history import HistoryCreate, HistoryOut, TopTrackOut, TopArtistOut, TopAlbumOut
+from ..crud.history import save_history, get_user_history,get_top_tracks,get_top_artists, get_top_albums
 
 router = APIRouter(
     prefix="/user/{user_id}/history",
@@ -62,3 +62,53 @@ async def read_history(
 ):
     require_spotify_client(request)
     return get_user_history(user_id=user_id, skip=skip, limit=limit, since=since)
+
+@router.get(
+    "/top",
+    response_model=List[TopTrackOut],
+    summary="Get a user's most-played tracks"
+)
+async def read_top_tracks(
+    request: Request,
+    user_id: str,
+    limit: int = Query(10, ge=1, le=100),
+    since: Optional[datetime] = Query(None)
+):
+    # ensure they’re authenticated
+    token = request.session.get("token_info")
+    if not token or sp_oauth.is_token_expired(token):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    return get_top_tracks(user_id=user_id, limit=limit, since=since)
+
+@router.get(
+    "/top-artists",
+    response_model=List[TopArtistOut],
+    summary="Get a user's most-played artists"
+)
+async def read_top_artists(
+    request: Request,
+    user_id: str,
+    limit: int = Query(10, ge=1, le=100),
+    since: Optional[datetime] = Query(None)
+):
+    # authenticate
+    token = request.session.get("token_info")
+    if not token or sp_oauth.is_token_expired(token):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    return get_top_artists(user_id=user_id, limit=limit, since=since)
+
+@router.get("/top-albums", response_model=List[TopAlbumOut])
+async def read_top_albums(
+    request: Request,
+    user_id: str,
+    limit: int = Query(10, ge=1, le=100),
+    since: Optional[datetime] = Query(None),
+):
+    """
+    Get a user's most-played albums.
+    """
+    require_spotify_client(request)
+    return get_top_albums(user_id, limit, since)
+

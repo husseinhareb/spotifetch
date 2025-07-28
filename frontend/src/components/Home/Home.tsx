@@ -8,7 +8,7 @@ import {
 
 import TopArtists from "./TopArtists";
 import CurrentlyPlaying from "./CurrentlyPlaying";
-import RecentlyPlayed from "./RecentlyPlayed";
+import RecentlyPlayed from "../Library/RecentlyPlayed";
 
 const Home: React.FC = () => {
   const isLoggedIn = useStore((state) => state.isLoggedIn);

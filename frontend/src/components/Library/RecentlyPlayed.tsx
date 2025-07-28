@@ -13,10 +13,10 @@ import {
 } from "./Styles/style";
 import { formatPlayedTime } from "../../helpers/timeUtils";
 import { useUserId } from "../../services/store";
-import { fetchUserHistory, Song } from "../../repositories/historyRepository";
+import { fetchUserHistory, HistorySong } from "../../repositories/historyRepository";
 
 const RecentlyPlayed: React.FC = () => {
-  const [recentTracks, setRecentTracks] = useState<Song[]>([]);
+  const [recentTracks, setRecentTracks] = useState<HistorySong[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState<number>(0);

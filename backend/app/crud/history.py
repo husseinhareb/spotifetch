@@ -3,7 +3,7 @@
 from typing import List, Optional
 from datetime import datetime
 from ..db.database import history_collection
-from ..schemas.history import HistoryCreate, HistoryOut
+from ..schemas.history import HistoryCreate, HistoryOut, TopTrackOut, TopArtistOut, TopAlbumOut
 
 def save_history(entry: HistoryCreate) -> HistoryOut:
     """
@@ -57,3 +57,120 @@ def get_user_history(
         .limit(limit)
     )
     return [HistoryOut(**doc) for doc in cursor]
+
+def get_top_tracks(
+    user_id: str,
+    limit: int = 10,
+    since: Optional[datetime] = None
+) -> List[TopTrackOut]:
+    """
+    Return the user's most-played tracks, sorted by play_count desc.
+    """
+    match_stage = { "user_id": user_id }
+    if since:
+        match_stage["played_at"] = { "$gte": since }
+
+    pipeline = [
+        { "$match": match_stage },
+        { 
+          "$group": {
+            "_id": "$track_id",
+            "play_count": { "$sum": 1 },
+            "track_name": { "$first": "$track_name" },
+            "artist_name": { "$first": "$artist_name" },
+            "album_name": { "$first": "$album_name" },
+            "album_image": { "$first": "$album_image" }
+          }
+        },
+        { "$sort": { "play_count": -1 } },
+        { "$limit": limit },
+        { 
+          "$project": {
+            "_id": 0,
+            "track_id": "$_id",
+            "track_name": 1,
+            "artist_name": 1,
+            "album_name": 1,
+            "album_image": 1,
+            "play_count": 1
+          }
+        }
+    ]
+
+    results = history_collection.aggregate(pipeline)
+    return [TopTrackOut(**doc) for doc in results]
+
+def get_top_artists(
+    user_id: str,
+    limit: int = 10,
+    since: Optional[datetime] = None
+) -> List[TopArtistOut]:
+    """
+    Return the user's most‐played artists, sorted by play_count desc.
+    """
+    match_stage = {"user_id": user_id}
+    if since:
+        match_stage["played_at"] = {"$gte": since}
+
+    pipeline = [
+        {"$match": match_stage},
+        {
+            "$group": {
+                "_id": "$artist_name",
+                "play_count": {"$sum": 1},
+                "artist_image": {"$first": "$album_image"}
+            }
+        },
+        {"$sort": {"play_count": -1}},
+        {"$limit": limit},
+        {
+            "$project": {
+                "_id": 0,
+                "artist_name": "$_id",
+                "play_count": 1,
+                "artist_image": 1
+            }
+        }
+    ]
+
+    results = history_collection.aggregate(pipeline)
+    return [TopArtistOut(**doc) for doc in results]
+
+
+def get_top_albums(
+    user_id: str,
+    limit: int = 10,
+    since: Optional[datetime] = None
+) -> List[TopAlbumOut]:
+    """
+    Return the user's most‐played albums, sorted by play_count desc.
+    """
+    match_stage = {"user_id": user_id}
+    if since:
+        match_stage["played_at"] = {"$gte": since}
+
+    pipeline = [
+        {"$match": match_stage},
+        {
+            "$group": {
+                "_id": "$album_name",
+                "play_count": {"$sum": 1},
+                "artist_name": {"$first": "$artist_name"},
+                "album_image": {"$first": "$album_image"},
+            }
+        },
+        {"$sort": {"play_count": -1}},
+        {"$limit": limit},
+        {
+            "$project": {
+                "_id":       0,
+                "album_name":"$_id",
+                "artist_name": 1,
+                "album_image": 1,
+                "play_count":  1,
+            }
+        }
+    ]
+
+    results = history_collection.aggregate(pipeline)
+    return [TopAlbumOut(**doc) for doc in results]
