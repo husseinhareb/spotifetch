@@ -1,4 +1,3 @@
-// src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
@@ -9,6 +8,7 @@ import About from './components/About/About';
 import Profile from './components/Profile/Profile';
 import ArtistPage from './components/Artists/ArtistPage';
 import Library from './components/Library/Library';
+import Reports from './components/Reports/Reports';
 
 import { useIsLoggedIn, useAuthChecked } from './services/store';
 
@@ -37,6 +37,7 @@ const App: React.FC = () => (
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/library/*" element={<Library />} />
+          <Route path="/reports" element={<Reports />} />
         </Route>
 
         {/* catch-all: redirect unknown URLs back to home */}

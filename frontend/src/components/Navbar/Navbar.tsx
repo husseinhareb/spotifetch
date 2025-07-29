@@ -1,4 +1,3 @@
-// src/components/Navbar/Navbar.tsx
 import React, { useState, useEffect } from "react";
 import { NavLink as RouterLink, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -153,6 +152,15 @@ const Navbar: React.FC = () => {
           <NavItem>
             <RouterLink to="/library">
               <NavButton>Library</NavButton>
+            </RouterLink>
+          </NavItem>
+        )}
+
+        {/* Reports button */}
+        {isLoggedIn && (
+          <NavItem>
+            <RouterLink to="/reports">
+              <NavButton>Reports</NavButton>
             </RouterLink>
           </NavItem>
         )}
