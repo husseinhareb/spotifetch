@@ -1,31 +1,55 @@
-export interface Report {
-  id: string;
-  title: string;
-  date: string; // ISO 8601 date string
-  description: string;
+// src/repositories/reportsRepository.ts
+
+import {
+  fetchTopArtists,
+  fetchTopAlbums,
+  fetchTopTracks,
+  HistorySong,
+  TopArtist,
+  TopAlbum,
+  TopTrack,
+  fetchUserHistory,
+} from "./historyRepository";
+
+// Re-export types
+export type { HistorySong, TopArtist, TopAlbum, TopTrack };
+
+/**
+ * Get the user's top artists (wraps historyRepository.fetchTopArtists)
+ */
+export async function getTopArtists(
+  userId: string,
+  limit: number = 5
+): Promise<TopArtist[]> {
+  return fetchTopArtists(userId, limit);
 }
 
 /**
- * Fetches the list of reports from the backend API.
- * @returns Promise resolving to an array of Report objects.
- * @throws Error if the network request fails or the server returns a non-2xx status.
+ * Get the user's top albums (wraps historyRepository.fetchTopAlbums)
  */
-export async function fetchReports(): Promise<Report[]> {
-  const response = await fetch('/api/reports', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include', // include cookies if needed for auth
-  });
+export async function getTopAlbums(
+  userId: string,
+  limit: number = 5
+): Promise<TopAlbum[]> {
+  return fetchTopAlbums(userId, limit);
+}
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to fetch reports: ${response.status} ${response.statusText} - ${text}`);
-  }
+/**
+ * Get the user's top tracks (wraps historyRepository.fetchTopTracks)
+ */
+export async function getTopTracks(
+  userId: string,
+  limit: number = 5
+): Promise<TopTrack[]> {
+  return fetchTopTracks(userId, limit);
+}
 
-  const data = await response.json();
-
-  // Optionally validate/transform data here
-  return data as Report[];
+/**
+ * Fetch the raw listening history for reports
+ */
+export async function fetchReports(
+  userId: string,
+  skip: number = 0
+): Promise<HistorySong[]> {
+  return fetchUserHistory(userId, skip);
 }
