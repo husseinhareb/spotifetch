@@ -8,6 +8,7 @@ import {
   faArrowUp,
   faShareAlt,
   faChevronLeft,
+  faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { Navigate } from 'react-router-dom';
 import { useUserId, useIsLoggedIn } from '../../services/store';
@@ -169,52 +170,64 @@ const WeekNav = styled.div`
   align-items: center;
   justify-content: space-between;
   background: #ffc0c0;
-  padding: 12px 20px;
-  margin-bottom: 16px;
+  padding: 24px 40px;     /* ↑ more vertical & horizontal padding */
+  margin-bottom: 24px;    /* ↑ extra breathing room */
+  height: 80px;           /* ↑ enforce a taller nav bar */
 `;
 const NavButton = styled.button`
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 1.5rem;      /* ↑ bigger arrows */
   cursor: pointer;
 `;
+
 const WeekTitle = styled.div`
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.25rem;     /* ↑ larger date text */
 `;
-const ScrobbleHeader = styled.div`
+
+const ListenHeader = styled.div`
   display: flex;
   align-items: baseline;
-  padding: 0 20px;
-  margin-bottom: 16px;
+  padding: 0 40px;        /* ↑ wider stripes */
+  margin-bottom: 24px;    /* ↑ more space below */
 `;
-const ScrobbleLabel = styled.p`
+
+const ListenLabel = styled.p`
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.2rem;      /* ↑ bigger “Listens” label */
   flex: 1;
 `;
-const ScrobbleValue = styled.h1`
+
+const ListenValue = styled.h1`
   margin: 0 16px;
-  font-size: 3rem;
+  font-size: 4rem;        /* ↑ jump up from 3rem to 4rem */
 `;
-const ScrobbleChange = styled.span`
-  font-size: 0.9rem;
+
+const ListenChange = styled.span`
+  font-size: 1rem;        /* ↑ scale percent up */
   display: inline-flex;
   align-items: center;
   svg {
-    margin-right: 4px;
+    margin-right: 6px;
+    font-size: 1.2rem;    /* ↑ slightly larger arrow */
   }
 `;
+
 const ChartRow = styled.div`
   display: flex;
-  padding: 0 20px 40px;
+  padding: 0 40px 60px;
   align-items: flex-end;
-  gap: 12px;
-`;
+  gap: 16px;
+  height: 280px;
+  width: 100%;
+  /* make bars take equal space */
+  justify-content: space-between;`
+
 const DayBar = styled.div<{ height: number }>`
-  width: 24px;
+  flex: 1;
   height: ${(props) => props.height}px;
-  background: #111;
+  background: #fd3030;
   border-radius: 4px 4px 0 0;
   position: relative;
   &:after {
@@ -306,7 +319,7 @@ const Subtitle = styled.p`
   font-size: 0.9rem;
   color: #888;
 `;
-const Scrobbles = styled.p`
+const Listens = styled.p`
   margin: 0 0 12px;
   font-size: 0.9rem;
   color: #888;
@@ -532,26 +545,33 @@ const Reports: React.FC = () => {
           {format(weekRange.start, 'd MMM yyyy').toUpperCase()} –{' '}
           {format(weekRange.end, 'd MMM yyyy').toUpperCase()}
         </WeekTitle>
-        <NavButton>
-          <FontAwesomeIcon icon={faShareAlt} />
+        <NavButton
+          onClick={() =>
+            setWeekRange((w) => ({
+              start: addDays(w.start, 7),
+              end: addDays(w.end, 7),
+            }))
+          }
+        >
+          <FontAwesomeIcon icon={faChevronRight} />
         </NavButton>
       </WeekNav>
 
-      <ScrobbleHeader>
-        <ScrobbleLabel>Scrobbles</ScrobbleLabel>
-        <ScrobbleValue>{weekData.total}</ScrobbleValue>
-        <ScrobbleChange>
+      <ListenHeader>
+        <ListenLabel>Listens</ListenLabel>
+        <ListenValue>{weekData.total}</ListenValue>
+        <ListenChange>
           <FontAwesomeIcon icon={faArrowUp} />
           {weekData.prevTotal > 0
             ? Math.round(
-                ((weekData.total - weekData.prevTotal) /
-                  weekData.prevTotal) *
-                  100
-              )
+              ((weekData.total - weekData.prevTotal) /
+                weekData.prevTotal) *
+              100
+            )
             : 0}
           % vs. last week
-        </ScrobbleChange>
-      </ScrobbleHeader>
+        </ListenChange>
+      </ListenHeader>
 
       <ChartRow>
         {weekData.daily.map((count, i) => (
@@ -588,7 +608,7 @@ const Reports: React.FC = () => {
               <Title>
                 #{i + 1} {a.artist_name}
               </Title>
-              <Scrobbles>{a.play_count} scrobbles</Scrobbles>
+              <Listens>{a.play_count} Listens</Listens>
             </CardBody>
           </Card>
         ))}
@@ -602,7 +622,7 @@ const Reports: React.FC = () => {
                 #{i + 1} {al.album_name}
               </Title>
               <Subtitle>{al.artist_name}</Subtitle>
-              <Scrobbles>{al.play_count} scrobbles</Scrobbles>
+              <Listens>{al.play_count} Listens</Listens>
             </CardBody>
           </Card>
         ))}
@@ -616,7 +636,7 @@ const Reports: React.FC = () => {
                 #{i + 1} {t.track_name}
               </Title>
               <Subtitle>{t.artist_name}</Subtitle>
-              <Scrobbles>{t.play_count} scrobbles</Scrobbles>
+              <Listens>{t.play_count} Listens</Listens>
             </CardBody>
           </Card>
         ))}
@@ -629,19 +649,19 @@ const Reports: React.FC = () => {
             label: 'New Artists',
             img: topArtists[0]?.artist_image,
             text: `#1 ${topArtists[0]?.artist_name}`,
-            scrobbles: `${topArtists[0]?.play_count} scrobbles`,
+            Listens: `${topArtists[0]?.play_count} Listens`,
           },
           {
             label: 'New Albums',
             img: topAlbums[0]?.album_image,
             text: `#1 ${topAlbums[0]?.album_name}`,
-            scrobbles: `${topAlbums[0]?.play_count} scrobbles`,
+            Listens: `${topAlbums[0]?.play_count} Listens`,
           },
           {
             label: 'New Tracks',
             img: topTracks[0]?.album_image,
             text: `#1 ${topTracks[0]?.track_name}`,
-            scrobbles: `${topTracks[0]?.play_count} scrobbles`,
+            Listens: `${topTracks[0]?.play_count} Listens`,
           },
         ].map((ns) => (
           <SmallCard key={ns.label}>
@@ -659,7 +679,7 @@ const Reports: React.FC = () => {
                       color: '#888',
                     }}
                   >
-                    {ns.scrobbles}
+                    {ns.Listens}
                   </p>
                 </div>
               </SmallItem>
