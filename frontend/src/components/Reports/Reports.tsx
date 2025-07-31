@@ -1,7 +1,14 @@
+// src/components/Reports/Reports.tsx
+
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar, faArrowUp, faShareAlt, faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import {
+  faChartBar,
+  faArrowUp,
+  faShareAlt,
+  faChevronLeft,
+} from '@fortawesome/free-solid-svg-icons';
 import { Navigate } from 'react-router-dom';
 import { useUserId, useIsLoggedIn } from '../../services/store';
 import {
@@ -9,20 +16,154 @@ import {
   getTopArtists,
   getTopAlbums,
   getTopTracks,
+  getMusicRatio,
+  getListeningFingerprint,
   TopArtist,
   TopAlbum,
   TopTrack,
+  Fingerprint,
 } from '../../repositories/reportsRepository';
 import { format, startOfWeek, endOfWeek, subDays, addDays } from 'date-fns';
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from 'recharts';
 
-// Container
+// ────────────────────────────────────────────────────────────
+// ChartsSection
+// ────────────────────────────────────────────────────────────
+const Section = styled.div`
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
+`;
+const ChartBox = styled.div`
+  flex: 1;
+  height: 300px;
+  background: #111;
+  border-radius: 8px;
+  padding: 20px;
+  color: #fff;
+`;
+const ChartTitle = styled.h4`
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+const DONUT_COLORS = {
+  tracks: '#60A5FA',
+  albums: '#4ADE80',
+  artists: '#C084FC',
+};
+
+interface ChartsSectionProps {
+  tracks: number;
+  albums: number;
+  artists: number;
+  fingerprint: Fingerprint;
+  globalAverage?: Fingerprint;
+}
+
+const ChartsSection: React.FC<ChartsSectionProps> = ({
+  tracks,
+  albums,
+  artists,
+  fingerprint,
+  globalAverage,
+}) => {
+  const pieData = [
+    { name: 'Tracks', value: tracks, color: DONUT_COLORS.tracks },
+    { name: 'Albums', value: albums, color: DONUT_COLORS.albums },
+    { name: 'Artists', value: artists, color: DONUT_COLORS.artists },
+  ];
+
+  const metrics: (keyof Fingerprint)[] = [
+    'consistency',
+    'discoveryRate',
+    'variance',
+    'concentration',
+    'replayRate',
+  ];
+
+  const radarData = metrics.map((m) => ({
+    metric: m.replace(/([A-Z])/g, ' $1').trim(),
+    you: fingerprint[m],
+    avg: globalAverage?.[m] ?? 0,
+  }));
+
+  return (
+    <Section>
+      <ChartBox>
+        <ChartTitle>Music Ratio</ChartTitle>
+        <ResponsiveContainer width="100%" height="80%">
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius="60%"
+              outerRadius="80%"
+              paddingAngle={4}
+            >
+              {pieData.map((entry) => (
+                <Cell key={entry.name} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </ChartBox>
+
+      <ChartBox>
+        <ChartTitle>Listening Fingerprint</ChartTitle>
+        <ResponsiveContainer width="100%" height="80%">
+          <RadarChart data={radarData}>
+            <PolarGrid stroke="#333" />
+            <PolarAngleAxis dataKey="metric" stroke="#666" />
+            <PolarRadiusAxis
+              angle={30}
+              domain={[0, 100]}
+              tick={false}
+              axisLine={false}
+            />
+            <Radar
+              name="You"
+              dataKey="you"
+              stroke={DONUT_COLORS.tracks}
+              fill={DONUT_COLORS.tracks}
+              fillOpacity={0.4}
+            />
+            {globalAverage && (
+              <Radar
+                name="Global avg"
+                dataKey="avg"
+                stroke="#555"
+                fill="#555"
+                fillOpacity={0.2}
+              />
+            )}
+          </RadarChart>
+        </ResponsiveContainer>
+      </ChartBox>
+    </Section>
+  );
+};
+
+// ────────────────────────────────────────────────────────────
+// Styled components for Reports page
+// ────────────────────────────────────────────────────────────
 const Container = styled.div`
   padding: 20px;
   background: #000;
   color: #fff;
 `;
-
-// Weekly summary styles
 const WeekNav = styled.div`
   display: flex;
   align-items: center;
@@ -72,7 +213,7 @@ const ChartRow = styled.div`
 `;
 const DayBar = styled.div<{ height: number }>`
   width: 24px;
-  height: ${props => props.height}px;
+  height: ${(props) => props.height}px;
   background: #111;
   border-radius: 4px 4px 0 0;
   position: relative;
@@ -85,8 +226,6 @@ const DayBar = styled.div<{ height: number }>`
     color: #555;
   }
 `;
-
-// Summary cards grid
 const SummaryGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -94,7 +233,7 @@ const SummaryGrid = styled.div`
   margin-bottom: 32px;
 `;
 const SummaryCard = styled.div<{ bg: string }>`
-  background: ${props => props.bg};
+  background: ${(props) => props.bg};
   position: relative;
   border-radius: 8px;
   padding: 20px;
@@ -113,7 +252,9 @@ const Change = styled.span`
   align-items: center;
   font-size: 0.9rem;
   opacity: 0.9;
-  svg { margin-right: 4px; }
+  svg {
+    margin-right: 4px;
+  }
 `;
 const ChartIcon = styled(FontAwesomeIcon)`
   position: absolute;
@@ -122,8 +263,6 @@ const ChartIcon = styled(FontAwesomeIcon)`
   opacity: 0.3;
   font-size: 2rem;
 `;
-
-// Detail cards grid
 const DetailGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -138,7 +277,7 @@ const Card = styled.div`
   flex-direction: column;
 `;
 const CardImage = styled.div<{ img?: string }>`
-  background: url(${props => props.img || ''}) center/cover no-repeat;
+  background: url(${(props) => props.img || ''}) center/cover no-repeat;
   height: 200px;
   position: relative;
 `;
@@ -146,7 +285,7 @@ const CardLabel = styled.span<{ bg: string }>`
   position: absolute;
   top: 12px;
   left: 12px;
-  background: ${props => props.bg};
+  background: ${(props) => props.bg};
   color: #000;
   padding: 4px 8px;
   border-radius: 4px;
@@ -172,18 +311,6 @@ const Scrobbles = styled.p`
   font-size: 0.9rem;
   color: #888;
 `;
-const List = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  flex: 1;
-`;
-const ListItem = styled.li`
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-`;
-
-// Mini cards grid
 const SmallGrid = styled(DetailGrid)`
   margin-bottom: 0;
 `;
@@ -197,10 +324,13 @@ const SmallValue = styled.h2`
   font-size: 2rem;
   flex: 1;
 `;
-const SmallList = styled(List)`
+const SmallList = styled.ul`
   display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 `;
-const SmallItem = styled(ListItem)`
+const SmallItem = styled.li`
   display: inline-flex;
   align-items: center;
   margin-right: 12px;
@@ -212,11 +342,14 @@ const SmallItem = styled(ListItem)`
   }
 `;
 
+// ────────────────────────────────────────────────────────────
+// Main Reports component
+// ────────────────────────────────────────────────────────────
 const Reports: React.FC = () => {
   const userId = useUserId();
   const isLoggedIn = useIsLoggedIn();
 
-  // Weekly state
+  // Weekly
   const [weekRange, setWeekRange] = useState(() => {
     const today = new Date();
     return {
@@ -224,10 +357,24 @@ const Reports: React.FC = () => {
       end: endOfWeek(today, { weekStartsOn: 1 }),
     };
   });
-  const [weekData, setWeekData] = useState<{ daily: number[]; total: number; prevTotal: number } | null>(null);
+  const [weekData, setWeekData] = useState<{
+    daily: number[];
+    total: number;
+    prevTotal: number;
+  } | null>(null);
 
-  // Summary state
-  const [summary, setSummary] = useState<{ label: string; value: number; change: number; bg: string }[]>([]);
+  // Charts
+  const [musicRatio, setMusicRatio] = useState<{
+    tracks: number;
+    albums: number;
+    artists: number;
+  } | null>(null);
+  const [fingerprint, setFingerprint] = useState<Fingerprint | null>(null);
+
+  // Summary & details
+  const [summary, setSummary] = useState<
+    { label: string; value: number; change: number; bg: string }[]
+  >([]);
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [topAlbums, setTopAlbums] = useState<TopAlbum[]>([]);
   const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
@@ -235,40 +382,64 @@ const Reports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch weekly data
+  // Fetch weekly
   useEffect(() => {
     if (!userId) return;
     (async () => {
       try {
-        const { start } = weekRange;
+        const { start, end } = weekRange;
         const lastStart = subDays(start, 7);
-        const [thisWeekResponse, lastWeekResponse] = await Promise.all([
+        const lastEnd = subDays(end, 7);
+        const [thisWeek, lastWeek] = await Promise.all([
           fetchReports(userId),
           fetchReports(userId),
         ]);
-        // JSON.parse error fixed by correct endpoint URL
-        const thisFiltered = thisWeekResponse.filter(hit => {
-          const d = new Date(hit.played_at);
-          return d >= weekRange.start && d <= weekRange.end;
-        });
-        const lastFiltered = lastWeekResponse.filter(hit => {
-          const d = new Date(hit.played_at);
-          const lastEnd = subDays(weekRange.end, 7);
-          return d >= lastStart && d <= lastEnd;
-        });
+        const filterRange = (
+          data: typeof thisWeek,
+          s: Date,
+          e: Date
+        ) =>
+          data.filter((h) => {
+            const d = new Date(h.played_at);
+            return d >= s && d <= e;
+          });
+        const thisFiltered = filterRange(thisWeek, start, end);
+        const lastFiltered = filterRange(lastWeek, lastStart, lastEnd);
         const daily = Array.from({ length: 7 }, (_, i) => {
-          const day = addDays(weekRange.start, i);
-          return thisFiltered.filter(hit => new Date(hit.played_at).toDateString() === day.toDateString()).length;
+          const dayStr = addDays(start, i).toDateString();
+          return thisFiltered.filter(
+            (h) => new Date(h.played_at).toDateString() === dayStr
+          ).length;
         });
-        setWeekData({ daily, total: thisFiltered.length, prevTotal: lastFiltered.length });
-      } catch (err) {
-        console.error(err);
+        setWeekData({
+          daily,
+          total: thisFiltered.length,
+          prevTotal: lastFiltered.length,
+        });
+      } catch {
         setError('Failed to load weekly data.');
       }
     })();
   }, [userId, weekRange]);
 
-  // Fetch summary data
+  // Fetch charts data
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const [ratio, fp] = await Promise.all([
+          getMusicRatio(userId),
+          getListeningFingerprint(userId),
+        ]);
+        setMusicRatio(ratio);
+        setFingerprint(fp);
+      } catch {
+        setError('Failed to load charts.');
+      }
+    })();
+  }, [userId]);
+
+  // Fetch summary & top-N
   useEffect(() => {
     if (!userId) return;
     (async () => {
@@ -288,18 +459,33 @@ const Reports: React.FC = () => {
           getTopAlbums(userId, 5),
           getTopTracks(userId, 5),
         ]);
-        const computeChange = (c: number, p: number) => p > 0 ? Math.round(((c - p) / p) * 100) : 0;
+        const pct = (c: number, p: number) =>
+          p > 0 ? Math.round(((c - p) / p) * 100) : 0;
         setSummary([
-          { label: 'Artists', value: allA.length, change: computeChange(allA.length, prevA.length), bg: '#C084FC' },
-          { label: 'Albums', value: allAL.length, change: computeChange(allAL.length, prevAL.length), bg: '#4ADE80' },
-          { label: 'Tracks', value: allT.length, change: computeChange(allT.length, prevT.length), bg: '#60A5FA' },
+          {
+            label: 'Artists',
+            value: allA.length,
+            change: pct(allA.length, prevA.length),
+            bg: DONUT_COLORS.artists,
+          },
+          {
+            label: 'Albums',
+            value: allAL.length,
+            change: pct(allAL.length, prevAL.length),
+            bg: DONUT_COLORS.albums,
+          },
+          {
+            label: 'Tracks',
+            value: allT.length,
+            change: pct(allT.length, prevT.length),
+            bg: DONUT_COLORS.tracks,
+          },
         ]);
         setTopArtists(detailA);
         setTopAlbums(detailAL);
         setTopTracks(detailT);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load reports.');
+      } catch {
+        setError('Failed to load summary.');
       } finally {
         setLoading(false);
       }
@@ -307,14 +493,39 @@ const Reports: React.FC = () => {
   }, [userId]);
 
   if (!isLoggedIn) return <Navigate to="/" replace />;
-  if (loading || !weekData) return <Container><p>Loading reports...</p></Container>;
-  if (error) return <Container><p>{error}</p></Container>;
+  if (loading || !weekData || !musicRatio || !fingerprint)
+    return (
+      <Container>
+        <p>Loading reports...</p>
+      </Container>
+    );
+  if (error)
+    return (
+      <Container>
+        <p>{error}</p>
+      </Container>
+    );
 
   return (
     <Container>
+      {/* Charts */}
+      <ChartsSection
+        tracks={musicRatio.tracks}
+        albums={musicRatio.albums}
+        artists={musicRatio.artists}
+        fingerprint={fingerprint}
+      />
+
       {/* Weekly summary */}
       <WeekNav>
-        <NavButton onClick={() => setWeekRange(w => ({ start: subDays(w.start, 7), end: subDays(w.end, 7) }))}>
+        <NavButton
+          onClick={() =>
+            setWeekRange((w) => ({
+              start: subDays(w.start, 7),
+              end: subDays(w.end, 7),
+            }))
+          }
+        >
           <FontAwesomeIcon icon={faChevronLeft} />
         </NavButton>
         <WeekTitle>
@@ -332,16 +543,21 @@ const Reports: React.FC = () => {
         <ScrobbleChange>
           <FontAwesomeIcon icon={faArrowUp} />
           {weekData.prevTotal > 0
-            ? Math.round(((weekData.total - weekData.prevTotal) / weekData.prevTotal) * 100)
-            : 0}% vs. last week
+            ? Math.round(
+                ((weekData.total - weekData.prevTotal) /
+                  weekData.prevTotal) *
+                  100
+              )
+            : 0}
+          % vs. last week
         </ScrobbleChange>
       </ScrobbleHeader>
 
       <ChartRow>
-        {weekData.daily.map((count, idx) => (
+        {weekData.daily.map((count, i) => (
           <DayBar
-            key={idx}
-            data-label={format(addDays(weekRange.start, idx), 'EEE')}
+            key={i}
+            data-label={format(addDays(weekRange.start, i), 'EEE')}
             height={count * 6 + 10}
           />
         ))}
@@ -349,12 +565,14 @@ const Reports: React.FC = () => {
 
       {/* Summary cards */}
       <SummaryGrid>
-        {summary.map(s => (
+        {summary.map((s) => (
           <SummaryCard key={s.label} bg={s.bg}>
             <Label>{s.label}</Label>
             <Value>{s.value}</Value>
-            <Change><FontAwesomeIcon icon={faArrowUp}/> {s.change}%</Change>
-            <ChartIcon icon={faChartBar}/>
+            <Change>
+              <FontAwesomeIcon icon={faArrowUp} /> {s.change}%
+            </Change>
+            <ChartIcon icon={faChartBar} />
           </SummaryCard>
         ))}
       </SummaryGrid>
@@ -364,10 +582,12 @@ const Reports: React.FC = () => {
         {topArtists.map((a, i) => (
           <Card key={a.artist_name}>
             <CardImage img={a.artist_image}>
-              <CardLabel bg="#C084FC">Top Artist</CardLabel>
+              <CardLabel bg={DONUT_COLORS.artists}>Top Artist</CardLabel>
             </CardImage>
             <CardBody>
-              <Title>#{i+1} {a.artist_name}</Title>
+              <Title>
+                #{i + 1} {a.artist_name}
+              </Title>
               <Scrobbles>{a.play_count} scrobbles</Scrobbles>
             </CardBody>
           </Card>
@@ -375,10 +595,12 @@ const Reports: React.FC = () => {
         {topAlbums.map((al, i) => (
           <Card key={al.album_name}>
             <CardImage img={al.album_image}>
-              <CardLabel bg="#4ADE80">Top Album</CardLabel>
+              <CardLabel bg={DONUT_COLORS.albums}>Top Album</CardLabel>
             </CardImage>
             <CardBody>
-              <Title>#{i+1} {al.album_name}</Title>
+              <Title>
+                #{i + 1} {al.album_name}
+              </Title>
               <Subtitle>{al.artist_name}</Subtitle>
               <Scrobbles>{al.play_count} scrobbles</Scrobbles>
             </CardBody>
@@ -387,10 +609,12 @@ const Reports: React.FC = () => {
         {topTracks.map((t, i) => (
           <Card key={t.track_id}>
             <CardImage img={t.album_image}>
-              <CardLabel bg="#60A5FA">Top Track</CardLabel>
+              <CardLabel bg={DONUT_COLORS.tracks}>Top Track</CardLabel>
             </CardImage>
             <CardBody>
-              <Title>#{i+1} {t.track_name}</Title>
+              <Title>
+                #{i + 1} {t.track_name}
+              </Title>
               <Subtitle>{t.artist_name}</Subtitle>
               <Scrobbles>{t.play_count} scrobbles</Scrobbles>
             </CardBody>
@@ -401,19 +625,42 @@ const Reports: React.FC = () => {
       {/* New items preview */}
       <SmallGrid>
         {[
-          { label: 'New Artists', img: topArtists[0]?.artist_image, text: `#1 ${topArtists[0]?.artist_name}`, scrobbles: `${topArtists[0]?.play_count} scrobbles` },
-          { label: 'New Albums', img: topAlbums[0]?.album_image, text: `#1 ${topAlbums[0]?.album_name}`, scrobbles: `${topAlbums[0]?.play_count} scrobbles` },
-          { label: 'New Tracks', img: topTracks[0]?.album_image, text: `#1 ${topTracks[0]?.track_name}`, scrobbles: `${topTracks[0]?.play_count} scrobbles` },
-        ].map(ns => (
+          {
+            label: 'New Artists',
+            img: topArtists[0]?.artist_image,
+            text: `#1 ${topArtists[0]?.artist_name}`,
+            scrobbles: `${topArtists[0]?.play_count} scrobbles`,
+          },
+          {
+            label: 'New Albums',
+            img: topAlbums[0]?.album_image,
+            text: `#1 ${topAlbums[0]?.album_name}`,
+            scrobbles: `${topAlbums[0]?.play_count} scrobbles`,
+          },
+          {
+            label: 'New Tracks',
+            img: topTracks[0]?.album_image,
+            text: `#1 ${topTracks[0]?.track_name}`,
+            scrobbles: `${topTracks[0]?.play_count} scrobbles`,
+          },
+        ].map((ns) => (
           <SmallCard key={ns.label}>
             <Label>{ns.label}</Label>
-            <SmallValue>{ns.text.split('%')[0]}</SmallValue>
+            <SmallValue>{ns.text}</SmallValue>
             <SmallList>
               <SmallItem>
-                <img src={ns.img} alt={ns.text}/>
+                <img src={ns.img} alt={ns.text} />
                 <div>
-                  <p style={{margin:0}}>{ns.text}</p>
-                  <p style={{margin:0, fontSize:'0.8rem', color:'#888'}}>{ns.scrobbles}</p>
+                  <p style={{ margin: 0 }}>{ns.text}</p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '0.8rem',
+                      color: '#888',
+                    }}
+                  >
+                    {ns.scrobbles}
+                  </p>
                 </div>
               </SmallItem>
             </SmallList>

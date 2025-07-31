@@ -2,6 +2,8 @@
 import { api } from "./apiConfig";
 
 export interface HistorySong {
+  artist_id: any;
+  album_id: any;
   track_id: string;
   track_name: string;
   artist_name: string;
