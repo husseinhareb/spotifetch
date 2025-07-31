@@ -1,17 +1,15 @@
-// src/repositories/reportsRepository.ts
-
 import {
   fetchTopArtists,
   fetchTopAlbums,
   fetchTopTracks,
+  fetchUserHistory,
   HistorySong,
   TopArtist,
   TopAlbum,
   TopTrack,
-  fetchUserHistory,
-} from "./historyRepository";
+} from './historyRepository';
 
-// Re-export types
+// Re-export types for convenience
 export type { HistorySong, TopArtist, TopAlbum, TopTrack };
 
 /**
@@ -45,11 +43,20 @@ export async function getTopTracks(
 }
 
 /**
- * Fetch the raw listening history for reports
+ * Fetch the user's raw listening history for reports.
+ * Delegates to historyRepository.fetchUserHistory, which handles URL construction and errors.
+ * Optionally filter by ISO timestamp 'since'.
  */
 export async function fetchReports(
   userId: string,
-  skip: number = 0
+  since?: string
 ): Promise<HistorySong[]> {
-  return fetchUserHistory(userId, skip);
+  try {
+    // Convert ISO timestamp to milliseconds for fetchUserHistory
+    const sinceMs: number | undefined = since ? Date.parse(since) : undefined;
+    return await fetchUserHistory(userId, sinceMs);
+  } catch (error) {
+    console.error('Error in fetchReports:', error);
+    throw error;
+  }
 }
