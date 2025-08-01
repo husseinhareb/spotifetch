@@ -1,7 +1,6 @@
 // src/components/Reports/Reports.tsx
 
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChartBar,
@@ -35,30 +34,13 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
+  Label,
 } from 'recharts';
+import { Card, CardBody, CardImage, CardLabel, Change, ChartBox, ChartIcon, ChartRow, ChartTitle, Container, DayBar, DetailGrid, ListenChange, ListenHeader, ListenLabel, Listens, ListenValue, NavButton, Section, SmallCard, SmallGrid, SmallItem, SmallList, SmallValue, Subtitle, SummaryCard, SummaryGrid, Title, Value, WeekNav, WeekTitle } from './Styles/style';
 
 // ────────────────────────────────────────────────────────────
 // ChartsSection
 // ────────────────────────────────────────────────────────────
-const Section = styled.div`
-  display: flex;
-  gap: 40px;
-  margin-bottom: 40px;
-`;
-const ChartBox = styled.div`
-  flex: 1;
-  height: 300px;
-  background: #111;
-  border-radius: 8px;
-  padding: 20px;
-  color: #fff;
-`;
-const ChartTitle = styled.h4`
-  margin-bottom: 16px;
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
 const DONUT_COLORS = {
   tracks: '#60A5FA',
   albums: '#4ADE80',
@@ -157,203 +139,6 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   );
 };
 
-// ────────────────────────────────────────────────────────────
-// Styled components for Reports page
-// ────────────────────────────────────────────────────────────
-const Container = styled.div`
-  padding: 20px;
-  background: #000;
-  color: #fff;
-`;
-const WeekNav = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffc0c0;
-  padding: 24px 40px;     /* ↑ more vertical & horizontal padding */
-  margin-bottom: 24px;    /* ↑ extra breathing room */
-  height: 80px;           /* ↑ enforce a taller nav bar */
-`;
-const NavButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;      /* ↑ bigger arrows */
-  cursor: pointer;
-`;
-
-const WeekTitle = styled.div`
-  font-weight: bold;
-  font-size: 1.25rem;     /* ↑ larger date text */
-`;
-
-const ListenHeader = styled.div`
-  display: flex;
-  align-items: baseline;
-  padding: 0 40px;        /* ↑ wider stripes */
-  margin-bottom: 24px;    /* ↑ more space below */
-`;
-
-const ListenLabel = styled.p`
-  margin: 0;
-  font-size: 1.2rem;      /* ↑ bigger “Listens” label */
-  flex: 1;
-`;
-
-const ListenValue = styled.h1`
-  margin: 0 16px;
-  font-size: 4rem;        /* ↑ jump up from 3rem to 4rem */
-`;
-
-const ListenChange = styled.span`
-  font-size: 1rem;        /* ↑ scale percent up */
-  display: inline-flex;
-  align-items: center;
-  svg {
-    margin-right: 6px;
-    font-size: 1.2rem;    /* ↑ slightly larger arrow */
-  }
-`;
-
-const ChartRow = styled.div`
-  display: flex;
-  padding: 0 40px 60px;
-  align-items: flex-end;
-  gap: 16px;
-  height: 280px;
-  width: 100%;
-  /* make bars take equal space */
-  justify-content: space-between;`
-
-const DayBar = styled.div<{ height: number }>`
-  flex: 1;
-  height: ${(props) => props.height}px;
-  background: #fd3030;
-  border-radius: 4px 4px 0 0;
-  position: relative;
-  &:after {
-    content: attr(data-label);
-    position: absolute;
-    top: 100%;
-    margin-top: 4px;
-    font-size: 0.75rem;
-    color: #555;
-  }
-`;
-const SummaryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-const SummaryCard = styled.div<{ bg: string }>`
-  background: ${(props) => props.bg};
-  position: relative;
-  border-radius: 8px;
-  padding: 20px;
-`;
-const Label = styled.p`
-  margin: 0;
-  font-size: 1rem;
-  opacity: 0.8;
-`;
-const Value = styled.h2`
-  margin: 8px 0;
-  font-size: 2.5rem;
-`;
-const Change = styled.span`
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.9rem;
-  opacity: 0.9;
-  svg {
-    margin-right: 4px;
-  }
-`;
-const ChartIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  opacity: 0.3;
-  font-size: 2rem;
-`;
-const DetailGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-const Card = styled.div`
-  background: #121212;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-`;
-const CardImage = styled.div<{ img?: string }>`
-  background: url(${(props) => props.img || ''}) center/cover no-repeat;
-  height: 200px;
-  position: relative;
-`;
-const CardLabel = styled.span<{ bg: string }>`
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: ${(props) => props.bg};
-  color: #000;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-`;
-const CardBody = styled.div`
-  padding: 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-const Title = styled.h3`
-  margin: 0 0 8px;
-  font-size: 1.2rem;
-`;
-const Subtitle = styled.p`
-  margin: 0 0 12px;
-  font-size: 0.9rem;
-  color: #888;
-`;
-const Listens = styled.p`
-  margin: 0 0 12px;
-  font-size: 0.9rem;
-  color: #888;
-`;
-const SmallGrid = styled(DetailGrid)`
-  margin-bottom: 0;
-`;
-const SmallCard = styled(Card)`
-  flex-direction: row;
-  align-items: center;
-  padding: 16px;
-`;
-const SmallValue = styled.h2`
-  margin: 0;
-  font-size: 2rem;
-  flex: 1;
-`;
-const SmallList = styled.ul`
-  display: flex;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-`;
-const SmallItem = styled.li`
-  display: inline-flex;
-  align-items: center;
-  margin-right: 12px;
-  img {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    margin-right: 8px;
-  }
-`;
 
 // ────────────────────────────────────────────────────────────
 // Main Reports component
