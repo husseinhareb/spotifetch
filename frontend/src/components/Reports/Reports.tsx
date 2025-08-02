@@ -1,4 +1,5 @@
 // src/components/Reports/Reports.tsx
+import styled from 'styled-components';
 
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -72,7 +73,7 @@ import {
   WeekNav,
   WeekTitle
 } from './Styles/style';
-
+import type { TickItemTextProps } from 'recharts/types/polar/PolarAngleAxis';
 // ────────────────────────────────────────────────────────────
 // ChartsSection
 // ────────────────────────────────────────────────────────────
@@ -173,6 +174,29 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
     </Section>
   );
 };
+const ClockChartBox = styled(ChartBox)`
+  position: relative;
+  /* ensure it’s square—adjust the height to your needs */
+  height: 400px;
+`;
+
+const CenterLabels = styled.div`
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+
+  .label {
+    position: absolute;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  .top    { top:  5%; left: 50%; transform: translateX(-50%); }
+  .right  { top: 50%; right: 5%; transform: translateY(-50%); }
+  .bottom { bottom: 5%; left:50%; transform: translateX(-50%); }
+  .left   { top: 50%; left: 5%; transform: translateY(-50%); }
+`;
 
 
 // ────────────────────────────────────────────────────────────
@@ -329,6 +353,26 @@ const Reports: React.FC = () => {
     })();
   }, [userId]);
 
+  // Render only at 0, 6, 12, 18 hours
+  const renderClockTick = (props: TickItemTextProps): React.ReactElement<SVGTextElement> => {
+    const { x, y, payload } = props;
+    const labels: Record<number, string> = { 0: '00', 6: '06', 12: '12', 18: '18' };
+    const label = labels[payload.value as number];
+    return (
+      <text
+        x={x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="central"
+        style={{ fill: '#888', fontSize: 12 }}
+      >
+        {label ?? ''}
+      </text>
+    );
+  };
+
+
+
 
   useEffect(() => {
     if (!userId) return;
@@ -368,59 +412,79 @@ const Reports: React.FC = () => {
         artists={musicRatio.artists}
         fingerprint={fingerprint}
       />
-
-      {/* Listening Clock */}
       <Section>
-        <ChartBox>
+        {/* Listening Clock */}
+        <ClockChartBox>
           <ChartTitle>Listening Clock</ChartTitle>
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
               data={byHour.map((count, hour) => ({ hour, count }))}
-              cx="50%"
-              cy="50%"
-              innerRadius="10%"
-              outerRadius="80%"
+              innerRadius="15%"
+              outerRadius="100%"
               startAngle={90}
               endAngle={-270}
-
-              // ← make each “slice” thick enough to see
-              barSize={16}
-
-              // ← how much gap (in px) between each slice
-              barGap={4}
-
-              // ← or, leave a percentage gap by category
-              barCategoryGap="5%"
             >
+              {/* Gradient for the bars */}
+              <defs>
+                <linearGradient id="clockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={DONUT_COLORS.tracks} />
+                  <stop offset="100%" stopColor="#1E3A8A" />
+                </linearGradient>
+              </defs>
+
+              {/* Use our renderClockTick (never returns null) */}
               <PolarAngleAxis
-                type="number"
-                domain={[0, 23]}
                 dataKey="hour"
-                tick={false}
+                domain={[0, 24]}
+                tick={renderClockTick}
+                axisLine={false}
+                tickLine={false}
               />
+
+              {/* clockWise removed in Recharts v2+ */}
               <RadialBar
                 dataKey="count"
-                background={{ fill: '#111' }}
-                fill={DONUT_COLORS.tracks}
+                background
+                cornerRadius={4}
+                fill="url(#clockGrad)"
               />
             </RadialBarChart>
           </ResponsiveContainer>
 
-        </ChartBox>
+          {/* Overlay center labels via styled-components */}
+          <CenterLabels>
+            <div className="label top">00</div>
+            <div className="label right">06</div>
+            <div className="label bottom">12</div>
+            <div className="label left">18</div>
+          </CenterLabels>
+        </ClockChartBox>
 
-        <ChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {/* Busiest‐hour summary box (unchanged) */}
+        <ChartBox
+          style={{
+            flex: 0.4,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
           <Label>Busiest hour</Label>
           <Value>
-            {((h: number) => {
-              const suffix = h < 12 ? 'AM' : 'PM';
-              const hh = h % 12 || 12;
-              return `${hh}:00${suffix}`;
-            })(busiestHour)}
+            {(() => {
+              const suffix = busiestHour < 12 ? 'AM' : 'PM';
+              const hour12 = busiestHour % 12 || 12;
+              return `${hour12}:00${suffix}`;
+            })()}
           </Value>
           <Label style={{ marginTop: 16 }}>Scrobbles in busiest hour</Label>
           <Value>{busiestCount}</Value>
         </ChartBox>
       </Section>
+
+
+
+
 
       {/* Weekly summary */}
       <WeekNav>

@@ -1,63 +1,82 @@
+// src/components/Reports/Styles/style.ts
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // ────────────────────────────────────────────────────────────
-// Styled components for Reports page
+// Container
 // ────────────────────────────────────────────────────────────
 export const Container = styled.div`
   padding: 20px;
   background: #000;
   color: #fff;
 `;
+
+// ────────────────────────────────────────────────────────────
+// Top Music / Week Navigation
+// ────────────────────────────────────────────────────────────
 export const WeekNav = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #ffc0c0;
-  padding: 24px 40px;     /* ↑ more vertical & horizontal padding */
-  margin-bottom: 24px;    /* ↑ extra breathing room */
-  height: 80px;           /* ↑ enforce a taller nav bar */
+  padding: 24px 40px;
+  margin-bottom: 24px;
+  height: 80px;
 `;
+
 export const NavButton = styled.button`
   background: none;
   border: none;
-  font-size: 1.5rem;      /* ↑ bigger arrows */
+  font-size: 1.5rem;
+  color: #fff;
   cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 export const WeekTitle = styled.div`
   font-weight: bold;
-  font-size: 1.25rem;     /* ↑ larger date text */
+  font-size: 1.25rem;
+  color: #fff;
 `;
 
+// ────────────────────────────────────────────────────────────
+// Listens Header
+// ────────────────────────────────────────────────────────────
 export const ListenHeader = styled.div`
   display: flex;
   align-items: baseline;
-  padding: 0 40px;        /* ↑ wider stripes */
-  margin-bottom: 24px;    /* ↑ more space below */
+  padding: 0 40px;
+  margin-bottom: 24px;
 `;
 
 export const ListenLabel = styled.p`
   margin: 0;
-  font-size: 1.2rem;      /* ↑ bigger “Listens” label */
+  font-size: 1.2rem;
   flex: 1;
 `;
 
 export const ListenValue = styled.h1`
   margin: 0 16px;
-  font-size: 4rem;        /* ↑ jump up from 3rem to 4rem */
+  font-size: 4rem;
 `;
 
 export const ListenChange = styled.span`
-  font-size: 1rem;        /* ↑ scale percent up */
+  font-size: 1rem;
   display: inline-flex;
   align-items: center;
+
   svg {
     margin-right: 6px;
-    font-size: 1.2rem;    /* ↑ slightly larger arrow */
+    font-size: 1.2rem;
   }
 `;
 
+// ────────────────────────────────────────────────────────────
+// Weekly Bar Chart
+// ────────────────────────────────────────────────────────────
 export const ChartRow = styled.div`
   display: flex;
   padding: 0 40px 60px;
@@ -65,15 +84,16 @@ export const ChartRow = styled.div`
   gap: 16px;
   height: 280px;
   width: 100%;
-  /* make bars take equal space */
-  justify-content: space-between;`
+  justify-content: space-between;
+`;
 
 export const DayBar = styled.div<{ height: number }>`
   flex: 1;
-  height: ${(props) => props.height}px;
+  height: ${props => props.height}px;
   background: #fd3030;
   border-radius: 4px 4px 0 0;
   position: relative;
+
   &:after {
     content: attr(data-label);
     position: absolute;
@@ -83,36 +103,48 @@ export const DayBar = styled.div<{ height: number }>`
     color: #555;
   }
 `;
+
+// ────────────────────────────────────────────────────────────
+// Summary Cards (Top Music ratios)
+// ────────────────────────────────────────────────────────────
 export const SummaryGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 `;
+
 export const SummaryCard = styled.div<{ bg: string }>`
-  background: ${(props) => props.bg};
+  background: ${props => props.bg};
+  color: #000;
   position: relative;
   border-radius: 8px;
   padding: 20px;
 `;
+
 export const Label = styled.p`
   margin: 0;
   font-size: 1rem;
   opacity: 0.8;
+  text-transform: uppercase;
 `;
+
 export const Value = styled.h2`
   margin: 8px 0;
   font-size: 2.5rem;
 `;
+
 export const Change = styled.span`
   display: inline-flex;
   align-items: center;
   font-size: 0.9rem;
   opacity: 0.9;
+
   svg {
     margin-right: 4px;
   }
 `;
+
 export const ChartIcon = styled(FontAwesomeIcon)`
   position: absolute;
   bottom: 12px;
@@ -120,12 +152,17 @@ export const ChartIcon = styled(FontAwesomeIcon)`
   opacity: 0.3;
   font-size: 2rem;
 `;
+
+// ────────────────────────────────────────────────────────────
+// Detail Cards (Top Artists / Albums / Tracks)
+// ────────────────────────────────────────────────────────────
 export const DetailGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 32px;
 `;
+
 export const Card = styled.div`
   background: #121212;
   border-radius: 8px;
@@ -133,64 +170,80 @@ export const Card = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
 export const CardImage = styled.div<{ img?: string }>`
-  background: url(${(props) => props.img || ''}) center/cover no-repeat;
+  background: url(${props => props.img || ''}) center/cover no-repeat;
   height: 200px;
   position: relative;
 `;
+
 export const CardLabel = styled.span<{ bg: string }>`
   position: absolute;
   top: 12px;
   left: 12px;
-  background: ${(props) => props.bg};
+  background: ${props => props.bg};
   color: #000;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.8rem;
+  text-transform: uppercase;
 `;
+
 export const CardBody = styled.div`
   padding: 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
 `;
+
 export const Title = styled.h3`
   margin: 0 0 8px;
   font-size: 1.2rem;
 `;
+
 export const Subtitle = styled.p`
   margin: 0 0 12px;
   font-size: 0.9rem;
   color: #888;
 `;
+
 export const Listens = styled.p`
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 0.9rem;
   color: #888;
 `;
+
+// ────────────────────────────────────────────────────────────
+// “New items” Small Cards
+// ────────────────────────────────────────────────────────────
 export const SmallGrid = styled(DetailGrid)`
   margin-bottom: 0;
 `;
+
 export const SmallCard = styled(Card)`
   flex-direction: row;
   align-items: center;
   padding: 16px;
 `;
+
 export const SmallValue = styled.h2`
   margin: 0;
   font-size: 2rem;
   flex: 1;
 `;
+
 export const SmallList = styled.ul`
   display: flex;
   margin: 0;
   padding: 0;
   list-style: none;
 `;
+
 export const SmallItem = styled.li`
   display: inline-flex;
   align-items: center;
   margin-right: 12px;
+
   img {
     width: 40px;
     height: 40px;
@@ -199,14 +252,15 @@ export const SmallItem = styled.li`
   }
 `;
 
-
-//------------------------------------------------------
-
+// ────────────────────────────────────────────────────────────
+// Generic Sections & Chart Boxes
+// ────────────────────────────────────────────────────────────
 export const Section = styled.div`
   display: flex;
   gap: 40px;
   margin-bottom: 40px;
 `;
+
 export const ChartBox = styled.div`
   flex: 1;
   height: 300px;
@@ -215,6 +269,7 @@ export const ChartBox = styled.div`
   padding: 20px;
   color: #fff;
 `;
+
 export const ChartTitle = styled.h4`
   margin-bottom: 16px;
   font-size: 1.1rem;
@@ -222,28 +277,23 @@ export const ChartTitle = styled.h4`
   letter-spacing: 0.5px;
 `;
 
-
-//-----------------------------------------------
 // ────────────────────────────────────────────────────────────
 // Listening Clock styled‐components
 // ────────────────────────────────────────────────────────────
-
 export const ClockSection = styled(Section)`
   gap: 40px;
   margin-bottom: 40px;
-  flex-wrap: wrap;      /* stack on very narrow viewports */
+  flex-wrap: wrap;
 `;
 
-// The radial‐chart container
 export const ClockChartBox = styled(ChartBox)`
-  flex: 1.5;            /* about 3× the width of the info box */
-  min-width: 0;         /* allow it to shrink below its internal content */
-  height: 300px;        /* match your other ChartBox height */
+  flex: 1.5;
+  min-width: 0;
+  height: 300px;
 `;
 
-// The right‐side info panel
 export const ClockInfoBox = styled(ChartBox)`
-  flex: 0.5;            /* smaller side panel */
+  flex: 0.5;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -251,7 +301,6 @@ export const ClockInfoBox = styled(ChartBox)`
   padding: 20px;
 `;
 
-// A label inside that panel
 export const ClockInfoLabel = styled.p`
   margin: 0;
   font-size: 1rem;
@@ -259,7 +308,6 @@ export const ClockInfoLabel = styled.p`
   text-transform: uppercase;
 `;
 
-// A big value (hour or count)
 export const ClockInfoValue = styled.h2`
   margin: 8px 0;
   font-size: 2.5rem;
