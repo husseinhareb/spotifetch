@@ -75,6 +75,7 @@ import {
 } from './Styles/style';
 import type { TickItemTextProps } from 'recharts/types/polar/PolarAngleAxis';
 import RadialHourChart from './RadialHourChart';
+import TopMusic from './TopMusic';
 // ────────────────────────────────────────────────────────────
 // ChartsSection
 // ────────────────────────────────────────────────────────────
@@ -414,206 +415,45 @@ const Reports: React.FC = () => {
         fingerprint={fingerprint}
       />
       <Section>
-  {/* Listening Clock */}
-  <ClockChartBox>
-    <ChartTitle>Listening Clock</ChartTitle>
+        {/* Listening Clock */}
+        <ClockChartBox>
+          <ChartTitle>Listening Clock</ChartTitle>
 
-    {/* only render once byHour is fetched */}
-    {byHour && (
-      <RadialHourChart
-        data={byHour}
-        width={350}
-        height={350}
-      />
-    )}
+          {/* only render once byHour is fetched */}
+          {byHour && (
+            <RadialHourChart
+              data={byHour}
+              width={350}
+              height={350}
+            />
+          )}
 
-    {/* Overlay center labels via styled-components */}
-    <CenterLabels>
-      <div className="label top">00</div>
-      <div className="label right">06</div>
-      <div className="label bottom">12</div>
-      <div className="label left">18</div>
-    </CenterLabels>
-  </ClockChartBox>
+          {/* Overlay center labels via styled-components */}
+          <CenterLabels>
+            <div className="label top">00</div>
+            <div className="label right">06</div>
+            <div className="label bottom">12</div>
+            <div className="label left">18</div>
+          </CenterLabels>
+        </ClockChartBox>
 
-  {/* Busiest‐hour summary box */}
-  <ChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-    <Label>Busiest hour</Label>
-    <Value>
-      {(() => {
-        const suffix = busiestHour < 12 ? 'AM' : 'PM';
-        const hour12 = busiestHour % 12 || 12;
-        return `${hour12}:00${suffix}`;
-      })()}
-    </Value>
-    <Label style={{ marginTop: 16 }}>Scrobbles in busiest hour</Label>
-    <Value>{busiestCount}</Value>
-  </ChartBox>
-</Section>
-
-
-
-
-
-
-      {/* Weekly summary */}
-      <WeekNav>
-        <NavButton
-          onClick={() =>
-            setWeekRange((w) => ({
-              start: subDays(w.start, 7),
-              end: subDays(w.end, 7),
-            }))
-          }
-        >
-          <FontAwesomeIcon icon={faChevronLeft} />
-        </NavButton>
-        <WeekTitle>
-          {format(weekRange.start, 'd MMM yyyy').toUpperCase()} –{' '}
-          {format(weekRange.end, 'd MMM yyyy').toUpperCase()}
-        </WeekTitle>
-        <NavButton
-          onClick={() =>
-            setWeekRange((w) => ({
-              start: addDays(w.start, 7),
-              end: addDays(w.end, 7),
-            }))
-          }
-        >
-          <FontAwesomeIcon icon={faChevronRight} />
-        </NavButton>
-      </WeekNav>
-
-      <ListenHeader>
-        <ListenLabel>Listens</ListenLabel>
-        <ListenValue>{weekData.total}</ListenValue>
-        <ListenChange>
-          <FontAwesomeIcon icon={faArrowUp} />
-          {weekData.prevTotal > 0
-            ? Math.round(
-              ((weekData.total - weekData.prevTotal) /
-                weekData.prevTotal) *
-              100
-            )
-            : 0}
-          % vs. last week
-        </ListenChange>
-      </ListenHeader>
-
-      <ChartRow>
-        {weekData.daily.map((count, i) => (
-          <DayBar
-            key={i}
-            data-label={format(addDays(weekRange.start, i), 'EEE')}
-            height={count * 6 + 10}
-          />
-        ))}
-      </ChartRow>
-
-      {/* Summary cards */}
-      <SummaryGrid>
-        {summary.map((s) => (
-          <SummaryCard key={s.label} bg={s.bg}>
-            <Label>{s.label}</Label>
-            <Value>{s.value}</Value>
-            <Change>
-              <FontAwesomeIcon icon={faArrowUp} /> {s.change}%
-            </Change>
-            <ChartIcon icon={faChartBar} />
-          </SummaryCard>
-        ))}
-      </SummaryGrid>
-
-      {/* Top detail cards */}
-      <DetailGrid>
-        {topArtists.map((a, i) => (
-          <Card key={a.artist_name}>
-            <CardImage img={a.artist_image}>
-              <CardLabel bg={DONUT_COLORS.artists}>Top Artist</CardLabel>
-            </CardImage>
-            <CardBody>
-              <Title>
-                #{i + 1} {a.artist_name}
-              </Title>
-              <Listens>{a.play_count} Listens</Listens>
-            </CardBody>
-          </Card>
-        ))}
-        {topAlbums.map((al, i) => (
-          <Card key={al.album_name}>
-            <CardImage img={al.album_image}>
-              <CardLabel bg={DONUT_COLORS.albums}>Top Album</CardLabel>
-            </CardImage>
-            <CardBody>
-              <Title>
-                #{i + 1} {al.album_name}
-              </Title>
-              <Subtitle>{al.artist_name}</Subtitle>
-              <Listens>{al.play_count} Listens</Listens>
-            </CardBody>
-          </Card>
-        ))}
-        {topTracks.map((t, i) => (
-          <Card key={t.track_id}>
-            <CardImage img={t.album_image}>
-              <CardLabel bg={DONUT_COLORS.tracks}>Top Track</CardLabel>
-            </CardImage>
-            <CardBody>
-              <Title>
-                #{i + 1} {t.track_name}
-              </Title>
-              <Subtitle>{t.artist_name}</Subtitle>
-              <Listens>{t.play_count} Listens</Listens>
-            </CardBody>
-          </Card>
-        ))}
-      </DetailGrid>
-
-      {/* New items preview */}
-      <SmallGrid>
-        {[
-          {
-            label: 'New Artists',
-            img: topArtists[0]?.artist_image,
-            text: `#1 ${topArtists[0]?.artist_name}`,
-            Listens: `${topArtists[0]?.play_count} Listens`,
-          },
-          {
-            label: 'New Albums',
-            img: topAlbums[0]?.album_image,
-            text: `#1 ${topAlbums[0]?.album_name}`,
-            Listens: `${topAlbums[0]?.play_count} Listens`,
-          },
-          {
-            label: 'New Tracks',
-            img: topTracks[0]?.album_image,
-            text: `#1 ${topTracks[0]?.track_name}`,
-            Listens: `${topTracks[0]?.play_count} Listens`,
-          },
-        ].map((ns) => (
-          <SmallCard key={ns.label}>
-            <Label>{ns.label}</Label>
-            <SmallValue>{ns.text}</SmallValue>
-            <SmallList>
-              <SmallItem>
-                <img src={ns.img} alt={ns.text} />
-                <div>
-                  <p style={{ margin: 0 }}>{ns.text}</p>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: '0.8rem',
-                      color: '#888',
-                    }}
-                  >
-                    {ns.Listens}
-                  </p>
-                </div>
-              </SmallItem>
-            </SmallList>
-          </SmallCard>
-        ))}
-      </SmallGrid>
+        {/* Busiest‐hour summary box */}
+        <ChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Label>Busiest hour</Label>
+          <Value>
+            {(() => {
+              const suffix = busiestHour < 12 ? 'AM' : 'PM';
+              const hour12 = busiestHour % 12 || 12;
+              return `${hour12}:00${suffix}`;
+            })()}
+          </Value>
+          <Label style={{ marginTop: 16 }}>Listens in busiest hour</Label>
+          <Value>{busiestCount}</Value>
+        </ChartBox>
+      </Section>
+          
+        <TopMusic userId={userId}/>
+     
     </Container>
   );
 };
