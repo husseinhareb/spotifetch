@@ -36,7 +36,39 @@ import {
   Radar,
   Label,
 } from 'recharts';
-import { Card, CardBody, CardImage, CardLabel, Change, ChartBox, ChartIcon, ChartRow, ChartTitle, Container, DayBar, DetailGrid, ListenChange, ListenHeader, ListenLabel, Listens, ListenValue, NavButton, Section, SmallCard, SmallGrid, SmallItem, SmallList, SmallValue, Subtitle, SummaryCard, SummaryGrid, Title, Value, WeekNav, WeekTitle } from './Styles/style';
+import {
+  Card,
+  CardBody,
+  CardImage,
+  CardLabel,
+  Change,
+  ChartBox,
+  ChartIcon,
+  ChartRow,
+  ChartTitle,
+  Container,
+  DayBar,
+  DetailGrid,
+  ListenChange,
+  ListenHeader,
+  ListenLabel,
+  Listens,
+  ListenValue,
+  NavButton,
+  Section,
+  SmallCard,
+  SmallGrid,
+  SmallItem,
+  SmallList,
+  SmallValue,
+  Subtitle,
+  SummaryCard,
+  SummaryGrid,
+  Title,
+  Value,
+  WeekNav,
+  WeekTitle
+} from './Styles/style';
 
 // ────────────────────────────────────────────────────────────
 // ChartsSection
