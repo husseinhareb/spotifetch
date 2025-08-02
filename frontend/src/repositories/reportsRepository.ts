@@ -153,3 +153,18 @@ export async function getListeningFingerprint(
 
   return { consistency, discoveryRate, variance, concentration, replayRate };
 }
+
+
+// just below getListeningFingerprint(...)
+export async function getListeningClock(
+  userId: string
+): Promise<number[]> {
+  const history = await fetchUserHistory(userId);
+  // zeroed array for 24h
+  const counts = Array<number>(24).fill(0);
+  history.forEach(h => {
+    const hr = new Date(h.played_at).getHours();
+    counts[hr]++;
+  });
+  return counts;
+}

@@ -221,3 +221,46 @@ export const ChartTitle = styled.h4`
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
+
+
+//-----------------------------------------------
+// ────────────────────────────────────────────────────────────
+// Listening Clock styled‐components
+// ────────────────────────────────────────────────────────────
+
+export const ClockSection = styled(Section)`
+  gap: 40px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;      /* stack on very narrow viewports */
+`;
+
+// The radial‐chart container
+export const ClockChartBox = styled(ChartBox)`
+  flex: 1.5;            /* about 3× the width of the info box */
+  min-width: 0;         /* allow it to shrink below its internal content */
+  height: 300px;        /* match your other ChartBox height */
+`;
+
+// The right‐side info panel
+export const ClockInfoBox = styled(ChartBox)`
+  flex: 0.5;            /* smaller side panel */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+`;
+
+// A label inside that panel
+export const ClockInfoLabel = styled.p`
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+`;
+
+// A big value (hour or count)
+export const ClockInfoValue = styled.h2`
+  margin: 8px 0;
+  font-size: 2.5rem;
+`;

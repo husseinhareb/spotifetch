@@ -22,6 +22,7 @@ import {
   TopAlbum,
   TopTrack,
   Fingerprint,
+  getListeningClock,
 } from '../../repositories/reportsRepository';
 import { format, startOfWeek, endOfWeek, subDays, addDays } from 'date-fns';
 import {
@@ -35,6 +36,8 @@ import {
   PolarRadiusAxis,
   Radar,
   Label,
+  RadialBar,
+  RadialBarChart,
 } from 'recharts';
 import {
   Card,
@@ -212,6 +215,10 @@ const Reports: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [byHour, setByHour] = useState<number[] | null>(null);
+  const [busiestHour, setBusiestHour] = useState(0);
+  const [busiestCount, setBusiestCount] = useState(0);
+
   // Fetch weekly
   useEffect(() => {
     if (!userId) return;
@@ -322,8 +329,24 @@ const Reports: React.FC = () => {
     })();
   }, [userId]);
 
+
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const data = await getListeningClock(userId);
+        setByHour(data);
+        // pick busiest
+        const max = Math.max(...data);
+        setBusiestCount(max);
+        setBusiestHour(data.indexOf(max));
+      } catch {
+        setError('Failed to load listening-clock.');
+      }
+    })();
+  }, [userId]);
   if (!isLoggedIn) return <Navigate to="/" replace />;
-  if (loading || !weekData || !musicRatio || !fingerprint)
+  if (loading || !weekData || !musicRatio || !fingerprint || byHour === null)
     return (
       <Container>
         <p>Loading reports...</p>
@@ -345,6 +368,59 @@ const Reports: React.FC = () => {
         artists={musicRatio.artists}
         fingerprint={fingerprint}
       />
+
+      {/* Listening Clock */}
+      <Section>
+        <ChartBox>
+          <ChartTitle>Listening Clock</ChartTitle>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadialBarChart
+              data={byHour.map((count, hour) => ({ hour, count }))}
+              cx="50%"
+              cy="50%"
+              innerRadius="10%"
+              outerRadius="80%"
+              startAngle={90}
+              endAngle={-270}
+
+              // ← make each “slice” thick enough to see
+              barSize={16}
+
+              // ← how much gap (in px) between each slice
+              barGap={4}
+
+              // ← or, leave a percentage gap by category
+              barCategoryGap="5%"
+            >
+              <PolarAngleAxis
+                type="number"
+                domain={[0, 23]}
+                dataKey="hour"
+                tick={false}
+              />
+              <RadialBar
+                dataKey="count"
+                background={{ fill: '#111' }}
+                fill={DONUT_COLORS.tracks}
+              />
+            </RadialBarChart>
+          </ResponsiveContainer>
+
+        </ChartBox>
+
+        <ChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Label>Busiest hour</Label>
+          <Value>
+            {((h: number) => {
+              const suffix = h < 12 ? 'AM' : 'PM';
+              const hh = h % 12 || 12;
+              return `${hh}:00${suffix}`;
+            })(busiestHour)}
+          </Value>
+          <Label style={{ marginTop: 16 }}>Scrobbles in busiest hour</Label>
+          <Value>{busiestCount}</Value>
+        </ChartBox>
+      </Section>
 
       {/* Weekly summary */}
       <WeekNav>
