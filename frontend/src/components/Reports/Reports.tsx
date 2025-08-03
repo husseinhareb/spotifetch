@@ -1,31 +1,7 @@
 // src/components/Reports/Reports.tsx
-import styled from 'styled-components';
-
 import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faChartBar,
-  faArrowUp,
-  faShareAlt,
-  faChevronLeft,
-  faChevronRight,
-} from '@fortawesome/free-solid-svg-icons';
+import styled from 'styled-components';
 import { Navigate } from 'react-router-dom';
-import { useUserId, useIsLoggedIn } from '../../services/store';
-import {
-  fetchReports,
-  getTopArtists,
-  getTopAlbums,
-  getTopTracks,
-  getMusicRatio,
-  getListeningFingerprint,
-  TopArtist,
-  TopAlbum,
-  TopTrack,
-  Fingerprint,
-  getListeningClock,
-} from '../../repositories/reportsRepository';
-import { format, startOfWeek, endOfWeek, subDays, addDays } from 'date-fns';
 import {
   ResponsiveContainer,
   PieChart,
@@ -36,48 +12,51 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  Label,
-  RadialBar,
-  RadialBarChart,
 } from 'recharts';
+import { startOfWeek, endOfWeek, subDays, addDays } from 'date-fns';
+
+import { useUserId, useIsLoggedIn } from '../../services/store';
 import {
-  Card,
-  CardBody,
-  CardImage,
-  CardLabel,
-  Change,
-  ChartBox,
-  ChartIcon,
-  ChartRow,
-  ChartTitle,
-  Container,
-  DayBar,
-  DetailGrid,
-  ListenChange,
-  ListenHeader,
-  ListenLabel,
-  Listens,
-  ListenValue,
-  NavButton,
-  Section,
-  SmallCard,
-  SmallGrid,
-  SmallItem,
-  SmallList,
-  SmallValue,
-  Subtitle,
-  SummaryCard,
-  SummaryGrid,
-  Title,
-  Value,
-  WeekNav,
-  WeekTitle
-} from './Styles/style';
-import type { TickItemTextProps } from 'recharts/types/polar/PolarAngleAxis';
+  fetchReports,
+  getTopArtists,
+  getTopAlbums,
+  getTopTracks,
+  getMusicRatio,
+  getListeningFingerprint,
+  getListeningClock,
+  TopArtist,
+  TopAlbum,
+  TopTrack,
+  Fingerprint,
+} from '../../repositories/reportsRepository';
+
 import RadialHourChart from './RadialHourChart';
 import TopMusic from './TopMusic';
+import MusicRatio from './MusicRatio';
+
+import {
+  Section,
+  ChartBox,
+  ChartTitle,
+  Container,
+  Label,
+  Value,
+} from './Styles/style';
+
 // ────────────────────────────────────────────────────────────
-// ChartsSection
+// “Raw” shape coming back from your repo
+// ────────────────────────────────────────────────────────────
+interface RawMusicRatio {
+  tracks: number;
+  albums: number;
+  artists: number;
+  lastTracks: number;
+  lastAlbums: number;
+  lastArtists: number;
+}
+
+// ────────────────────────────────────────────────────────────
+// Constants & Styled Components
 // ────────────────────────────────────────────────────────────
 const DONUT_COLORS = {
   tracks: '#60A5FA',
@@ -85,6 +64,30 @@ const DONUT_COLORS = {
   artists: '#C084FC',
 };
 
+const ClockChartBox = styled(ChartBox)`
+  position: relative;
+  height: 400px;
+`;
+
+const CenterLabels = styled.div`
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  .label {
+    position: absolute;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  .top    { top:  5%; left: 50%; transform: translateX(-50%); }
+  .right  { top: 50%; right: 5%; transform: translateY(-50%); }
+  .bottom { bottom: 5%; left:50%; transform: translateX(-50%); }
+  .left   { top: 50%; left: 5%; transform: translateY(-50%); }
+`;
+
+// ────────────────────────────────────────────────────────────
+// ChartsSection (unchanged)
+// ────────────────────────────────────────────────────────────
 interface ChartsSectionProps {
   tracks: number;
   albums: number;
@@ -124,7 +127,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
     <Section>
       <ChartBox>
         <ChartTitle>Music Ratio</ChartTitle>
-        <ResponsiveContainer width="100%" height="80%">
+        <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
               data={pieData}
@@ -144,16 +147,11 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
 
       <ChartBox>
         <ChartTitle>Listening Fingerprint</ChartTitle>
-        <ResponsiveContainer width="100%" height="80%">
+        <ResponsiveContainer width="100%" height={200}>
           <RadarChart data={radarData}>
             <PolarGrid stroke="#333" />
             <PolarAngleAxis dataKey="metric" stroke="#666" />
-            <PolarRadiusAxis
-              angle={30}
-              domain={[0, 100]}
-              tick={false}
-              axisLine={false}
-            />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
             <Radar
               name="You"
               dataKey="you"
@@ -176,40 +174,16 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
     </Section>
   );
 };
-const ClockChartBox = styled(ChartBox)`
-  position: relative;
-  /* ensure it’s square—adjust the height to your needs */
-  height: 400px;
-`;
-
-const CenterLabels = styled.div`
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-
-  .label {
-    position: absolute;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: bold;
-  }
-
-  .top    { top:  5%; left: 50%; transform: translateX(-50%); }
-  .right  { top: 50%; right: 5%; transform: translateY(-50%); }
-  .bottom { bottom: 5%; left:50%; transform: translateX(-50%); }
-  .left   { top: 50%; left: 5%; transform: translateY(-50%); }
-`;
-
 
 // ────────────────────────────────────────────────────────────
-// Main Reports component
+// Main Reports Component (with mapping fix)
 // ────────────────────────────────────────────────────────────
 const Reports: React.FC = () => {
   const userId = useUserId();
   const isLoggedIn = useIsLoggedIn();
 
-  // Weekly
-  const [weekRange, setWeekRange] = useState(() => {
+  // Weekly listens
+  const [weekRange] = useState(() => {
     const today = new Date();
     return {
       start: startOfWeek(today, { weekStartsOn: 1 }),
@@ -222,213 +196,92 @@ const Reports: React.FC = () => {
     prevTotal: number;
   } | null>(null);
 
-  // Charts
-  const [musicRatio, setMusicRatio] = useState<{
-    tracks: number;
-    albums: number;
-    artists: number;
-  } | null>(null);
+  // Charts & summary
+  const [musicRatio, setMusicRatio] = useState<RawMusicRatio | null>(null);
   const [fingerprint, setFingerprint] = useState<Fingerprint | null>(null);
-
-  // Summary & details
-  const [summary, setSummary] = useState<
-    { label: string; value: number; change: number; bg: string }[]
-  >([]);
-  const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
-  const [topAlbums, setTopAlbums] = useState<TopAlbum[]>([]);
-  const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const [byHour, setByHour] = useState<number[] | null>(null);
   const [busiestHour, setBusiestHour] = useState(0);
   const [busiestCount, setBusiestCount] = useState(0);
 
-  // Fetch weekly
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      try {
-        const { start, end } = weekRange;
-        const lastStart = subDays(start, 7);
-        const lastEnd = subDays(end, 7);
-        const [thisWeek, lastWeek] = await Promise.all([
-          fetchReports(userId),
-          fetchReports(userId),
-        ]);
-        const filterRange = (
-          data: typeof thisWeek,
-          s: Date,
-          e: Date
-        ) =>
-          data.filter((h) => {
-            const d = new Date(h.played_at);
-            return d >= s && d <= e;
-          });
-        const thisFiltered = filterRange(thisWeek, start, end);
-        const lastFiltered = filterRange(lastWeek, lastStart, lastEnd);
-        const daily = Array.from({ length: 7 }, (_, i) => {
-          const dayStr = addDays(start, i).toDateString();
-          return thisFiltered.filter(
-            (h) => new Date(h.played_at).toDateString() === dayStr
-          ).length;
-        });
-        setWeekData({
-          daily,
-          total: thisFiltered.length,
-          prevTotal: lastFiltered.length,
-        });
-      } catch {
-        setError('Failed to load weekly data.');
-      }
-    })();
-  }, [userId, weekRange]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch charts data
   useEffect(() => {
     if (!userId) return;
     (async () => {
       try {
-        const [ratio, fp] = await Promise.all([
+        // 1. Fetch raw ratio + fingerprint
+        const [rawRatio, fp] = await Promise.all([
           getMusicRatio(userId),
           getListeningFingerprint(userId),
         ]);
-        setMusicRatio(ratio);
+        // 2. Map into our full shape
+        setMusicRatio({
+          tracks:      rawRatio.tracks,
+          lastTracks:  rawRatio.lastTracks,
+          albums:      rawRatio.albums,
+          lastAlbums:  rawRatio.lastAlbums,
+          artists:     rawRatio.artists,
+          lastArtists: rawRatio.lastArtists,
+        });
         setFingerprint(fp);
-      } catch {
-        setError('Failed to load charts.');
-      }
-    })();
-  }, [userId]);
 
-  // Fetch summary & top-N
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      try {
-        const [allA, allAL, allT] = await Promise.all([
-          getTopArtists(userId, 10),
-          getTopAlbums(userId, 10),
-          getTopTracks(userId, 10),
-        ]);
-        const [prevA, prevAL, prevT] = await Promise.all([
-          getTopArtists(userId, 10),
-          getTopAlbums(userId, 10),
-          getTopTracks(userId, 10),
-        ]);
-        const [detailA, detailAL, detailT] = await Promise.all([
-          getTopArtists(userId, 5),
-          getTopAlbums(userId, 5),
-          getTopTracks(userId, 5),
-        ]);
-        const pct = (c: number, p: number) =>
-          p > 0 ? Math.round(((c - p) / p) * 100) : 0;
-        setSummary([
-          {
-            label: 'Artists',
-            value: allA.length,
-            change: pct(allA.length, prevA.length),
-            bg: DONUT_COLORS.artists,
-          },
-          {
-            label: 'Albums',
-            value: allAL.length,
-            change: pct(allAL.length, prevAL.length),
-            bg: DONUT_COLORS.albums,
-          },
-          {
-            label: 'Tracks',
-            value: allT.length,
-            change: pct(allT.length, prevT.length),
-            bg: DONUT_COLORS.tracks,
-          },
-        ]);
-        setTopArtists(detailA);
-        setTopAlbums(detailAL);
-        setTopTracks(detailT);
+        // 3. Listening clock
+        const clock = await getListeningClock(userId);
+        setByHour(clock);
+        const max = Math.max(...clock);
+        setBusiestCount(max);
+        setBusiestHour(clock.indexOf(max));
+
+        // 4. Weekly listens
+        const reports = await fetchReports(userId);
+        const { start, end } = weekRange;
+        const lastStart = subDays(start, 7);
+        const lastEnd   = subDays(end,   7);
+        const slice = (arr: typeof reports, s: Date, e: Date) =>
+          arr.filter((h) => {
+            const d = new Date(h.played_at);
+            return d >= s && d <= e;
+          });
+        const thisW = slice(reports, start, end);
+        const lastW = slice(reports, lastStart, lastEnd);
+        const daily = Array.from({ length: 7 }, (_, i) => {
+          const dayStr = addDays(start, i).toDateString();
+          return thisW.filter((h) => new Date(h.played_at).toDateString() === dayStr).length;
+        });
+        setWeekData({ daily, total: thisW.length, prevTotal: lastW.length });
+
       } catch {
-        setError('Failed to load summary.');
+        setError('Failed to load data.');
       } finally {
         setLoading(false);
       }
     })();
-  }, [userId]);
+  }, [userId, weekRange]);
 
-  // Render only at 0, 6, 12, 18 hours
-  const renderClockTick = (props: TickItemTextProps): React.ReactElement<SVGTextElement> => {
-    const { x, y, payload } = props;
-    const labels: Record<number, string> = { 0: '00', 6: '06', 12: '12', 18: '18' };
-    const label = labels[payload.value as number];
-    return (
-      <text
-        x={x}
-        y={y}
-        textAnchor="middle"
-        dominantBaseline="central"
-        style={{ fill: '#888', fontSize: 12 }}
-      >
-        {label ?? ''}
-      </text>
-    );
-  };
-
-
-
-
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      try {
-        const data = await getListeningClock(userId);
-        setByHour(data);
-        // pick busiest
-        const max = Math.max(...data);
-        setBusiestCount(max);
-        setBusiestHour(data.indexOf(max));
-      } catch {
-        setError('Failed to load listening-clock.');
-      }
-    })();
-  }, [userId]);
   if (!isLoggedIn) return <Navigate to="/" replace />;
-  if (loading || !weekData || !musicRatio || !fingerprint || byHour === null)
-    return (
-      <Container>
-        <p>Loading reports...</p>
-      </Container>
-    );
-  if (error)
-    return (
-      <Container>
-        <p>{error}</p>
-      </Container>
-    );
+  if (loading || !weekData || !musicRatio || !fingerprint || !byHour)
+    return <Container><p>Loading reports…</p></Container>;
+  if (error) 
+    return <Container><p>{error}</p></Container>;
 
   return (
     <Container>
-      {/* Charts */}
+      {/* Top‐level donuts & radar */}
       <ChartsSection
         tracks={musicRatio.tracks}
         albums={musicRatio.albums}
         artists={musicRatio.artists}
         fingerprint={fingerprint}
       />
+
+      {/* Listening clock + busiest‐hour */}
       <Section>
-        {/* Listening Clock */}
         <ClockChartBox>
           <ChartTitle>Listening Clock</ChartTitle>
-
-          {/* only render once byHour is fetched */}
-          {byHour && (
-            <RadialHourChart
-              data={byHour}
-              width={350}
-              height={350}
-            />
-          )}
-
-          {/* Overlay center labels via styled-components */}
+          <ResponsiveContainer width="100%" height="100%">
+            <RadialHourChart data={byHour} width={350} height={350} />
+          </ResponsiveContainer>
           <CenterLabels>
             <div className="label top">00</div>
             <div className="label right">06</div>
@@ -436,24 +289,29 @@ const Reports: React.FC = () => {
             <div className="label left">18</div>
           </CenterLabels>
         </ClockChartBox>
-
-        {/* Busiest‐hour summary box */}
         <ChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Label>Busiest hour</Label>
-          <Value>
-            {(() => {
-              const suffix = busiestHour < 12 ? 'AM' : 'PM';
-              const hour12 = busiestHour % 12 || 12;
-              return `${hour12}:00${suffix}`;
-            })()}
-          </Value>
-          <Label style={{ marginTop: 16 }}>Listens in busiest hour</Label>
+          <Value>{`${busiestHour % 12 || 12}:00${busiestHour < 12 ? ' AM' : ' PM'}`}</Value>
+          <Label style={{ marginTop: 16 }}>Listens this hour</Label>
           <Value>{busiestCount}</Value>
         </ChartBox>
       </Section>
-          
-        <TopMusic userId={userId}/>
-     
+
+      {/* Top‐N lists */}
+      <TopMusic userId={userId} />
+
+      {/* Detailed Music‐Ratio panel */}
+      <Section>
+        <ChartTitle>Music Ratio Details</ChartTitle>
+        <MusicRatio
+          currentTracks={musicRatio.tracks}
+          lastTracks={musicRatio.lastTracks}
+          currentAlbums={musicRatio.albums}
+          lastAlbums={musicRatio.lastAlbums}
+          currentArtists={musicRatio.artists}
+          lastArtists={musicRatio.lastArtists}
+        />
+      </Section>
     </Container>
   );
 };
