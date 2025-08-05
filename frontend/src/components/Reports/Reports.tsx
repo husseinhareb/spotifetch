@@ -69,21 +69,6 @@ const ClockChartBox = styled(ChartBox)`
   height: 400px;
 `;
 
-const CenterLabels = styled.div`
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-  .label {
-    position: absolute;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: bold;
-  }
-  .top    { top:  5%; left: 50%; transform: translateX(-50%); }
-  .right  { top: 50%; right: 5%; transform: translateY(-50%); }
-  .bottom { bottom: 5%; left:50%; transform: translateX(-50%); }
-  .left   { top: 50%; left: 5%; transform: translateY(-50%); }
-`;
 
 // ────────────────────────────────────────────────────────────
 // ChartsSection (unchanged)
@@ -282,12 +267,7 @@ const Reports: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <RadialHourChart data={byHour} width={350} height={350} />
           </ResponsiveContainer>
-          <CenterLabels>
-            <div className="label top">00</div>
-            <div className="label right">06</div>
-            <div className="label bottom">12</div>
-            <div className="label left">18</div>
-          </CenterLabels>
+
         </ClockChartBox>
         <ChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Label>Busiest hour</Label>
