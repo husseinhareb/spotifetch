@@ -18,6 +18,7 @@ import {
   Title,
   Subtitle,
   Listens,
+  Overlay,
 } from './Styles/style';
 import {
   getMusicRatio,
@@ -99,14 +100,17 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         <Card>
           <CardImage img={topArtists[0]?.artist_image}>
             <CardLabel bg={DONUT_COLORS.artists}>Top Artist</CardLabel>
+            <Overlay>
+              <Title>#1 {topArtists[0]?.artist_name}</Title>
+              <Listens>{topArtists[0]?.play_count} listens</Listens>
+            </Overlay>
           </CardImage>
           <CardBody>
-            <Title>#1 {topArtists[0]?.artist_name}</Title>
-            <Listens>{topArtists[0]?.play_count} listens</Listens>
             <ul style={{ padding: 0, margin: '12px 0', listStyle: 'none', color: '#fff' }}>
               {topArtists.slice(1, 5).map((artist, idx) => (
                 <li key={artist.artist_name}>
-                  #{idx + 2} {artist.artist_name} <span style={{ color: '#888' }}>({artist.play_count})</span>
+                  #{idx + 2} {artist.artist_name}{' '}
+                  <span style={{ color: '#888' }}>({artist.play_count})</span>
                 </li>
               ))}
             </ul>
@@ -117,15 +121,18 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         <Card>
           <CardImage img={topAlbums[0]?.album_image}>
             <CardLabel bg={DONUT_COLORS.albums}>Top Album</CardLabel>
+            <Overlay>
+              <Title>#1 {topAlbums[0]?.album_name}</Title>
+              <Subtitle>{topAlbums[0]?.artist_name}</Subtitle>
+              <Listens>{topAlbums[0]?.play_count} listens</Listens>
+            </Overlay>
           </CardImage>
           <CardBody>
-            <Title>#1 {topAlbums[0]?.album_name}</Title>
-            <Subtitle>{topAlbums[0]?.artist_name}</Subtitle>
-            <Listens>{topAlbums[0]?.play_count} listens</Listens>
             <ul style={{ padding: 0, margin: '12px 0', listStyle: 'none', color: '#fff' }}>
               {topAlbums.slice(1, 5).map((album, idx) => (
                 <li key={album.album_name}>
-                  #{idx + 2} {album.album_name} <span style={{ color: '#888' }}>({album.play_count})</span>
+                  #{idx + 2} {album.album_name}{' '}
+                  <span style={{ color: '#888' }}>({album.play_count})</span>
                 </li>
               ))}
             </ul>
@@ -136,15 +143,18 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         <Card>
           <CardImage img={topTracks[0]?.album_image}>
             <CardLabel bg={DONUT_COLORS.tracks}>Top Track</CardLabel>
+            <Overlay>
+              <Title>#1 {topTracks[0]?.track_name}</Title>
+              <Subtitle>{topTracks[0]?.artist_name}</Subtitle>
+              <Listens>{topTracks[0]?.play_count} listens</Listens>
+            </Overlay>
           </CardImage>
           <CardBody>
-            <Title>#1 {topTracks[0]?.track_name}</Title>
-            <Subtitle>{topTracks[0]?.artist_name}</Subtitle>
-            <Listens>{topTracks[0]?.play_count} listens</Listens>
             <ul style={{ padding: 0, margin: '12px 0', listStyle: 'none', color: '#fff' }}>
               {topTracks.slice(1, 5).map((track, idx) => (
                 <li key={track.track_id}>
-                  #{idx + 2} {track.track_name} <span style={{ color: '#888' }}>({track.play_count})</span>
+                  #{idx + 2} {track.track_name}{' '}
+                  <span style={{ color: '#888' }}>({track.play_count})</span>
                 </li>
               ))}
             </ul>

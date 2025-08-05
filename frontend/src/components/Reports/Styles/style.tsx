@@ -1,5 +1,5 @@
 // src/components/Reports/Styles/style.ts
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 // ────────────────────────────────────────────────────────────
@@ -171,10 +171,41 @@ export const Card = styled.div`
   flex-direction: column;
 `;
 
+// ────────────────────────────────────────────────────────────
+// slow zoom keyframes
+// ────────────────────────────────────────────────────────────
+
+// ────────────────────────────────────────────────────────────
+// Detail Cards (Top Artists / Albums / Tracks)
+// ────────────────────────────────────────────────────────────
 export const CardImage = styled.div<{ img?: string }>`
-  background: url(${props => props.img || ''}) center/cover no-repeat;
-  height: 200px;
+  background: url(${props => props.img || ''}) center center no-repeat;
+  background-size: 100%;
+  height: 600px;
   position: relative;
+  overflow: hidden;
+
+  /* transition will smoothly animate both into and out of hover */
+  transition: background-size 0.2s linear;
+
+  &:hover {
+    background-size: 110%;
+  }
+`;
+// Overlay container for the “#1” text, subtitles, and listen counts
+export const Overlay = styled.div`
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+
+  h3, p {
+    margin: 4px 0;
+  }
 `;
 
 export const CardLabel = styled.span<{ bg: string }>`
@@ -204,13 +235,13 @@ export const Title = styled.h3`
 export const Subtitle = styled.p`
   margin: 0 0 12px;
   font-size: 0.9rem;
-  color: #888;
+  color: #ccc;
 `;
 
 export const Listens = styled.p`
   margin: 0;
   font-size: 0.9rem;
-  color: #888;
+  color: #ccc;
 `;
 
 // ────────────────────────────────────────────────────────────
