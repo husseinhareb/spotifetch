@@ -1,5 +1,3 @@
-// src/repositories/reportsRepository.ts
-
 import {
   fetchUserHistory,
   fetchTopArtists,
@@ -23,6 +21,18 @@ export interface Fingerprint {
   variance: number;       // normalized day-to-day play variance
   concentration: number;  // % of plays in your top-5 busiest days
   replayRate: number;     // avg plays per unique track, scaled to 0–100
+}
+
+/**
+ * Shape of music-ratio data, comparing current vs a previous period.
+ */
+export interface RawMusicRatio {
+  tracks: number;
+  albums: number;
+  artists: number;
+  lastTracks: number;
+  lastAlbums: number;
+  lastArtists: number;
 }
 
 /**
@@ -73,22 +83,44 @@ export async function fetchReports(
 }
 
 /**
- * Compute the user's “Music Ratio”:
+ * Compute the user's "Music Ratio":
  *   • # unique tracks
  *   • # unique albums
  *   • # unique artists
+ * over the last `days` days, compared to the previous `days`.
  */
-export async function getMusicRatio(userId: string): Promise<{
-  tracks: number;
-  albums: number;
-  artists: number;
-}> {
+export async function getMusicRatio(
+  userId: string,
+  days: number = 30
+): Promise<RawMusicRatio> {
   const history = await fetchUserHistory(userId);
-  return {
-    tracks: new Set(history.map(h => h.track_id)).size,
-    albums: new Set(history.map(h => h.album_id)).size,
-    artists: new Set(history.map(h => h.artist_id)).size,
-  };
+  const now = Date.now();
+  const periodMs = days * 24 * 60 * 60 * 1000;
+  const startCurrent = now - periodMs;
+  const startLast = now - 2 * periodMs;
+  const endLast = startCurrent;
+
+  const slice = (arr: HistorySong[], from: number, to: number) =>
+    arr.filter(h => {
+      const t = new Date(h.played_at).getTime();
+      return t >= from && t < to;
+    });
+
+  const currentPeriod = slice(history, startCurrent, now);
+  const lastPeriod = slice(history, startLast, endLast);
+
+  const countUniques = (arr: HistorySong[], key: keyof HistorySong) =>
+    new Set(arr.map(h => h[key] as string)).size;
+
+  const tracks = countUniques(currentPeriod, 'track_id');
+  const albums = countUniques(currentPeriod, 'album_id');
+  const artists = countUniques(currentPeriod, 'artist_id');
+
+  const lastTracks = countUniques(lastPeriod, 'track_id');
+  const lastAlbums = countUniques(lastPeriod, 'album_id');
+  const lastArtists = countUniques(lastPeriod, 'artist_id');
+
+  return { tracks, albums, artists, lastTracks, lastAlbums, lastArtists };
 }
 
 /**
@@ -151,16 +183,16 @@ export async function getListeningFingerprint(
   const replayRateRaw = uniqueTracks > 0 ? recent.length / uniqueTracks : 0;
   const replayRate = Math.min(Math.round(replayRateRaw * 10), 100);
 
-  return { consistency, discoveryRate, variance, concentration, replayRate };
+  return { consistency, discoveryRate, variance, concentration,  replayRate };
 }
 
-
-// just below getListeningFingerprint(...)
+/**
+ * Compute the distribution of plays by hour of day (0–23).
+ */
 export async function getListeningClock(
   userId: string
 ): Promise<number[]> {
   const history = await fetchUserHistory(userId);
-  // zeroed array for 24h
   const counts = Array<number>(24).fill(0);
   history.forEach(h => {
     const hr = new Date(h.played_at).getHours();
