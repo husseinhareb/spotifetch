@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api } from '../../repositories/apiConfig';
 import { 
   Title,
   Container,
@@ -23,29 +24,26 @@ const CurrentlyPlaying: React.FC = () => {
   useEffect(() => {
     const fetchCurrentSong = async () => {
       try {
-        const response = await fetch("http://localhost:8000/tracks/currently_playing", {
-          credentials: "include",
-        });
-        
-        if (response.ok) {
-          const songInfo = await response.json();
-          if (songInfo.track_name) {
-            setCurrentTrack(songInfo.track_name);
-            setCurrentArtist(songInfo.artist_name);
-            setAlbumImage(songInfo.album_image);
-            setIsPlaying(songInfo.is_playing);
-            setProgressMs(songInfo.progress_ms);
-            setDurationMs(songInfo.duration_ms);
-          } else {
-            setIsPlaying(false);
-          }
+        const resp = await api.get('/tracks/currently_playing');
+        const songInfo = resp.data;
+        if (songInfo && songInfo.track_name) {
+          setCurrentTrack(songInfo.track_name);
+          setCurrentArtist(songInfo.artist_name);
+          setAlbumImage(songInfo.album_image);
+          setIsPlaying(songInfo.is_playing);
+          setProgressMs(songInfo.progress_ms);
+          setDurationMs(songInfo.duration_ms);
         } else {
-          console.error("Failed to fetch current song");
           setIsPlaying(false);
         }
-      } catch (error) {
-        console.error("Error fetching current song", error);
-        setIsPlaying(false);
+      } catch (error: any) {
+        // 204 responses will throw; treat as no content
+        if (error.response && error.response.status === 204) {
+          setIsPlaying(false);
+        } else {
+          console.error('Error fetching current song', error);
+          setIsPlaying(false);
+        }
       }
     };
 

@@ -7,6 +7,7 @@ import {
     useSetCountry,
     useSetProduct,
 } from "../services/store";
+import { api } from '../repositories/apiConfig';
 
 const useUserInfo = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -22,25 +23,22 @@ const useUserInfo = () => {
 
     const checkLoginStatus = async () => {
         try {
-            const response = await fetch("http://localhost:8000/user_info", {
-                credentials: "include",
-            });
-
-            if (response.ok) {
-                const userInfo = await response.json();
-                setUsername(userInfo.display_name);
-                setEmail(userInfo.email);
+            try {
+                const resp = await api.get('/user_info');
+                const userInfo = resp.data;
+                setUsername(userInfo.display_name || 'N/A');
+                setEmail(userInfo.email || 'N/A');
 
                 if (userInfo.images && userInfo.images.length > 0) {
-                    setProfileImage(userInfo.images[1].url); 
-                }
-                else {
+                    // pick first available image
+                    setProfileImage(userInfo.images[0].url || null);
+                } else {
                     setProfileImage(null);
                 }
-                setCountry(userInfo.country);
-                setProduct(userInfo.product);
+                setCountry(userInfo.country || 'N/A');
+                setProduct(userInfo.product || 'N/A');
                 setIsLoggedIn(true);
-            } else {
+            } catch (e) {
                 setIsLoggedIn(false);
                 resetUserDetails();
             }

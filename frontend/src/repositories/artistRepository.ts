@@ -49,7 +49,7 @@ export async function fetchArtistInfo(
   artistId: string
 ): Promise<ArtistInfo> {
   const resp = await axios.get<ArtistInfo>(
-    `http://localhost:8000/auth/artist_info/${artistId}`,
+    `http://localhost:8000/artists/artist_info/${artistId}`,
     { withCredentials: true }
   );
   if (resp.status !== 200) {
@@ -65,7 +65,7 @@ export async function fetchLastFmImages(
   artistName: string
 ): Promise<string[]> {
   const resp = await axios.get<{ images: string[] }>(
-    `http://localhost:8000/auth/artist_images/${artistName}`
+    `http://localhost:8000/artists/artist_images/${artistName}`
   );
   if (resp.status !== 200) {
     throw new Error(`Failed to load Last.fm images (${resp.status})`);

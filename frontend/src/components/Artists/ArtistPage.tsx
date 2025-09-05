@@ -8,65 +8,47 @@ import {
   ImageGallery,
   GalleryImage,
 } from './Styles/style';
+import { fetchArtistInfo, fetchLastFmImages, ArtistInfo } from '../../repositories/artistRepository';
 
 const ArtistPage: React.FC = () => {
   const { artistId } = useParams<{ artistId: string }>();
-  const [artistInfo, setArtistInfo] = useState<any>(null);
+  const [artistInfo, setArtistInfo] = useState<ArtistInfo | null>(null);
   const [lastFmImages, setLastFmImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch artist info and Last.fm images
+  // Fetch artist info and Last.fm images using repository helpers
   useEffect(() => {
-    const fetchArtistInfo = async () => {
+    const load = async () => {
+      if (!artistId) return;
+      setLoading(true);
+      setError(null);
       try {
-        const response = await fetch(`http://localhost:8000/auth/artist_info/${artistId}`, {
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setArtistInfo(data);
-          return data.artist_info.artist_name;  // Return artist name for Last.fm fetch
-        } else {
-          console.error('Failed to fetch artist info:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching artist info', error);
-      }
-    };
+        const data = await fetchArtistInfo(artistId);
+        setArtistInfo(data);
 
-    const fetchLastFmImages = async (artistName: string) => {
-      try {
-        const response = await fetch(`http://localhost:8000/auth/artist_images/${artistName}`);
-        if (response.ok) {
-          const data = await response.json();
-          setLastFmImages(data.images);
-        } else {
-          console.error('Failed to fetch Last.fm images:', response.statusText);
+        try {
+          const imgs = await fetchLastFmImages(data.artist_info.artist_name);
+          setLastFmImages(imgs);
+        } catch (imgErr) {
+          // non-fatal: keep going with empty gallery
+          console.error('Failed to load Last.fm images', imgErr);
+          setLastFmImages([]);
         }
-      } catch (error) {
-        console.error('Error fetching Last.fm images', error);
+      } catch (err: any) {
+        console.error('Error loading artist page', err);
+        setError(err?.message || 'Failed to load artist');
       } finally {
         setLoading(false);
       }
     };
 
-    const loadArtistData = async () => {
-      const artistName = await fetchArtistInfo();
-      if (artistName) {
-        fetchLastFmImages(artistName);
-      }
-    };
-
-    loadArtistData();
+    load();
   }, [artistId]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (!artistInfo) {
-    return <p>No artist information found.</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+  if (!artistInfo) return <p>No artist information found.</p>;
 
   return (
     <ArtistDetailsContainer>
