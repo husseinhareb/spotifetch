@@ -8,14 +8,16 @@ import {
   ImageGallery,
   GalleryImage,
 } from './Styles/style';
-import { fetchArtistInfo, fetchLastFmImages, ArtistInfo } from '../../repositories/artistRepository';
+import { fetchArtistInfo, fetchLastFmImages, fetchArtistGallery, ArtistInfo } from '../../repositories/artistRepository';
 
+const PLACEHOLDER_HASH = '2a96cbd8b46e442fc41c2b86b821562f';
 const ArtistPage: React.FC = () => {
   const { artistId } = useParams<{ artistId: string }>();
   const [artistInfo, setArtistInfo] = useState<ArtistInfo | null>(null);
   const [lastFmImages, setLastFmImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [mainImageSrc, setMainImageSrc] = useState<string>('https://via.placeholder.com/300');
 
   // Fetch artist info and Last.fm images using repository helpers
   useEffect(() => {
@@ -28,11 +30,18 @@ const ArtistPage: React.FC = () => {
         setArtistInfo(data);
 
         try {
-          const imgs = await fetchLastFmImages(data.artist_info.artist_name);
-          setLastFmImages(imgs);
+          // Try the new gallery endpoint first (uses web scraping)
+          const gallery = await fetchArtistGallery(data.artist_info.artist_name, 12);
+          if (gallery.length > 0) {
+            setLastFmImages(gallery);
+          } else {
+            // Fallback to Last.fm if gallery is empty
+            const lastfmImgs = await fetchLastFmImages(data.artist_info.artist_name);
+            const filtered = lastfmImgs.filter(url => url && !url.includes(PLACEHOLDER_HASH));
+            setLastFmImages(filtered.length > 0 ? filtered : []);
+          }
         } catch (imgErr) {
-          // non-fatal: keep going with empty gallery
-          console.error('Failed to load Last.fm images', imgErr);
+          console.error('Failed to load images', imgErr);
           setLastFmImages([]);
         }
       } catch (err: any) {
@@ -46,15 +55,35 @@ const ArtistPage: React.FC = () => {
     load();
   }, [artistId]);
 
+  // update main image when artistInfo or lastFmImages change
+  useEffect(() => {
+    if (!artistInfo) {
+      setMainImageSrc('https://via.placeholder.com/300');
+      return;
+    }
+    const computed =
+      (artistInfo.artist_info.images && artistInfo.artist_info.images.length > 0 && artistInfo.artist_info.images[0]) ||
+      (artistInfo.artist_info.track_images && artistInfo.artist_info.track_images.length > 0 && artistInfo.artist_info.track_images[0]) ||
+      (lastFmImages && lastFmImages.length > 0 && lastFmImages[0]) ||
+      'https://via.placeholder.com/300';
+    setMainImageSrc(computed);
+  }, [artistInfo, lastFmImages]);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
   if (!artistInfo) return <p>No artist information found.</p>;
 
+
   return (
     <ArtistDetailsContainer>
       <h1>{artistInfo.artist_info.artist_name}</h1>
-      <ArtistImage src={artistInfo.artist_info.images[0] || "https://via.placeholder.com/150"} alt={artistInfo.artist_info.artist_name} />
-      <p>{artistInfo.artist_info.genres.join(', ')}</p>
+      <ArtistImage
+        src={mainImageSrc}
+        alt={artistInfo.artist_info.artist_name}
+        crossOrigin="anonymous"
+        onError={() => setMainImageSrc('https://via.placeholder.com/300')}
+      />
+      <p>{(artistInfo.artist_info.genres || []).join(', ')}</p>
       <p>Popularity: {artistInfo.artist_info.popularity}</p>
       <p>Description: {artistInfo.artist_info.description}</p>
 
@@ -62,9 +91,15 @@ const ArtistPage: React.FC = () => {
       <h2>Gallery</h2>
       <ImageGallery>
         {(lastFmImages.length ? lastFmImages : ["https://via.placeholder.com/150"]).map((imageUrl, index) => (
-          <GalleryImage key={index} src={imageUrl} alt={`Image of ${artistInfo.artist_info.artist_name} ${index + 1}`} />
+          <GalleryImage
+            key={index}
+            src={imageUrl}
+            alt={`Image of ${artistInfo.artist_info.artist_name} ${index + 1}`}
+            onError={(e: any) => { e.currentTarget.src = 'https://via.placeholder.com/150'; }}
+          />
         ))}
       </ImageGallery>
+
 
       {/* Display Top Tracks */}
       <h2>Top Tracks</h2>

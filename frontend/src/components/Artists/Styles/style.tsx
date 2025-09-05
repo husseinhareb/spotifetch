@@ -25,8 +25,9 @@ export const ArtistDetailsContainer = styled.div`
 // Styling for the artist image
 export const ArtistImage = styled.img`
   width: 100%;
-  height: auto;
+  height: 300px;
   max-width: 300px;
+  object-fit: cover;
   border-radius: 10px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -70,7 +71,8 @@ export const ImageGallery = styled.div`
 
 export const GalleryImage = styled.img`
   width: 100%;
-  height: auto;
+  height: 150px;
+  object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 `;

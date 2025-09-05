@@ -32,6 +32,7 @@ export interface ArtistInfo {
     images: string[];
     genres: string[];
     popularity: number;
+  track_images?: string[];
     description: string;
   };
   top_tracks: Array<{
@@ -65,10 +66,23 @@ export async function fetchLastFmImages(
   artistName: string
 ): Promise<string[]> {
   const resp = await axios.get<{ images: string[] }>(
-    `http://localhost:8000/artists/artist_images/${artistName}`
+    `http://localhost:8000/artists/artist_images/${encodeURIComponent(artistName)}`
   );
   if (resp.status !== 200) {
     throw new Error(`Failed to load Last.fm images (${resp.status})`);
+  }
+  return resp.data.images;
+}
+
+export async function fetchArtistGallery(
+  artistName: string,
+  limit = 12
+): Promise<string[]> {
+  const resp = await axios.get<{ images: string[] }>(
+    `http://localhost:8000/artists/artist_gallery/${encodeURIComponent(artistName)}?limit=${limit}`
+  );
+  if (resp.status !== 200) {
+    throw new Error(`Failed to load artist gallery (${resp.status})`);
   }
   return resp.data.images;
 }
