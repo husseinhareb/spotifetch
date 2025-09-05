@@ -22,11 +22,17 @@ const MusicRatio: React.FC<MusicRatioProps> = ({
   currentArtists,
   lastArtists,
 }) => {
-  // Prepare ratio percentages
+  // Prepare ratio percentages with a safe divider to avoid NaN when denom is 0
+  const safePercent = (curr: number, last: number) => {
+    const denom = curr + last;
+    if (!Number.isFinite(curr) || !Number.isFinite(last) || denom <= 0) return 0;
+    return (curr / denom) * 100;
+  };
+
   const data = [
-    { name: 'Artists', value: (currentArtists / (currentArtists + lastArtists)) * 100, fill: '#A78BFA' },
-    { name: 'Albums', value: (currentAlbums / (currentAlbums + lastAlbums)) * 100, fill: '#34D399' },
-    { name: 'Tracks', value: (currentTracks / (currentTracks + lastTracks)) * 100, fill: '#3B82F6' },
+    { name: 'Artists', value: safePercent(currentArtists, lastArtists), fill: '#A78BFA' },
+    { name: 'Albums', value: safePercent(currentAlbums, lastAlbums), fill: '#34D399' },
+    { name: 'Tracks', value: safePercent(currentTracks, lastTracks), fill: '#3B82F6' },
   ];
 
   return (

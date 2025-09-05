@@ -15,11 +15,15 @@ export function trimBioWithLink(
 
   const preview = words.slice(0, maxWords - 3).join(' ') + '... ';
   return (
-    <>
+    // use an inline wrapper so the link appears immediately after the preview
+    <span style={{ display: 'inline' }}>
       {preview}
-      <Link to={`/artist/${encodeURIComponent(artistId)}`} style={{ color: '#007bff' }}>
+      <Link
+        to={`/artist/${encodeURIComponent(artistId)}`}
+        style={{ color: '#007bff', textDecoration: 'underline', display: 'inline' }}
+      >
         Click to read more
       </Link>
-    </>
+    </span>
   );
 }
