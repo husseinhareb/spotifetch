@@ -4,7 +4,6 @@ import Navbar from './components/Navbar/Navbar';
 import { ContentWrapper } from './components/Navbar/Styles/style';
 
 import Home from './components/Home/Home';
-import About from './components/About/About';
 import Profile from './components/Profile/Profile';
 import ArtistPage from './components/Artists/ArtistPage';
 import Library from './components/Library/Library';
@@ -30,7 +29,6 @@ const App: React.FC = () => (
       <Routes>
         {/* public pages */}
         <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
         <Route path="/artist/:artistId" element={<ArtistPage />} />
 
         {/* protected pages */}

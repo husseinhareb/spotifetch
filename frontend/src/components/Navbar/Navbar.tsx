@@ -165,12 +165,6 @@ const Navbar: React.FC = () => {
           </NavItem>
         )}
 
-        <NavItem>
-          <RouterLink to="/about">
-            <NavButton>About</NavButton>
-          </RouterLink>
-        </NavItem>
-
         {isLoggedIn ? (
           <>
             <NavItem>
