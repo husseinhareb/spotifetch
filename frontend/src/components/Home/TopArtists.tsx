@@ -308,7 +308,7 @@ const TopArtists: React.FC = () => {
       </SectionHeader>
 
       <ArtistsGrid>
-        {artists.slice(0, 6).map((artist, index) => (
+        {artists.slice(0, 5).map((artist, index) => (
           <ArtistCard 
             key={artist.id} 
             featured={index === 0}
