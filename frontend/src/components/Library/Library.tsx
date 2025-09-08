@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Link } from "react-router-dom";
 import styled, { keyframes } from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -354,12 +354,8 @@ const Library: React.FC = () => {
             <NavCard
               key={item.key}
               active={activeSection === item.key}
-              as="a"
-              href={`#/library/${item.path}`}
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.hash = `/library/${item.path}`;
-              }}
+              as={Link}
+              to={`/library/${item.path}`}
             >
               <NavCardIcon>
                 <FontAwesomeIcon icon={item.icon} />

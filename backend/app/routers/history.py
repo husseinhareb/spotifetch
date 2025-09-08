@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Request, HTTPException, Query
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import spotipy
 
 from fastapi.encoders import jsonable_encoder
@@ -41,7 +41,7 @@ async def record_history(request: Request, user_id: str):
         artist_name=", ".join(a["name"] for a in item["artists"]),
         album_name=item["album"]["name"],
         album_image=(item["album"]["images"][0]["url"] if item["album"]["images"] else None),
-        played_at=datetime.utcnow()
+    played_at=datetime.now(timezone.utc)
     )
 
     saved = save_history(entry)
