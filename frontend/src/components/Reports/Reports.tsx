@@ -102,6 +102,11 @@ interface GenreData {
   color: string;
 }
 
+interface DecadeItem {
+  label: string;
+  count: number;
+}
+
 // ────────────────────────────────────────────────────────────
 // Constants & Styled Components
 // ────────────────────────────────────────────────────────────
@@ -521,6 +526,7 @@ const Reports: React.FC = () => {
   // Enhanced analytics data
   const [trendData, setTrendData] = useState<TrendData[]>([]);
   const [genreData, setGenreData] = useState<GenreData[]>([]);
+  const [decadeData, setDecadeData] = useState<DecadeItem[]>([]);
   const [totalListenTime, setTotalListenTime] = useState(0);
   const [avgSessionLength, setAvgSessionLength] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
@@ -619,6 +625,29 @@ const Reports: React.FC = () => {
 
       const genres = await generateGenreData(userId);
       setGenreData(genres);
+
+      // 6. Decade distribution
+      const decadeMap: Record<string, number> = {};
+      const decadeLabels = ['Pre-1960','1960s','1970s','1980s','1990s','2000s','2010s','2020s'];
+      reports.forEach((r) => {
+        try {
+          const y = new Date(r.played_at).getFullYear();
+          let label = '';
+          if (isNaN(y)) return;
+          if (y < 1960) label = 'Pre-1960';
+          else {
+            const d = Math.floor(y / 10) * 10;
+            label = `${d}s`;
+          }
+          if (!decadeMap[label]) decadeMap[label] = 0;
+          decadeMap[label] += 1;
+        } catch (e) {
+          // ignore parse errors
+        }
+      });
+
+      const decades: DecadeItem[] = decadeLabels.map((lbl) => ({ label: lbl, count: decadeMap[lbl] || 0 }));
+      setDecadeData(decades);
 
       // 4. Calculate advanced metrics
       const recentReports = reports.filter(r => {
@@ -823,6 +852,31 @@ const Reports: React.FC = () => {
         trendData={trendData}
         genreData={genreData}
       />
+
+      {/* Decade distribution section */}
+      <Section>
+        <ChartTitle>
+          <FontAwesomeIcon icon={faMusic} style={{ marginRight: '8px' }} />
+          Decade Distribution
+        </ChartTitle>
+        <EnhancedChartBox style={{ marginTop: '16px', padding: '18px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {decadeData.map((d) => {
+              const max = Math.max(...decadeData.map(x => x.count), 1);
+              const width = Math.round((d.count / max) * 460);
+              return (
+                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '80px', color: '#ccc', fontSize: '0.9rem' }}>{d.label}</div>
+                  <div style={{ flex: 1, background: '#0f0f0f', borderRadius: '6px', height: '18px', overflow: 'hidden' }}>
+                    <div style={{ width: `${(d.count === 0 ? 2 : (d.count / max) * 100)}%`, height: '100%', background: (d.label === '2010s' ? DONUT_COLORS.primary : '#2b2b2b') }} />
+                  </div>
+                  <div style={{ width: '60px', textAlign: 'right', color: '#bbb', fontSize: '0.9rem' }}>{d.count}</div>
+                </div>
+              );
+            })}
+          </div>
+        </EnhancedChartBox>
+      </Section>
 
       {/* Enhanced Listening Clock */}
       <Section>
