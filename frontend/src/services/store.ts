@@ -14,6 +14,11 @@ interface Store {
   isLoggedIn: boolean;
   authChecked: boolean;                     
   topArtists: { name: string; genres: string[]; imageUrl: string | null }[];
+  // preferences
+  theme: string;
+  language: string;
+  setTheme: (theme: string) => void;
+  setLanguage: (language: string) => void;
   setUserId: (userId: string) => void,
   setUsername: (username: string) => void;
   setEmail: (email: string) => void;
@@ -45,6 +50,9 @@ export const useStore = create<Store>((set) => ({
   isLoggedIn: false,
   authChecked: false,
   topArtists: [],
+  // user preferences
+  theme: (typeof window !== 'undefined' && window.localStorage.getItem('theme')) || 'dark',
+  language: (typeof window !== 'undefined' && window.localStorage.getItem('language')) || 'en',
   setUserId: (userId) => set({userId}),
   setUsername: (username) => set({ username }),
   setEmail: (email) => set({ email }),
@@ -56,6 +64,14 @@ export const useStore = create<Store>((set) => ({
   setAlbumImage: (image) => set({ albumImage: image }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setTopArtists: (artists) => set({ topArtists: artists }),
+  setTheme: (theme: string) => {
+    set({ theme });
+    try { window.localStorage.setItem('theme', theme); } catch {}
+  },
+  setLanguage: (language: string) => {
+    set({ language });
+    try { window.localStorage.setItem('language', language); } catch {}
+  },
   setIsLoggedIn: (status) => set({ isLoggedIn: status }), 
   setAuthChecked: (checked) => set({ authChecked: checked }),
 }));
@@ -73,6 +89,8 @@ export const useAlbumImage = () => useStore((state) => state.albumImage);
 export const useIsPlaying = () => useStore((state) => state.isPlaying);
 export const useTopArtists = () => useStore((state) => state.topArtists);
 export const useIsLoggedIn = () => useStore((state) => state.isLoggedIn); 
+export const useTheme = () => useStore((s) => s.theme);
+export const useLanguage = () => useStore((s) => s.language);
 // Setters for updating state
 export const useSetUserId = () => useStore((s) => s.setUserId);
 export const useSetUsername = () => useStore((state) => state.setUsername);
@@ -86,6 +104,8 @@ export const useSetAlbumImage = () => useStore((state) => state.setAlbumImage);
 export const useSetIsPlaying = () => useStore((state) => state.setIsPlaying);
 export const useSetTopArtists = () => useStore((state) => state.setTopArtists);
 export const useSetIsLoggedIn = () => useStore((state) => state.setIsLoggedIn); 
+export const useSetTheme = () => useStore((s) => s.setTheme);
+export const useSetLanguage = () => useStore((s) => s.setLanguage);
 
 // at the bottom, alongside your other exports:
 export const useAuthChecked = () => useStore((s) => s.authChecked);

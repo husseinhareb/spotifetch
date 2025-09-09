@@ -28,3 +28,46 @@ export const ProfileInfo = styled.p`
   color: #333;
   margin: 5px 0;
 `;
+
+export const SettingsPanel = styled.div`
+  margin-top: 20px;
+  width: 100%;
+  background: linear-gradient(145deg, #ffffff, #f3f3f3);
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+`;
+
+export const SettingsRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+export const Label = styled.div`
+  font-size: 14px;
+  color: #333;
+`;
+
+export const Control = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const Select = styled.select`
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+`;
+
+export const Toggle = styled.button`
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background: #111;
+  color: white;
+`;
