@@ -19,6 +19,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  LabelList,
   AreaChart,
   Area,
   BarChart,
@@ -28,10 +29,10 @@ import {
 import { startOfWeek, endOfWeek, subDays, addDays, format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faCalendarAlt, 
-  faChartLine, 
-  faMusic, 
-  faClock, 
+  faCalendarAlt,
+  faChartLine,
+  faMusic,
+  faClock,
   faFire,
   faArrowUp,
   faArrowDown,
@@ -221,9 +222,15 @@ const StatChange = styled.div<{ positive: boolean }>`
 
 const ChartsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
+  align-items: stretch;
   margin-bottom: 32px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 `;
 
 const EnhancedChartBox = styled(ChartBox)`
@@ -231,10 +238,20 @@ const EnhancedChartBox = styled(ChartBox)`
   border: 1px solid #333;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  min-height: 320px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  @media (max-width: 768px) {
+    min-height: 280px;
   }
 `;
 
@@ -331,31 +348,84 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
           <FontAwesomeIcon icon={faMusic} style={{ marginRight: '8px' }} />
           Music Distribution
         </ChartTitle>
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              innerRadius="50%"
-              outerRadius="80%"
-              paddingAngle={2}
-              animationBegin={0}
-              animationDuration={1000}
-            >
-              {pieData.map((entry, index) => (
-                <Cell 
-                  key={entry.name} 
-                  fill={entry.color}
-                  stroke="#333"
-                  strokeWidth={2}
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              {/* concentric rings: render one Pie per metric with a rest segment to show proportion */}
+              {(() => {
+                const maxVal = Math.max(...pieData.map((d) => d.value), 1);
+                return pieData.map((entry, idx) => {
+                  const outer = 75 - idx * 16; // percent
+                  const inner = outer - 10;
+                  const data = [
+                    { name: entry.name, value: entry.value },
+                    { name: 'rest', value: Math.max(0, maxVal - entry.value) },
+                  ];
+
+                  return (
+                    <Pie
+                      key={entry.name}
+                      data={data}
+                      dataKey="value"
+                      startAngle={90}
+                      endAngle={-270}
+                      innerRadius={`${inner}%`}
+                      outerRadius={`${outer}%`}
+                      paddingAngle={2}
+                      isAnimationActive={true}
+                      animationBegin={idx * 100}
+                      animationDuration={800}
+                      nameKey="name"
+                    >
+                      <Cell key={`${entry.name}-value`} fill={entry.color} stroke="#111" />
+                      <Cell key={`${entry.name}-rest`} fill="#0f0f0f" stroke="#111" />
+                    </Pie>
+                  );
+                });
+              })()}
+
+              <Tooltip content={({ active, payload }: any) => {
+                if (!active || !payload || payload.length === 0) return null;
+                // find the first non-rest slice
+                const slice = payload.find((p: any) => p && p.name && p.name !== 'rest');
+                if (!slice) return null;
+                const pct = Math.round((slice.value / Math.max(...pieData.map(d => d.value), 1)) * 1000) / 10;
+                return (
+                  <div style={{ background: 'rgba(0,0,0,0.85)', padding: '8px 12px', color: 'white', borderRadius: 6 }}>
+                    <div style={{ fontWeight: 700 }}>{slice.name}</div>
+                    <div style={{ fontSize: 12, color: '#9aa0a6' }}>Value: {slice.value}</div>
+                    <div style={{ fontSize: 12, color: '#9aa0a6' }}>Proportion: {pct}%</div>
+                  </div>
+                );
+              }} />
+            </PieChart>
+          </ResponsiveContainer>
+          
+          {/* Overlay numeric summary positioned better */}
+          <div style={{ 
+            position: 'absolute', 
+            right: 8, 
+            top: 8, 
+            background: 'rgba(0,0,0,0.7)', 
+            padding: '8px', 
+            borderRadius: '6px',
+            fontSize: '12px',
+            zIndex: 5 
+          }}>
+            {pieData.map((p, i) => {
+              const maxVal = Math.max(...pieData.map((d) => d.value), 1);
+              const pct = Math.round((p.value / maxVal) * 100);
+              return (
+                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 4 }}>
+                  <div style={{ width: 8, height: 8, background: p.color, borderRadius: 2 }} />
+                  <span style={{ color: '#fff', minWidth: 50 }}>{p.name}</span>
+                  <span style={{ color: '#9aa0a6' }}>{p.value}</span>
+                  <span style={{ color: '#6dd36d' }}>({pct}%)</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </EnhancedChartBox>
 
       {/* Enhanced Listening Fingerprint */}
@@ -364,10 +434,11 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
           <FontAwesomeIcon icon={faChartLine} style={{ marginRight: '8px' }} />
           Listening Fingerprint
         </ChartTitle>
-        <ResponsiveContainer width="100%" height={250}>
-          <RadarChart data={radarData}>
+          <div style={{ width: '100%', height: '280px', overflow: 'hidden' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} margin={{ top: 15, right: 15, bottom: 15, left: 15 }}>
             <PolarGrid stroke="#333" />
-            <PolarAngleAxis dataKey="metric" stroke="#ccc" fontSize={12} />
+            <PolarAngleAxis dataKey="metric" stroke="#ccc" fontSize={11} />
             <PolarRadiusAxis 
               angle={30} 
               domain={[0, 100]} 
@@ -397,8 +468,9 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             )}
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-          </RadarChart>
-        </ResponsiveContainer>
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
       </EnhancedChartBox>
 
       {/* New Trend Analysis Chart */}
@@ -467,27 +539,29 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             <FontAwesomeIcon icon={faFilter} style={{ marginRight: '8px' }} />
             Top Genres
           </ChartTitle>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={genreData} layout="horizontal">
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis type="number" stroke="#ccc" fontSize={12} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                stroke="#ccc" 
-                fontSize={12}
-                width={80}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar 
-                dataKey="value" 
-                fill={DONUT_COLORS.accent}
-                radius={[0, 4, 4, 0]}
-                animationBegin={0}
-                animationDuration={1200}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div style={{ width: '100%', height: '280px', overflow: 'hidden' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={genreData} layout="horizontal" margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                <XAxis type="number" stroke="#ccc" fontSize={11} />
+                <YAxis 
+                  type="category" 
+                  dataKey="name" 
+                  stroke="#ccc" 
+                  fontSize={11}
+                  width={120}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar 
+                  dataKey="value" 
+                  fill={DONUT_COLORS.accent}
+                  radius={[0, 4, 4, 0]}
+                  animationBegin={0}
+                  animationDuration={1200}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </EnhancedChartBox>
       )}
     </ChartsGrid>
@@ -859,18 +933,22 @@ const Reports: React.FC = () => {
           <FontAwesomeIcon icon={faMusic} style={{ marginRight: '8px' }} />
           Decade Distribution
         </ChartTitle>
-        <EnhancedChartBox style={{ marginTop: '16px', padding: '18px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <EnhancedChartBox style={{ marginTop: '16px', padding: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
             {decadeData.map((d) => {
               const max = Math.max(...decadeData.map(x => x.count), 1);
-              const width = Math.round((d.count / max) * 460);
               return (
-                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '80px', color: '#ccc', fontSize: '0.9rem' }}>{d.label}</div>
-                  <div style={{ flex: 1, background: '#0f0f0f', borderRadius: '6px', height: '18px', overflow: 'hidden' }}>
-                    <div style={{ width: `${(d.count === 0 ? 2 : (d.count / max) * 100)}%`, height: '100%', background: (d.label === '2010s' ? DONUT_COLORS.primary : '#2b2b2b') }} />
+                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '20px' }}>
+                  <div style={{ width: '70px', color: '#ccc', fontSize: '0.85rem', flexShrink: 0 }}>{d.label}</div>
+                  <div style={{ flex: 1, background: '#0f0f0f', borderRadius: '4px', height: '16px', overflow: 'hidden', minWidth: 0 }}>
+                    <div style={{ 
+                      width: `${Math.max(2, (d.count / max) * 100)}%`, 
+                      height: '100%', 
+                      background: (d.label === '2010s' ? DONUT_COLORS.primary : '#2b2b2b'),
+                      transition: 'width 0.3s ease'
+                    }} />
                   </div>
-                  <div style={{ width: '60px', textAlign: 'right', color: '#bbb', fontSize: '0.9rem' }}>{d.count}</div>
+                  <div style={{ width: '50px', textAlign: 'right', color: '#bbb', fontSize: '0.85rem', flexShrink: 0 }}>{d.count}</div>
                 </div>
               );
             })}
@@ -911,19 +989,21 @@ const Reports: React.FC = () => {
       <TopMusic userId={userId} />
 
       {/* Enhanced Music Ratio Details */}
-      <Section style={{ display: 'block' }}>
-        <ChartTitle style={{ marginBottom: '24px' }}>
+      <Section style={{ display: 'block', overflow: 'hidden' }}>
+        <ChartTitle style={{ marginBottom: '20px' }}>
           <FontAwesomeIcon icon={faChartLine} style={{ marginRight: '8px' }} />
           Detailed Music Analysis
         </ChartTitle>
-        <MusicRatio
-          currentTracks={musicRatio.tracks}
-          lastTracks={musicRatio.lastTracks}
-          currentAlbums={musicRatio.albums}
-          lastAlbums={musicRatio.lastAlbums}
-          currentArtists={musicRatio.artists}
-          lastArtists={musicRatio.lastArtists}
-        />
+        <div style={{ overflow: 'auto' }}>
+          <MusicRatio
+            currentTracks={musicRatio.tracks}
+            lastTracks={musicRatio.lastTracks}
+            currentAlbums={musicRatio.albums}
+            lastAlbums={musicRatio.lastAlbums}
+            currentArtists={musicRatio.artists}
+            lastArtists={musicRatio.lastArtists}
+          />
+        </div>
       </Section>
     </Container>
   );
