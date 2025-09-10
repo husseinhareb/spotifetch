@@ -60,7 +60,7 @@ async def read_history(
     limit: int = Query(50, ge=1, le=200),
     since: Optional[datetime] = Query(None)
 ):
-    require_spotify_client(request)
+    # Return listening history from our database (no Spotify API call required)
     return get_user_history(user_id=user_id, skip=skip, limit=limit, since=since)
 
 @router.get(
@@ -74,11 +74,7 @@ async def read_top_tracks(
     limit: int = Query(10, ge=1, le=100),
     since: Optional[datetime] = Query(None)
 ):
-    # ensure they’re authenticated
-    token = request.session.get("token_info")
-    if not token or sp_oauth.is_token_expired(token):
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
+    # Return most-played tracks computed from our DB
     return get_top_tracks(user_id=user_id, limit=limit, since=since)
 
 @router.get(
@@ -92,11 +88,7 @@ async def read_top_artists(
     limit: int = Query(10, ge=1, le=100),
     since: Optional[datetime] = Query(None)
 ):
-    # authenticate
-    token = request.session.get("token_info")
-    if not token or sp_oauth.is_token_expired(token):
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
+    # Return most-played artists from our DB
     return get_top_artists(user_id=user_id, limit=limit, since=since)
 
 @router.get("/top-albums", response_model=List[TopAlbumOut])
@@ -107,8 +99,7 @@ async def read_top_albums(
     since: Optional[datetime] = Query(None),
 ):
     """
-    Get a user's most-played albums.
+    Get a user's most-played albums from our database.
     """
-    require_spotify_client(request)
     return get_top_albums(user_id, limit, since)
 

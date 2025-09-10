@@ -17,6 +17,9 @@ import RecentlyPlayed from "./RecentlyPlayed";
 import Songs from "./Songs";
 import Artists from "./Artists";
 import Albums from "./Albums";
+import { useUserId } from "../../services/store";
+import { getMusicRatio, getListeningClock } from "../../repositories/reportsRepository";
+import { fetchTopTracks, fetchTopArtists, fetchTopAlbums } from "../../repositories/historyRepository";
 
 // Enhanced animations
 const fadeInUp = keyframes`
@@ -254,12 +257,69 @@ const ContentSection = styled.div`
 
 const Library: React.FC = () => {
   const location = useLocation();
+  const userId = useUserId();
   const [stats, setStats] = useState({
-    totalTracks: 1547,
-    totalArtists: 234,
-    totalAlbums: 189,
-    hoursListened: 1250
+    totalTracks: 0,
+    totalArtists: 0,
+    totalAlbums: 0,
+    hoursListened: 0
   });
+
+  useEffect(() => {
+    if (!userId || userId === 'N/A') return;
+
+    const loadStats = async () => {
+      try {
+        // Fetch the listening clock and the full top lists (request a large limit)
+        // and derive totals from the returned array lengths. This is more reliable
+        // than counting uniques from a paginated raw history fetch.
+        const [clock, topTracks, topArtists, topAlbums] = await Promise.all([
+          getListeningClock(userId),
+          fetchTopTracks(userId, 100),
+          fetchTopArtists(userId, 100),
+          fetchTopAlbums(userId, 100),
+        ]);
+
+        // Derive totals from returned arrays. If the backend enforces a hard cap
+        // on the limit, consider adding dedicated aggregated-count endpoints.
+        const totalPlays = (clock || []).reduce((s, v) => s + v, 0);
+
+        // Estimate hours listened by assuming an average track length (3.5 minutes)
+        // hours = plays * avgMinutes / 60
+        const avgMinutesPerPlay = 3.5;
+        const hoursListened = Math.round((totalPlays * avgMinutesPerPlay) / 60);
+
+        // If the top lists are empty (e.g. validation error upstream), fall back to
+        // the aggregated ratio which computes unique counts server-side.
+        if ((topTracks || []).length === 0 && (topArtists || []).length === 0 && (topAlbums || []).length === 0) {
+          try {
+            const ratio = await getMusicRatio(userId, 365);
+            setStats({
+              totalTracks: ratio.tracks || 0,
+              totalArtists: ratio.artists || 0,
+              totalAlbums: ratio.albums || 0,
+              hoursListened
+            });
+            return;
+          } catch (innerErr) {
+            console.error('Fallback getMusicRatio failed', innerErr);
+          }
+        }
+
+        setStats({
+          totalTracks: (topTracks || []).length || 0,
+          totalArtists: (topArtists || []).length || 0,
+          totalAlbums: (topAlbums || []).length || 0,
+          hoursListened
+        });
+      } catch (e) {
+        // keep defaults on error
+        console.error('Failed loading library stats', e);
+      }
+    };
+
+    loadStats();
+  }, [userId]);
 
   // Determine active section
   const getActiveSection = () => {
