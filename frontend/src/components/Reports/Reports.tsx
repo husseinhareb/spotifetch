@@ -963,9 +963,12 @@ const Reports: React.FC = () => {
             <FontAwesomeIcon icon={faClock} style={{ marginRight: '8px' }} />
             24-Hour Listening Pattern
           </ChartTitle>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadialHourChart data={byHour} width={350} height={350} />
-          </ResponsiveContainer>
+          <div style={{ width: '100%', height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {byHour && (
+              <RadialHourChart data={byHour} width={320} height={320} />
+            )}
+            {!byHour && <div style={{ color: '#777' }}>No listening data available</div>}
+          </div>
         </ClockChartBox>
         
         <EnhancedChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

@@ -1,17 +1,10 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import {
-  RadialBarChart,
-  RadialBar,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Tooltip,
-  Legend,
   ComposedChart,
   Bar,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -271,28 +264,15 @@ const MusicRatio: React.FC<MusicRatioProps> = ({
           Current vs Previous Period
         </ChartTitle>
         
-        <div style={{ width: '300px', height: '300px', marginBottom: '20px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadialBarChart
-              cx="50%"
-              cy="50%"
-              innerRadius="40%"
-              outerRadius="90%"
-              barSize={20}
-              data={radialData}
-              startAngle={90}
-              endAngle={-270}
-            >
-              <RadialBar
-                dataKey="value"
-                background={{ fill: '#374151', opacity: 0.3 }}
-                cornerRadius={8}
-                animationBegin={0}
-                animationDuration={2000}
-              />
-              <Tooltip content={<CustomTooltip />} />
-            </RadialBarChart>
-          </ResponsiveContainer>
+        {/* Compact numeric summary replacing the ring visualization */}
+        <div style={{ width: '100%', marginBottom: '12px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+          {radialData.map((d) => (
+            <div key={d.name} style={{ textAlign: 'center', minWidth: 80 }}>
+              <div style={{ fontSize: '0.8rem', color: '#bbb', marginBottom: 6 }}>{d.name}</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>{Math.round(d.value)}%</div>
+              <div style={{ fontSize: '0.8rem', color: '#9aa0a6' }}>{d.current}/{d.last}</div>
+            </div>
+          ))}
         </div>
 
         {/* Comparison Bar Chart */}

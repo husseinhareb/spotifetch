@@ -62,7 +62,13 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
   });
 
   useEffect(() => {
-    if (!data.length || !ref.current) return;
+    if (!ref.current) return;
+
+    // normalize incoming data to 24 entries (pad with zeros if needed)
+    const hours = Array.isArray(data) ? data.slice(0, 24) : [];
+    while (hours.length < 24) hours.push(0);
+
+    if (hours.length === 0) return;
 
     const svg = d3.select<SVGSVGElement, unknown>(ref.current);
     svg.selectAll('*').remove();
@@ -83,7 +89,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       .align(0)
       .padding(0.02);
 
-    const valueMax = d3.max(data) || 1;
+    const valueMax = d3.max(hours) || 1;
     const radius = d3
       .scaleLinear()
       .domain([0, valueMax])
@@ -117,23 +123,25 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
     });
 
     // Draw the 24 bars with enhanced interactivity
-    const bars = g.selectAll('path')
-      .data(data)
+    const barsSelection = g.selectAll('path')
+      .data(hours as number[])
       .enter()
       .append('path')
-      .attr('d', arcGen as any)
+      .attr('d', (d, i) => (arcGen as any)(d, i))
       .attr('fill', d => color(d))
       .attr('stroke', '#000')
       .attr('stroke-width', 0.5)
       .style('cursor', 'pointer')
       .style('opacity', 0.8)
       .on('mouseover', function(event, d) {
-        const hour = data.indexOf(d);
+        // compute index of this element reliably
+        const nodes = g.selectAll('path').nodes();
+        const hour = nodes.indexOf(this as any);
         const hourFormatted = hour === 0 ? '12 AM' :
                              hour < 12 ? `${hour} AM` :
                              hour === 12 ? '12 PM' :
                              `${hour - 12} PM`;
-        
+
         d3.select(this)
           .transition()
           .duration(150)
@@ -161,11 +169,11 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       });
 
     // Animate bars on load
-    bars
+    barsSelection
       .attr('opacity', 0)
       .transition()
       .duration(1000)
-      .delay((_, i) => i * 50)
+      .delay((_, i) => i * 30)
       .attr('opacity', 0.8);
 
     // Enhanced hour labels with better positioning
@@ -209,8 +217,9 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
         .attr('stroke-width', 1);
     });
 
-    // Add center text showing peak hour
-    const peakIndex = data.indexOf(Math.max(...data));
+    // Add center text showing peak hour (or no plays)
+    const totalPlays = hours.reduce((s, v) => s + (v || 0), 0);
+    const peakIndex = hours.indexOf(Math.max(...hours));
     const peakHour = peakIndex === 0 ? '12 AM' :
                      peakIndex < 12 ? `${peakIndex} AM` :
                      peakIndex === 12 ? '12 PM' :
@@ -222,20 +231,20 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       .attr('y', -10)
       .style('fill', '#ccc')
       .style('font-size', '12px')
-      .text('Peak Hour');
+      .text(totalPlays > 0 ? 'Peak Hour' : 'No Activity');
       
     centerGroup.append('text')
       .attr('y', 8)
-      .style('fill', '#1DB954')
+      .style('fill', totalPlays > 0 ? '#1DB954' : '#777')
       .style('font-size', '16px')
       .style('font-weight', 'bold')
-      .text(peakHour);
+      .text(totalPlays > 0 ? peakHour : '--');
 
     centerGroup.append('text')
       .attr('y', 24)
       .style('fill', '#999')
       .style('font-size', '10px')
-      .text(`${Math.max(...data)} plays`);
+      .text(totalPlays > 0 ? `${Math.max(...hours)} plays` : '');
 
   }, [data, width, height]);
 
