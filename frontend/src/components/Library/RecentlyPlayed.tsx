@@ -379,7 +379,15 @@ const RecentlyPlayed: React.FC = () => {
             </TrackDetails>
 
             <TrackActions>
-              <ActionButton title="Play">
+              <ActionButton
+                title="Play"
+                onClick={() => {
+                  if (!track.track_id) return;
+                  const url = `https://open.spotify.com/track/${track.track_id}`;
+                  const w = window.open(url, '_blank');
+                  if (w) w.opener = null;
+                }}
+              >
                 <FontAwesomeIcon icon={faPlay} />
               </ActionButton>
               <ActionButton title="Add to favorites">

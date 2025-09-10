@@ -262,6 +262,7 @@ const CurrentlyPlaying: React.FC = () => {
   const [currentTrack, setCurrentTrack] = useState<string | null>(null);
   const [currentArtist, setCurrentArtist] = useState<string | null>(null);
   const [albumImage, setAlbumImage] = useState<string | null>(null);
+  const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [progressMs, setProgressMs] = useState<number | null>(0);
   const [durationMs, setDurationMs] = useState<number | null>(0);
@@ -279,6 +280,7 @@ const CurrentlyPlaying: React.FC = () => {
           setCurrentTrack(songInfo.track_name);
           setCurrentArtist(songInfo.artist_name);
           setAlbumImage(songInfo.album_image);
+          setCurrentTrackId(songInfo.track_id || null);
           setIsPlaying(songInfo.is_playing);
           setProgressMs(songInfo.progress_ms);
           setDurationMs(songInfo.duration_ms);
@@ -404,7 +406,11 @@ const CurrentlyPlaying: React.FC = () => {
 
         {/* Controls */}
         <PlayerControls>
-          <ActionButton primary title="Open in Spotify">
+          <ActionButton primary title="Open in Spotify" onClick={() => {
+            if (!currentTrackId) return;
+            const url = `https://open.spotify.com/track/${currentTrackId}`;
+            const w = window.open(url, '_blank'); if (w) w.opener = null;
+          }}>
             <FontAwesomeIcon icon={faExternalLinkAlt} />
           </ActionButton>
           <ActionButton title="Add to favorites">

@@ -478,7 +478,14 @@ const Albums: React.FC = () => {
                 </CoverPlaceholder>
               )}
               
-              <PlayButton>
+              <PlayButton
+                onClick={() => {
+                  const query = encodeURIComponent(`${album.album_name} ${album.artist_name}`);
+                  const url = `https://open.spotify.com/search/${query}`;
+                  const w = window.open(url, '_blank');
+                  if (w) w.opener = null;
+                }}
+              >
                 <FontAwesomeIcon icon={faPlay} />
               </PlayButton>
             </AlbumCover>
@@ -501,7 +508,12 @@ const Albums: React.FC = () => {
               </AlbumStats>
               
               <AlbumActions>
-                <ActionButton primary>
+                <ActionButton primary onClick={() => {
+                  const query = encodeURIComponent(`${album.album_name} ${album.artist_name}`);
+                  const url = `https://open.spotify.com/search/${query}`;
+                  const w = window.open(url, '_blank');
+                  if (w) w.opener = null;
+                }}>
                   <FontAwesomeIcon icon={faPlay} />
                   Play
                 </ActionButton>

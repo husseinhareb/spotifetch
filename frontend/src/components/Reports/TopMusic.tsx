@@ -309,7 +309,18 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />
                 Top Artist
               </CardLabel>
-              <PlayButton>
+              <PlayButton onClick={() => {
+                // If this is a track with an id, open the track; otherwise search
+                const t = topArtists[0];
+                if (t && (t as any).track_id) {
+                  const url = `https://open.spotify.com/track/${(t as any).track_id}`;
+                  const w = window.open(url, '_blank'); if (w) w.opener = null;
+                } else if (t && t.artist_name) {
+                  const q = encodeURIComponent(t.artist_name);
+                  const url = `https://open.spotify.com/search/${q}`;
+                  const w = window.open(url, '_blank'); if (w) w.opener = null;
+                }
+              }}>
                 <FontAwesomeIcon icon={faPlay} />
               </PlayButton>
               <Overlay>
@@ -345,7 +356,17 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />
                 Top Album
               </CardLabel>
-              <PlayButton>
+              <PlayButton onClick={() => {
+                const a = topAlbums[0];
+                if (a && (a as any).album_id) {
+                  const url = `https://open.spotify.com/album/${(a as any).album_id}`;
+                  const w = window.open(url, '_blank'); if (w) w.opener = null;
+                } else if (a && a.album_name) {
+                  const q = encodeURIComponent(`${a.album_name} ${a.artist_name}`);
+                  const url = `https://open.spotify.com/search/${q}`;
+                  const w = window.open(url, '_blank'); if (w) w.opener = null;
+                }
+              }}>
                 <FontAwesomeIcon icon={faPlay} />
               </PlayButton>
               <Overlay>
@@ -382,7 +403,17 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />
                 Top Track
               </CardLabel>
-              <PlayButton>
+              <PlayButton onClick={() => {
+                const tr = topTracks[0];
+                if (tr && tr.track_id) {
+                  const url = `https://open.spotify.com/track/${tr.track_id}`;
+                  const w = window.open(url, '_blank'); if (w) w.opener = null;
+                } else if (tr && tr.track_name) {
+                  const q = encodeURIComponent(`${tr.track_name} ${tr.artist_name}`);
+                  const url = `https://open.spotify.com/search/${q}`;
+                  const w = window.open(url, '_blank'); if (w) w.opener = null;
+                }
+              }}>
                 <FontAwesomeIcon icon={faPlay} />
               </PlayButton>
               <Overlay>

@@ -350,7 +350,12 @@ const TopArtists: React.FC = () => {
                 </p>
               )}
               <ArtistActions>
-                <ActionButton title="Play">
+                <ActionButton title="Play" onClick={() => {
+                  const query = encodeURIComponent(artist.name);
+                  const url = `https://open.spotify.com/search/${query}`;
+                  const w = window.open(url, '_blank');
+                  if (w) w.opener = null;
+                }}>
                   <FontAwesomeIcon icon={faPlay} />
                 </ActionButton>
                 <ActionButton title="Add to favorites">
