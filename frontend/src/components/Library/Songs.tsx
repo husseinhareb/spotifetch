@@ -433,7 +433,15 @@ const Songs: React.FC = () => {
               </TrackInfo>
               
               <TrackActions>
-                <ActionButton title="Play">
+                <ActionButton
+                  title="Play"
+                  onClick={() => {
+                    if (!song.track_id) return;
+                    const url = `https://open.spotify.com/track/${song.track_id}`;
+                    const w = window.open(url, '_blank');
+                    if (w) w.opener = null;
+                  }}
+                >
                   <FontAwesomeIcon icon={faPlay} />
                 </ActionButton>
                 <ActionButton title="Add to favorites">
