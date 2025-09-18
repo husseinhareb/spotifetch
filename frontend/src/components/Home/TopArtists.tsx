@@ -1,5 +1,6 @@
 // src/components/Home/TopArtists.tsx
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -250,6 +251,7 @@ const TopArtists: React.FC = () => {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [timeRange, setTimeRange] = useState<string>('medium_term');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -361,7 +363,7 @@ const TopArtists: React.FC = () => {
                 <ActionButton title="Add to favorites">
                   <FontAwesomeIcon icon={faHeart} />
                 </ActionButton>
-                <ActionButton title="View details">
+                <ActionButton title="View details" onClick={() => navigate(`/artist/${artist.id}`)}>
                   <FontAwesomeIcon icon={faExternalLinkAlt} />
                 </ActionButton>
               </ArtistActions>
