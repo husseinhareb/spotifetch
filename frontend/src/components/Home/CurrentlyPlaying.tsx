@@ -6,7 +6,6 @@ import {
   faPause, 
   faMusic, 
   faVolumeUp,
-  faHeart,
   faExternalLinkAlt,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
@@ -413,9 +412,7 @@ const CurrentlyPlaying: React.FC = () => {
           }}>
             <FontAwesomeIcon icon={faExternalLinkAlt} />
           </ActionButton>
-          <ActionButton title="Add to favorites">
-            <FontAwesomeIcon icon={faHeart} />
-          </ActionButton>
+          {/* favorite button removed */}
           <ActionButton title="Volume">
             <FontAwesomeIcon icon={faVolumeUp} />
           </ActionButton>

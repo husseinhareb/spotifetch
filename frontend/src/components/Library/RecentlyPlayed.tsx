@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPlay, 
   faPause, 
-  faHeart, 
   faMusic,
   faSpinner,
   faClock,
@@ -389,9 +388,6 @@ const RecentlyPlayed: React.FC = () => {
                 }}
               >
                 <FontAwesomeIcon icon={faPlay} />
-              </ActionButton>
-              <ActionButton title="Add to favorites">
-                <FontAwesomeIcon icon={faHeart} />
               </ActionButton>
             </TrackActions>
           </TrackItem>

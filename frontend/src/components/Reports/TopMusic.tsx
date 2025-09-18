@@ -7,7 +7,6 @@ import {
   faArrowUp, 
   faArrowDown,
   faPlay,
-  faHeart,
   faStar,
   faMusic,
   faCompactDisc,

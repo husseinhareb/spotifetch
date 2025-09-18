@@ -5,7 +5,7 @@ import {
   faMusic, 
   faChartLine, 
   faUsers, 
-  faHeart,
+  faStar,
   faPlay,
   faArrowRight 
 } from '@fortawesome/free-solid-svg-icons';
@@ -197,7 +197,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
       description: "Explore your most played artists across different time periods."
     },
     {
-      icon: faHeart,
+      icon: faStar,
       title: "Personal Insights",
       description: "Get personalized recommendations based on your unique listening habits."
     }

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUser,
   faPlay,
-  faHeart,
+  
   faEllipsisV,
   faCrown,
   faFire,
@@ -463,9 +463,7 @@ const Artists: React.FC = () => {
                 <FontAwesomeIcon icon={faArrowRight} />
                 View
               </ActionButton>
-              <ActionButton>
-                <FontAwesomeIcon icon={faHeart} />
-              </ActionButton>
+              {/* favorite button removed */}
             </ArtistActions>
           </ArtistCard>
         ))}

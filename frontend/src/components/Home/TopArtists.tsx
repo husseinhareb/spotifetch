@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faStar, 
   faPlay, 
-  faHeart,
   faExternalLinkAlt,
   faSpinner,
   faChevronLeft,
@@ -360,9 +359,7 @@ const TopArtists: React.FC = () => {
                 }}>
                   <FontAwesomeIcon icon={faPlay} />
                 </ActionButton>
-                <ActionButton title="Add to favorites">
-                  <FontAwesomeIcon icon={faHeart} />
-                </ActionButton>
+                {/* favorite button removed */}
                 <ActionButton title="View details" onClick={() => navigate(`/artist/${artist.id}`)}>
                   <FontAwesomeIcon icon={faExternalLinkAlt} />
                 </ActionButton>

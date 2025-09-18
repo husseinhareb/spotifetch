@@ -169,7 +169,8 @@ const ContentGrid = styled.div`
   grid-template-columns: 1fr 1.5fr;
   gap: 40px;
   margin-top: 40px;
-  
+  align-items: start;
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: 30px;
@@ -180,10 +181,20 @@ const SidePanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: 30px;
+  /* match the main panel min-height so both columns visually align */
+  min-height: 600px;
 `;
 
 const MainPanel = styled.div`
   min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  /* make direct child containers expand to fill height when possible */
+  > div {
+    flex: 1 1 auto;
+  }
 `;
 
 const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
@@ -341,22 +352,10 @@ const Home: React.FC = () => {
         {/* Content Grid */}
         <ContentGrid>
           <SidePanel>
-            {/* Top Artists Section */}
-            <div>
-              <SectionHeader>
-                <SectionIcon><FontAwesomeIcon icon={faUser} /></SectionIcon>
-                <SectionTitle>Your Top Artists</SectionTitle>
-              </SectionHeader>
-              <TopArtists />
-            </div>
+            <TopArtists />
           </SidePanel>
 
           <MainPanel>
-            {/* Recent Activity Section */}
-            <SectionHeader>
-              <SectionIcon><FontAwesomeIcon icon={faHistory} /></SectionIcon>
-              <SectionTitle>Recent Activity</SectionTitle>
-            </SectionHeader>
             <RecentlyPlayed />
           </MainPanel>
         </ContentGrid>
