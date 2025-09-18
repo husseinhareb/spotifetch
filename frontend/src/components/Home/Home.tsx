@@ -20,7 +20,7 @@ import {
 
 import TopArtists from "./TopArtists";
 import CurrentlyPlaying from "./CurrentlyPlaying";
-import WelcomeSection from "./WelcomeSection";
+// WelcomeSection removed to show Home immediately
 import LoadingSkeleton from "./LoadingSkeleton";
 import RecentlyPlayed from "../Library/RecentlyPlayed";
 
@@ -226,8 +226,7 @@ const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { isLoggedIn, username } = useStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasData, setHasData] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState({
     totalPlays: 1247,
     favoriteArtists: 42,
@@ -242,24 +241,10 @@ const Home: React.FC = () => {
     }
   }, [isLoggedIn, navigate]);
 
-  // Simulate loading and data check
+  // Assume user has data and show Home immediately when logged in
   useEffect(() => {
-    const loadUserData = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        const userHasData = Math.random() > 0.3; // 70% chance of having data
-        setHasData(userHasData);
-      } catch (error) {
-        console.error('Error loading user data:', error);
-        setHasData(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (isLoggedIn) {
-      loadUserData();
+      setIsLoading(false);
     }
   }, [isLoggedIn]);
 
@@ -281,19 +266,7 @@ const Home: React.FC = () => {
 
   const greeting = getGreeting();
 
-  // Show welcome section for new users
-  if (!isLoading && !hasData) {
-    return (
-      <HomeContainer>
-        <WelcomeSection 
-          username={username}
-          onGetStarted={() => navigate('/library')}
-        />
-      </HomeContainer>
-    );
-  }
-
-  // Show loading skeletons
+  // Show loading skeletons if explicitly loading (rare)
   if (isLoading) {
     return (
       <HomeContainer>

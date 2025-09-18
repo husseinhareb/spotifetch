@@ -7,6 +7,10 @@ import {
   TrackItem,
   ImageGallery,
   GalleryImage,
+  ArtistHeader,
+  ArtistMeta,
+  DescriptionCard,
+  SectionTitle,
 } from './Styles/style';
 import { fetchArtistInfo, fetchLastFmImages, fetchArtistGallery, ArtistInfo } from '../../repositories/artistRepository';
 
@@ -76,19 +80,26 @@ const ArtistPage: React.FC = () => {
 
   return (
     <ArtistDetailsContainer>
-      <h1>{artistInfo.artist_info.artist_name}</h1>
-      <ArtistImage
-        src={mainImageSrc}
-        alt={artistInfo.artist_info.artist_name}
-        crossOrigin="anonymous"
-        onError={() => setMainImageSrc('https://via.placeholder.com/300')}
-      />
-      <p>{(artistInfo.artist_info.genres || []).join(', ')}</p>
-      <p>Popularity: {artistInfo.artist_info.popularity}</p>
-      <p>Description: {artistInfo.artist_info.description}</p>
+      <ArtistHeader>
+        <ArtistImage
+          src={mainImageSrc}
+          alt={artistInfo.artist_info.artist_name}
+          crossOrigin="anonymous"
+          onError={() => setMainImageSrc('https://via.placeholder.com/300')}
+        />
 
-      {/* Gallery of images */}
-      <h2>Gallery</h2>
+        <ArtistMeta>
+          <h1>{artistInfo.artist_info.artist_name}</h1>
+          <div className="genres">{(artistInfo.artist_info.genres || []).join(', ')}</div>
+          <div className="popularity">Popularity: {artistInfo.artist_info.popularity}</div>
+
+          <DescriptionCard>
+            {artistInfo.artist_info.description || 'No description available.'}
+          </DescriptionCard>
+        </ArtistMeta>
+      </ArtistHeader>
+
+      <SectionTitle>Gallery</SectionTitle>
       <ImageGallery>
         {(lastFmImages.length ? lastFmImages : ["https://via.placeholder.com/150"]).map((imageUrl, index) => (
           <GalleryImage
@@ -100,14 +111,15 @@ const ArtistPage: React.FC = () => {
         ))}
       </ImageGallery>
 
-
-      {/* Display Top Tracks */}
-      <h2>Top Tracks</h2>
+      <SectionTitle>Top Tracks</SectionTitle>
       <TrackList>
         {artistInfo.top_tracks.map((track: any) => (
           <TrackItem key={track.external_url}>
-            <p>{track.track_name} - {track.album_name}</p>
-            <img src={track.album_image || "https://via.placeholder.com/150"} alt={track.album_name} />
+            <img className="track-thumb" src={track.album_image || "https://via.placeholder.com/150"} alt={track.album_name} />
+            <div className="track-info">
+              <div className="track-title">{track.track_name}</div>
+              <div className="track-album">{track.album_name}</div>
+            </div>
           </TrackItem>
         ))}
       </TrackList>
