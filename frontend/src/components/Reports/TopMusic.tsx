@@ -308,8 +308,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />
                 Top Artist
               </CardLabel>
-              <PlayButton onClick={() => {
-                // If this is a track with an id, open the track; otherwise search
+              <PlayButton onClick={() => {                // If this is a track with an id, open the track; otherwise search
                 const t = topArtists[0];
                 if (t && (t as any).track_id) {
                   const url = `https://open.spotify.com/track/${(t as any).track_id}`;

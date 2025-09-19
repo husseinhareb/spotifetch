@@ -197,6 +197,9 @@ def fetch_pixabay_images(artist_name: str, limit: int = 10) -> List[str]:
     return []
 
 
+
+    # Final: empty list
+    return []
 def fetch_artist_images_web_scraping(artist_name: str, limit: int = 12) -> List[str]:
     """
     Orchestrator that tries multiple sources to gather artist images.
@@ -216,6 +219,3 @@ def fetch_artist_images_web_scraping(artist_name: str, limit: int = 12) -> List[
     pixabay = fetch_pixabay_images(artist_name, limit=limit)
     if pixabay:
         return pixabay[:limit]
-
-    # Final: empty list
-    return []

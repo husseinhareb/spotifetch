@@ -72,14 +72,19 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
 
     const svg = d3.select<SVGSVGElement, unknown>(ref.current);
     svg.selectAll('*').remove();
+  // allow labels outside arcs to be visible instead of clipped
+  svg.attr('overflow', 'visible');
 
-    const margin = 40;
-    const innerRadius = Math.min(width, height) / 6;
-    const outerRadius = Math.min(width, height) / 2 - margin;
+  const w = width;
+  const h = height;
+  const minSide = Math.min(w, h);
+  const margin = Math.max(24, Math.floor(minSide * 0.08));
+    const outerRadius = Math.floor(minSide / 2) - margin;
+    const innerRadius = Math.max(outerRadius * 0.42, Math.floor(minSide * 0.12));
 
     const g = svg
       .append('g')
-      .attr('transform', `translate(${width / 2}, ${height / 2})`);
+      .attr('transform', `translate(${w / 2}, ${h / 2})`);
 
     // Enhanced scales
     const angle = d3
@@ -90,10 +95,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       .padding(0.02);
 
     const valueMax = d3.max(hours) || 1;
-    const radius = d3
-      .scaleLinear()
-      .domain([0, valueMax])
-      .range([innerRadius, outerRadius]);
+    const radius = d3.scaleLinear().domain([0, valueMax]).range([innerRadius, outerRadius]);
 
     // Enhanced color scale with Spotify-like gradient
     const color = d3
@@ -181,20 +183,27 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
     const majorTicks = [0, 6, 12, 18];
     const minorTicks = allHours.filter(h => !majorTicks.includes(h));
 
-    // Major hour labels
+    // Major hour labels (anchor based on angle so cardinal points align)
     majorTicks.forEach(h => {
       const start = angle(h)!;
       const ang = start + (angle.bandwidth() ?? 0) / 2 - Math.PI / 2;
-      const labelRadius = innerRadius - 20;
+  // keep labels just outside the outer radius but within the svg viewbox
+  const labelRadius = outerRadius + Math.max(8, Math.floor(minSide * 0.02));
+
+      const cx = Math.cos(ang);
+      const cy = Math.sin(ang);
+      let anchor: 'start' | 'middle' | 'end' = 'middle';
+      if (cx > 0.3) anchor = 'start';
+      else if (cx < -0.3) anchor = 'end';
 
       g.append('text')
-        .attr('x', Math.cos(ang) * labelRadius)
-        .attr('y', Math.sin(ang) * labelRadius)
-        .attr('text-anchor', 'middle')
+        .attr('x', cx * labelRadius)
+        .attr('y', cy * labelRadius)
+        .attr('text-anchor', anchor)
         .attr('alignment-baseline', 'middle')
         .style('fill', '#fff')
-        .style('font-size', '14px')
-        .style('font-weight', 'bold')
+  .style('font-size', `${Math.max(10, Math.floor(minSide * 0.025))}px`)
+        .style('font-weight', '700')
         .text(h === 0 ? '12AM' : 
               h < 12 ? `${h}AM` : 
               h === 12 ? '12PM' : 
@@ -205,8 +214,8 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
     minorTicks.forEach(h => {
       const start = angle(h)!;
       const ang = start + (angle.bandwidth() ?? 0) / 2 - Math.PI / 2;
-      const tickInner = innerRadius - 8;
-      const tickOuter = innerRadius - 4;
+      const tickInner = outerRadius - Math.max(8, Math.floor(minSide * 0.02));
+      const tickOuter = outerRadius - Math.max(4, Math.floor(minSide * 0.01));
 
       g.append('line')
         .attr('x1', Math.cos(ang) * tickInner)
@@ -225,25 +234,32 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
                      peakIndex === 12 ? '12 PM' :
                      `${peakIndex - 12} PM`;
 
+    // add center badge background to improve contrast
     const centerGroup = g.append('g').attr('text-anchor', 'middle');
-    
+    centerGroup.append('circle')
+      .attr('r', innerRadius - Math.max(8, Math.floor(minSide * 0.03)))
+      .attr('fill', 'rgba(10,10,10,0.8)')
+      .attr('stroke', '#222')
+      .attr('stroke-width', 1);
+
     centerGroup.append('text')
-      .attr('y', -10)
+      .attr('y', -8)
       .style('fill', '#ccc')
-      .style('font-size', '12px')
+      .style('font-size', `${Math.max(11, Math.floor(minSide * 0.03))}px`)
+      .style('font-weight', '600')
       .text(totalPlays > 0 ? 'Peak Hour' : 'No Activity');
       
     centerGroup.append('text')
-      .attr('y', 8)
+      .attr('y', 12)
       .style('fill', totalPlays > 0 ? '#1DB954' : '#777')
-      .style('font-size', '16px')
-      .style('font-weight', 'bold')
+      .style('font-size', `${Math.max(14, Math.floor(minSide * 0.04))}px`)
+      .style('font-weight', '800')
       .text(totalPlays > 0 ? peakHour : '--');
 
     centerGroup.append('text')
-      .attr('y', 24)
+      .attr('y', 30)
       .style('fill', '#999')
-      .style('font-size', '10px')
+      .style('font-size', `${Math.max(10, Math.floor(minSide * 0.025))}px`)
       .text(totalPlays > 0 ? `${Math.max(...hours)} plays` : '');
 
   }, [data, width, height]);
@@ -253,8 +269,8 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       <svg ref={ref} width={width} height={height} />
       <Tooltip
         visible={tooltip.visible}
-        x={tooltip.x}
-        y={tooltip.y}
+        x={Math.max(8, Math.min(width - 160, tooltip.x))}
+        y={Math.max(8, Math.min(height - 80, tooltip.y))}
       >
         {tooltip.content}
       </Tooltip>

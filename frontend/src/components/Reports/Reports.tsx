@@ -291,19 +291,34 @@ interface ChartsSectionProps {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    // payload is an array of series at this point; for bar charts it's usually one item
+    const friendly = (name: string) => {
+      if (!name) return '';
+      if (name === 'value') return 'Plays';
+      if (name === 'totalPlays') return 'Total Plays';
+      if (name === 'tracks') return 'Tracks';
+      if (name === 'albums') return 'Albums';
+      if (name === 'artists') return 'Artists';
+      return name;
+    };
+
     return (
       <div style={{
-        background: 'rgba(0, 0, 0, 0.9)',
-        border: '1px solid #333',
-        borderRadius: '8px',
-        padding: '12px',
-        color: 'white'
+        background: 'rgba(6, 6, 6, 0.95)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: 10,
+        padding: '10px 14px',
+        color: 'white',
+        minWidth: 140,
+        boxShadow: '0 6px 20px rgba(0,0,0,0.6)'
       }}>
-        <p style={{ margin: 0, marginBottom: '8px', fontWeight: 'bold' }}>{label}</p>
+        <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 14 }}>{label}</div>
         {payload.map((entry: any, index: number) => (
-          <p key={index} style={{ margin: 0, color: entry.color }}>
-            {entry.name}: {entry.value}
-          </p>
+          <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <div style={{ width: 10, height: 10, background: entry.color || '#fff', borderRadius: 2 }} />
+            <div style={{ fontSize: 13, color: '#e6eef2' }}>{friendly(entry.name)}:</div>
+            <div style={{ fontSize: 13, fontWeight: 700, marginLeft: 'auto', color: '#fff' }}>{entry.value}</div>
+          </div>
         ))}
       </div>
     );
@@ -339,6 +354,19 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
     you: fingerprint[m],
     avg: globalAverage?.[m] ?? 0,
   }));
+
+  // compute max value for genre chart so axis domain fits data
+  const genreMax = useMemo(() => Math.max(...genreData.map(g => g.value), 1), [genreData]);
+  // compute nice tick marks for genre axis
+  const genreTicks = useMemo(() => {
+    const max = Math.max(genreMax, 1);
+    const ticksCount = 5;
+    const step = Math.ceil(max / (ticksCount - 1));
+    const ticks = Array.from({ length: ticksCount }, (_, i) => i * step);
+    // ensure last tick >= max
+    if (ticks[ticks.length - 1] < max) ticks[ticks.length - 1] = max;
+    return ticks;
+  }, [genreMax]);
 
   return (
     <ChartsGrid>
@@ -534,31 +562,37 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
 
       {/* New Genre Distribution Chart */}
       {genreData.length > 0 && (
-        <EnhancedChartBox>
+        // make Top Genres span the full width of the charts grid
+        <EnhancedChartBox style={{ overflow: 'visible', gridColumn: '1 / -1' }}>
           <ChartTitle>
             <FontAwesomeIcon icon={faFilter} style={{ marginRight: '8px' }} />
             Top Genres
           </ChartTitle>
-          <div style={{ width: '100%', height: '280px', overflow: 'hidden' }}>
+          {/* Span whole row and give the chart more horizontal space */}
+          <div style={{ width: '100%', height: '360px', minHeight: 320, overflow: 'visible', padding: '8px 0' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={genreData} layout="horizontal" margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis type="number" stroke="#ccc" fontSize={11} />
+              <BarChart data={genreData} layout="horizontal" margin={{ top: 10, right: 100, left: 16, bottom: 12 }} barCategoryGap="30%" barSize={22}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+                <XAxis type="number" stroke="#bbb" fontSize={12} tickLine={false} domain={[0, genreMax]} ticks={genreTicks} />
                 <YAxis 
                   type="category" 
                   dataKey="name" 
-                  stroke="#ccc" 
-                  fontSize={11}
-                  width={120}
+                  stroke="#ddd" 
+                  fontSize={13}
+                  width={160}
+                  axisLine={false}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="value" 
                   fill={DONUT_COLORS.accent}
-                  radius={[0, 4, 4, 0]}
+                  radius={[6, 6, 6, 6]}
                   animationBegin={0}
-                  animationDuration={1200}
-                />
+                  animationDuration={900}
+                >
+                  {/* show value labels at end of bars for readability */}
+                  <LabelList dataKey="value" position="right" offset={12} style={{ fill: '#e6eef2', fontSize: 13, fontWeight: 800 }} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
