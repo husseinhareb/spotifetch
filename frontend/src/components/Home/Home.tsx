@@ -23,6 +23,8 @@ import CurrentlyPlaying from "./CurrentlyPlaying";
 // WelcomeSection removed to show Home immediately
 import LoadingSkeleton from "./LoadingSkeleton";
 import RecentlyPlayed from "../Library/RecentlyPlayed";
+import { fetchUserHistory } from '../../repositories/historyRepository';
+import { getListeningFingerprint } from '../../repositories/reportsRepository';
 
 // Animations
 const fadeInUp = keyframes`
@@ -237,12 +239,12 @@ const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { isLoggedIn, username } = useStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalPlays: 1247,
-    favoriteArtists: 42,
-    hoursListened: 234,
-    newDiscoveries: 18
+    totalPlays: 0,
+    favoriteArtists: 0,
+    hoursListened: 0,
+    newDiscoveries: 0
   });
 
   // Redirect if not logged in
@@ -255,7 +257,49 @@ const Home: React.FC = () => {
   // Assume user has data and show Home immediately when logged in
   useEffect(() => {
     if (isLoggedIn) {
-      setIsLoading(false);
+      // load stats from API
+      (async () => {
+        try {
+          setIsLoading(true);
+          // fetch full history for metrics
+          const userId = (useStore.getState && useStore.getState().userId) || '';
+          if (!userId) {
+            setStats({ totalPlays: 0, favoriteArtists: 0, hoursListened: 0, newDiscoveries: 0 });
+            setIsLoading(false);
+            return;
+          }
+
+          const history = await fetchUserHistory(userId);
+
+          // total plays is simply number of records
+          const totalPlays = history.length;
+
+          // favorite artists = unique artist ids in history
+          const uniqueArtists = new Set(history.map(h => h.artist_id));
+          const favoriteArtists = uniqueArtists.size;
+
+          // estimate hours listened: sum of durations if available (duration_ms), otherwise approximate by count * 3 minutes
+          // many history entries don't include duration; use 3 minutes per play as a conservative default
+          const DEFAULT_MS_PER_PLAY = 3 * 60 * 1000;
+          const totalMs = history.reduce((sum, h: any) => {
+            // prefer duration_ms if present
+            const ms = (h as any).duration_ms ?? DEFAULT_MS_PER_PLAY;
+            return sum + (typeof ms === 'number' ? ms : DEFAULT_MS_PER_PLAY);
+          }, 0);
+          const hoursListened = Math.round(totalMs / (1000 * 60 * 60));
+
+          // new discoveries: count of unique tracks in the last 30 days
+          const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+          const recent = history.filter(h => new Date(h.played_at).getTime() >= thirtyDaysAgo);
+          const newDiscoveries = new Set(recent.map(r => r.track_id)).size;
+
+          setStats({ totalPlays, favoriteArtists, hoursListened, newDiscoveries });
+        } catch (err) {
+          console.error('Failed to load home stats', err);
+        } finally {
+          setIsLoading(false);
+        }
+      })();
     }
   }, [isLoggedIn]);
 
