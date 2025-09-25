@@ -33,10 +33,18 @@ def get_artist_description(artist_name: str) -> Optional[str]:
         f"?method=artist.getinfo&artist={artist_name}"
         f"&api_key={settings.LASTFM_KEY}&format=json"
     )
-    r = requests.get(url)
+    try:
+        r = requests.get(url, timeout=6)
+    except Exception:
+        # Network error / timeout / DNS failure
+        return None
     if r.status_code != 200:
         return None
-    data = r.json().get("artist", {})
+    try:
+        data = r.json().get("artist", {})
+    except Exception:
+        # Last.fm returned non-JSON or empty body; ignore description
+        return None
     summary = data.get("bio", {}).get("summary", "")
     sentences = re.split(r'\.\s*', summary)
     if len(sentences) >= 2:
@@ -118,28 +126,32 @@ def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
     """
     try:
         # Primary: Try Last.fm and filter out placeholders
+        settings = _get_settings()
         url = "http://ws.audioscrobbler.com/2.0/"
         params = {
             "method":  "artist.getInfo",
             "artist":  artist_name,
-            "api_key": settings.LASTFM_KEY,
+            "api_key": getattr(settings, 'LASTFM_KEY', None),
             "format":  "json",
         }
         PLACEHOLDER_SIGNATURE = "2a96cbd8b46e442fc41c2b86b821562f"
         
         r = requests.get(url, params=params, timeout=10)
         if r.status_code == 200:
-            data = r.json()
+            try:
+                data = r.json()
+            except Exception:
+                data = {}
             imgs = data.get("artist", {}).get("image", [])
             raw_urls = [i.get("#text", "").strip() for i in imgs if i.get("#text")]
             # Filter out placeholders and empty strings
             filtered = [u for u in raw_urls if u and PLACEHOLDER_SIGNATURE not in u]
             if filtered:
                 return list(dict.fromkeys(filtered))[:limit]
-            
+
     except Exception as e:
         print(f"Error fetching images for {artist_name}: {e}")
-    
+
     # Final fallback: return empty list and let frontend handle placeholders
     return []
 
