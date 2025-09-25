@@ -7,8 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // ────────────────────────────────────────────────────────────
 export const Container = styled.div`
   padding: 20px;
-  background: #000;
-  color: #fff;
+  background: ${props => props.theme.colors.background};
+  color: ${props => props.theme.colors.text};
 `;
 
 // ────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ export const WeekNav = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ffc0c0;
+  background: ${props => props.theme.colors.backgroundSolid};
   padding: 24px 40px;
   margin-bottom: 24px;
   height: 80px;
@@ -28,7 +28,7 @@ export const NavButton = styled.button`
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #fff;
+  color: ${props => props.theme.colors.text};
   cursor: pointer;
 
   &:hover {
@@ -39,7 +39,7 @@ export const NavButton = styled.button`
 export const WeekTitle = styled.div`
   font-weight: bold;
   font-size: 1.25rem;
-  color: #fff;
+  color: ${props => props.theme.colors.text};
 `;
 
 // ────────────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ export const ChartRow = styled.div`
 export const DayBar = styled.div<{ height: number }>`
   flex: 1;
   height: ${props => props.height}px;
-  background: #fd3030;
+  background: ${props => props.theme.colors.accent};
   border-radius: 4px 4px 0 0;
   position: relative;
 
@@ -116,7 +116,7 @@ export const SummaryGrid = styled.div`
 
 export const SummaryCard = styled.div<{ bg: string }>`
   background: ${props => props.bg};
-  color: #000;
+  color: ${props => props.theme.colors.text};
   position: relative;
   border-radius: 8px;
   padding: 20px;
@@ -164,7 +164,7 @@ export const DetailGrid = styled.div`
 `;
 
 export const Card = styled.div`
-  background: #121212;
+  background: ${props => props.theme.colors.backgroundSolid};
   border-radius: 8px;
   overflow: hidden;
   display: flex;
@@ -201,7 +201,7 @@ export const Overlay = styled.div`
   background: rgba(0, 0, 0, 0.6);
   padding: 12px;
   border-radius: 8px;
-  color: #fff;
+  color: ${props => props.theme.colors.text};
 
   h3, p {
     margin: 4px 0;
@@ -295,10 +295,10 @@ export const Section = styled.div`
 export const ChartBox = styled.div`
   flex: 1;
   height: 300px;
-  background: #111;
+  background: ${props => props.theme.colors.backgroundSolid};
   border-radius: 8px;
   padding: 20px;
-  color: #fff;
+  color: ${props => props.theme.colors.text};
 `;
 
 export const ChartTitle = styled.h4`

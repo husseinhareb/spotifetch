@@ -12,6 +12,7 @@ import {
   ProfileThumbnail,
   HamburgerIcon
 } from "./Styles/style";
+import { ThemeToggle } from "./Styles/style";
 import {
   useSetUsername,
   useSetUserId,
@@ -26,6 +27,7 @@ import {
   useUsername,
   useProfileImage,
 } from "../../services/store";
+import { useTheme as useZTheme, useSetTheme } from "../../services/store";
 import {
   checkLoginStatus as fetchLoginStatus,
   getLoginUrl,
@@ -47,6 +49,8 @@ const Navbar: React.FC = () => {
   const setProduct     = useSetProduct();
   const setIsLoggedIn  = useSetIsLoggedIn();
   const setAuthChecked = useSetAuthChecked();
+  const theme = useZTheme();
+  const setTheme = useSetTheme();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -142,6 +146,11 @@ const Navbar: React.FC = () => {
       </HamburgerIcon>
 
       <NavList className={menuOpen ? "active" : ""}>
+        <NavItem>
+          <ThemeToggle onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+          </ThemeToggle>
+        </NavItem>
         <NavItemRight>
           <RouterLink to="/">
             <NavButton>Home</NavButton>

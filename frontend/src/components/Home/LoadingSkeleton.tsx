@@ -24,9 +24,9 @@ const pulse = keyframes`
 const SkeletonBase = styled.div`
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.1) 25%,
-    rgba(255, 255, 255, 0.2) 50%, 
-    rgba(255, 255, 255, 0.1) 75%
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.09) 50%, 
+    rgba(255, 255, 255, 0.06) 75%
   );
   background-size: 200px 100%;
   animation: ${shimmer} 1.5s infinite linear;
@@ -53,7 +53,7 @@ const SkeletonText = styled(SkeletonBase)<{ width?: string; height?: string }>`
 `;
 
 const SkeletonCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);

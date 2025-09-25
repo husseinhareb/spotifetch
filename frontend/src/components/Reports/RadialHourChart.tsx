@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 interface RadialHourChartProps {
   data: number[];
@@ -48,6 +48,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
   width = 300,
   height = 300,
 }) => {
+  const theme: any = useTheme();
   const ref = useRef<SVGSVGElement | null>(null);
   const [tooltip, setTooltip] = useState<{
     visible: boolean;
@@ -97,11 +98,13 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
     const valueMax = d3.max(hours) || 1;
     const radius = d3.scaleLinear().domain([0, valueMax]).range([innerRadius, outerRadius]);
 
-    // Enhanced color scale with Spotify-like gradient
+    // Enhanced color scale using theme accent
+    const accent = theme?.colors?.accent || '#1DB954';
+    const accent2 = theme?.colors?.accentLight || '#1ed760';
     const color = d3
       .scaleSequential()
       .domain([0, valueMax])
-      .interpolator(d3.interpolateRgb('#1DB954', '#1ed760'));
+      .interpolator(d3.interpolateRgb(accent, accent2));
 
     // Arc generator
     const arcGen = d3
@@ -118,7 +121,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       g.append('circle')
         .attr('r', innerRadius + (outerRadius - innerRadius) * ratio)
         .attr('fill', 'none')
-        .attr('stroke', '#333')
+        .attr('stroke', theme?.colors?.backgroundSolid ? '#333' : '#333')
         .attr('stroke-width', 0.5)
         .attr('stroke-dasharray', '2,2')
         .attr('opacity', 0.3);
@@ -130,8 +133,8 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       .enter()
       .append('path')
       .attr('d', (d, i) => (arcGen as any)(d, i))
-      .attr('fill', d => color(d))
-      .attr('stroke', '#000')
+  .attr('fill', d => color(d))
+  .attr('stroke', theme?.colors?.backgroundSolid ? '#000' : '#000')
       .attr('stroke-width', 0.5)
       .style('cursor', 'pointer')
       .style('opacity', 0.8)
@@ -149,7 +152,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
           .duration(150)
           .style('opacity', 1)
           .attr('stroke-width', 1)
-          .attr('stroke', '#1DB954');
+          .attr('stroke', theme?.colors?.accent || '#1DB954');
 
         const rect = ref.current!.getBoundingClientRect();
         setTooltip({
@@ -165,7 +168,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
           .duration(150)
           .style('opacity', 0.8)
           .attr('stroke-width', 0.5)
-          .attr('stroke', '#000');
+          .attr('stroke', theme?.colors?.backgroundSolid ? '#000' : '#000');
 
         setTooltip(prev => ({ ...prev, visible: false }));
       });
@@ -238,27 +241,27 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
     const centerGroup = g.append('g').attr('text-anchor', 'middle');
     centerGroup.append('circle')
       .attr('r', innerRadius - Math.max(8, Math.floor(minSide * 0.03)))
-      .attr('fill', 'rgba(10,10,10,0.8)')
-      .attr('stroke', '#222')
+      .attr('fill', theme?.colors?.backgroundSolid || 'rgba(10,10,10,0.8)')
+      .attr('stroke', theme?.colors?.backgroundSolid ? '#222' : '#222')
       .attr('stroke-width', 1);
 
     centerGroup.append('text')
       .attr('y', -8)
-      .style('fill', '#ccc')
+      .style('fill', theme?.colors?.text || '#ccc')
       .style('font-size', `${Math.max(11, Math.floor(minSide * 0.03))}px`)
       .style('font-weight', '600')
       .text(totalPlays > 0 ? 'Peak Hour' : 'No Activity');
       
     centerGroup.append('text')
       .attr('y', 12)
-      .style('fill', totalPlays > 0 ? '#1DB954' : '#777')
+      .style('fill', totalPlays > 0 ? (theme?.colors?.accent || '#1DB954') : '#777')
       .style('font-size', `${Math.max(14, Math.floor(minSide * 0.04))}px`)
       .style('font-weight', '800')
       .text(totalPlays > 0 ? peakHour : '--');
 
     centerGroup.append('text')
       .attr('y', 30)
-      .style('fill', '#999')
+      .style('fill', theme?.colors?.textSecondary || '#999')
       .style('font-size', `${Math.max(10, Math.floor(minSide * 0.025))}px`)
       .text(totalPlays > 0 ? `${Math.max(...hours)} plays` : '');
 

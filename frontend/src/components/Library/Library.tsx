@@ -57,8 +57,8 @@ const float = keyframes`
 // Enhanced styled components
 const LibraryContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-  color: white;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
   padding: 20px;
   animation: ${fadeInUp} 0.8s ease-out;
 `;
@@ -66,7 +66,7 @@ const LibraryContainer = styled.div`
 const HeroSection = styled.div`
   text-align: center;
   padding: 40px 0;
-  background: radial-gradient(ellipse at center, rgba(29, 185, 84, 0.1) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(29, 185, 84, 0.06) 0%, transparent 70%);
   border-radius: 24px;
   margin-bottom: 40px;
   position: relative;
@@ -79,7 +79,7 @@ const HeroSection = styled.div`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(29, 185, 84, 0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(29, 185, 84, 0.06), transparent);
     animation: shimmer 3s infinite;
   }
   
@@ -91,7 +91,7 @@ const HeroSection = styled.div`
 
 const LibraryIcon = styled.div`
   font-size: 4rem;
-  color: #1DB954;
+  color: ${({ theme }) => theme.colors.accent};
   margin-bottom: 16px;
   animation: ${float} 3s ease-in-out infinite;
 `;
@@ -100,7 +100,8 @@ const LibraryTitle = styled.h1`
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, #1DB954, #1ed760, #ffffff);
+  /* keep the visual gradient but rely on accent for primary color */
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, #1ed760, ${({ theme }) => theme.colors.backgroundSolid});
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -114,7 +115,7 @@ const LibraryTitle = styled.h1`
 
 const LibrarySubtitle = styled.p`
   font-size: 1.2rem;
-  color: #b3b3b3;
+  color: rgba(255,255,255,0.6);
   margin-bottom: 32px;
   animation: ${slideIn} 1s ease-out 0.2s both;
 `;
@@ -132,13 +133,13 @@ const StatsGrid = styled.div`
   }
 `;
 
-const StatCard = styled.div<{ gradient: string }>`
-  background: ${props => props.gradient};
+const StatCard = styled.div<{ $gradient?: string }>`
+  background: ${({ $gradient }) => $gradient || 'transparent'};
   padding: 24px;
   border-radius: 16px;
   text-align: center;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   
   &:hover {
     transform: translateY(-8px) scale(1.02);
@@ -149,36 +150,36 @@ const StatCard = styled.div<{ gradient: string }>`
 const StatIcon = styled.div`
   font-size: 2rem;
   margin-bottom: 12px;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const StatValue = styled.div`
   font-size: 1.8rem;
   font-weight: 700;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 4px;
 `;
 
 const StatLabel = styled.div`
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 1px;
 `;
 
 const NavigationSection = styled.div`
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 20px;
   padding: 32px;
   margin-bottom: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(10px);
 `;
 
 const NavTitle = styled.h2`
   font-size: 1.5rem;
   font-weight: 600;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -195,34 +196,34 @@ const NavGrid = styled.div`
   }
 `;
 
-const NavCard = styled.div<{ active?: boolean }>`
+const NavCard = styled(Link)<{ active?: boolean }>`
   background: ${props => props.active 
     ? 'linear-gradient(135deg, #1DB954, #1ed760)' 
-    : 'rgba(255, 255, 255, 0.03)'
+    : 'rgba(255, 255, 255, 0.02)'
   };
   border: 1px solid ${props => props.active 
     ? 'rgba(29, 185, 84, 0.5)' 
-    : 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(255, 255, 255, 0.06)'
   };
   border-radius: 16px;
   padding: 24px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   display: block;
   
   &:hover {
     transform: translateY(-4px);
     background: ${props => props.active 
       ? 'linear-gradient(135deg, #1ed760, #1DB954)' 
-      : 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(255, 255, 255, 0.04)'
     };
     border-color: ${props => props.active 
       ? 'rgba(29, 185, 84, 0.8)' 
-      : 'rgba(29, 185, 84, 0.3)'
+      : 'rgba(29, 185, 84, 0.2)'
     };
-    box-shadow: 0 12px 40px rgba(29, 185, 84, 0.2);
+    box-shadow: 0 12px 40px rgba(29, 185, 84, 0.12);
   }
 `;
 
@@ -240,22 +241,20 @@ const NavCardTitle = styled.h3`
 `;
 
 const NavCardDescription = styled.p`
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
   margin: 0;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.95rem;
+  line-height: 1.3;
 `;
 
 const ContentSection = styled.div`
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 20px;
-  padding: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  min-height: 600px;
-  backdrop-filter: blur(10px);
+  margin-top: 24px;
+  background: transparent;
 `;
 
-const Library: React.FC = () => {
+/* ----- Component ----- */
+
+const Library = () => {
   const location = useLocation();
   const userId = useUserId();
   const [stats, setStats] = useState({
@@ -377,25 +376,25 @@ const Library: React.FC = () => {
         
         {/* Quick Stats */}
         <StatsGrid>
-          <StatCard gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
             <StatIcon><FontAwesomeIcon icon={faMusic} /></StatIcon>
             <StatValue>{stats.totalTracks.toLocaleString()}</StatValue>
             <StatLabel>Total Tracks</StatLabel>
           </StatCard>
           
-          <StatCard gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
             <StatIcon><FontAwesomeIcon icon={faUser} /></StatIcon>
             <StatValue>{stats.totalArtists}</StatValue>
             <StatLabel>Artists</StatLabel>
           </StatCard>
           
-          <StatCard gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
             <StatIcon><FontAwesomeIcon icon={faCompactDisc} /></StatIcon>
             <StatValue>{stats.totalAlbums}</StatValue>
             <StatLabel>Albums</StatLabel>
           </StatCard>
           
-          <StatCard gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
             <StatIcon><FontAwesomeIcon icon={faClock} /></StatIcon>
             <StatValue>{stats.hoursListened}h</StatValue>
             <StatLabel>Hours Listened</StatLabel>
@@ -414,7 +413,6 @@ const Library: React.FC = () => {
             <NavCard
               key={item.key}
               active={activeSection === item.key}
-              as={Link}
               to={`/library/${item.path}`}
             >
               <NavCardIcon>

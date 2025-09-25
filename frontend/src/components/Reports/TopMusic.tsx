@@ -40,14 +40,9 @@ import {
   TopAlbum,
   TopTrack,
 } from '../../repositories/reportsRepository';
+import { useTheme } from 'styled-components';
 
-const DONUT_COLORS = {
-  artists: '#C084FC',
-  albums: '#4ADE80',
-  tracks: '#60A5FA',
-  primary: '#1DB954',
-  accent: '#FF6B6B',
-};
+// use theme values where appropriate
 
 // Enhanced animations
 const fadeInUp = keyframes`
@@ -206,6 +201,14 @@ const StatValue = styled.span`
 `;
 
 const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
+  const theme: any = useTheme();
+  const LOCAL_COLORS = {
+    artists: '#C084FC',
+    albums: '#4ADE80',
+    tracks: '#60A5FA',
+    primary: theme?.colors?.accent || '#1DB954',
+    accent: '#FF6B6B',
+  };
   const [artistsRatio, setArtistsRatio] = useState<number>(0);
   const [albumsRatio, setAlbumsRatio] = useState<number>(0);
   const [tracksRatio, setTracksRatio] = useState<number>(0);
@@ -331,7 +334,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
             </EnhancedCardImage>
             <CardBody>
               <div style={{ padding: '8px 0' }}>
-                <h4 style={{ margin: '0 0 12px', color: DONUT_COLORS.artists }}>
+                <h4 style={{ margin: '0 0 12px', color: LOCAL_COLORS.artists }}>
                   Top Artists Ranking
                 </h4>
                 {topArtists.slice(1, 5).map((artist, idx) => (
@@ -378,7 +381,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
             </EnhancedCardImage>
             <CardBody>
               <div style={{ padding: '8px 0' }}>
-                <h4 style={{ margin: '0 0 12px', color: DONUT_COLORS.albums }}>
+                <h4 style={{ margin: '0 0 12px', color: LOCAL_COLORS.albums }}>
                   Top Albums Ranking
                 </h4>
                 {topAlbums.slice(1, 5).map((album, idx) => (
@@ -425,7 +428,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
             </EnhancedCardImage>
             <CardBody>
               <div style={{ padding: '8px 0' }}>
-                <h4 style={{ margin: '0 0 12px', color: DONUT_COLORS.tracks }}>
+                <h4 style={{ margin: '0 0 12px', color: LOCAL_COLORS.tracks }}>
                   Top Tracks Ranking
                 </h4>
                 {topTracks.slice(1, 5).map((track, idx) => (

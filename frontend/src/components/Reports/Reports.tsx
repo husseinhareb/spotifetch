@@ -67,6 +67,7 @@ import {
   Label,
   Value,
 } from './Styles/style';
+import { useTheme } from 'styled-components';
 
 // ────────────────────────────────────────────────────────────
 // "Raw" shape coming back from your repo
@@ -111,16 +112,7 @@ interface DecadeItem {
 // ────────────────────────────────────────────────────────────
 // Constants & Styled Components
 // ────────────────────────────────────────────────────────────
-const DONUT_COLORS = {
-  tracks: '#60A5FA',
-  albums: '#4ADE80',
-  artists: '#C084FC',
-  primary: '#1DB954',    // Spotify green
-  secondary: '#191414',  // Spotify black
-  accent: '#FF6B6B',     // Coral red
-  warning: '#FFD93D',    // Yellow
-  info: '#6BCF7F',       // Light green
-};
+// chart color mapping will be derived from the active theme inside the component
 
 const TIME_RANGES: TimeRange[] = [
   { label: 'Last Week', value: 'week', days: 7 },
@@ -335,10 +327,23 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   trendData,
   genreData,
 }) => {
+  // use theme for primary accent color inside charts
+  const theme: any = useTheme();
+  const PRIMARY = theme?.colors?.accent || '#1DB954';
+  // local palette keeps track/album/artist hues but uses primary for brand accents
+  const LOCAL_COLORS = {
+    tracks: '#60A5FA',
+    albums: '#4ADE80',
+    artists: '#C084FC',
+    primary: PRIMARY,
+    accent: '#FF6B6B',
+    bgMuted: theme?.colors?.backgroundSolid || '#111',
+  };
+
   const pieData = [
-    { name: 'Tracks', value: tracks, color: DONUT_COLORS.tracks },
-    { name: 'Albums', value: albums, color: DONUT_COLORS.albums },
-    { name: 'Artists', value: artists, color: DONUT_COLORS.artists },
+    { name: 'Tracks', value: tracks, color: LOCAL_COLORS.tracks },
+    { name: 'Albums', value: albums, color: LOCAL_COLORS.albums },
+    { name: 'Artists', value: artists, color: LOCAL_COLORS.artists },
   ];
 
   const metrics: (keyof Fingerprint)[] = [
@@ -405,8 +410,8 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                       animationDuration={800}
                       nameKey="name"
                     >
-                      <Cell key={`${entry.name}-value`} fill={entry.color} stroke="#111" />
-                      <Cell key={`${entry.name}-rest`} fill="#0f0f0f" stroke="#111" />
+                <Cell key={`${entry.name}-value`} fill={entry.color} stroke={LOCAL_COLORS.bgMuted} />
+                <Cell key={`${entry.name}-rest`} fill={theme?.colors?.background || '#0f0f0f'} stroke={LOCAL_COLORS.bgMuted} />
                     </Pie>
                   );
                 });
@@ -419,7 +424,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                 if (!slice) return null;
                 const pct = Math.round((slice.value / Math.max(...pieData.map(d => d.value), 1)) * 1000) / 10;
                 return (
-                  <div style={{ background: 'rgba(0,0,0,0.85)', padding: '8px 12px', color: 'white', borderRadius: 6 }}>
+                  <div style={{ background: theme?.colors?.backgroundSolid || 'rgba(0,0,0,0.85)', padding: '8px 12px', color: theme?.colors?.text || 'white', borderRadius: 6 }}>
                     <div style={{ fontWeight: 700 }}>{slice.name}</div>
                     <div style={{ fontSize: 12, color: '#9aa0a6' }}>Value: {slice.value}</div>
                     <div style={{ fontSize: 12, color: '#9aa0a6' }}>Proportion: {pct}%</div>
@@ -434,7 +439,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             position: 'absolute', 
             right: 8, 
             top: 8, 
-            background: 'rgba(0,0,0,0.7)', 
+            background: theme?.colors?.backgroundSolid || 'rgba(0,0,0,0.7)', 
             padding: '8px', 
             borderRadius: '6px',
             fontSize: '12px',
@@ -446,9 +451,9 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
               return (
                 <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 4 }}>
                   <div style={{ width: 8, height: 8, background: p.color, borderRadius: 2 }} />
-                  <span style={{ color: '#fff', minWidth: 50 }}>{p.name}</span>
+                  <span style={{ color: theme?.colors?.text || '#fff', minWidth: 50 }}>{p.name}</span>
                   <span style={{ color: '#9aa0a6' }}>{p.value}</span>
-                  <span style={{ color: '#6dd36d' }}>({pct}%)</span>
+                  <span style={{ color: LOCAL_COLORS.primary }}>({pct}%)</span>
                 </div>
               );
             })}
@@ -465,65 +470,62 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
           <div style={{ width: '100%', height: '280px', overflow: 'hidden' }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData} margin={{ top: 15, right: 15, bottom: 15, left: 15 }}>
-            <PolarGrid stroke="#333" />
-            <PolarAngleAxis dataKey="metric" stroke="#ccc" fontSize={11} />
-            <PolarRadiusAxis 
-              angle={30} 
-              domain={[0, 100]} 
-              tick={false} 
-              axisLine={false} 
-            />
-            <Radar
-              name="You"
-              dataKey="you"
-              stroke={DONUT_COLORS.primary}
-              fill={DONUT_COLORS.primary}
-              fillOpacity={0.3}
-              strokeWidth={2}
-              animationBegin={0}
-              animationDuration={1500}
-            />
-            {globalAverage && (
-              <Radar
-                name="Average"
-                dataKey="avg"
-                stroke="#666"
-                fill="#666"
-                fillOpacity={0.1}
-                strokeWidth={1}
-                strokeDasharray="5 5"
-              />
-            )}
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
+                <PolarGrid stroke={theme?.colors?.backgroundSolid ? '#333' : '#333'} />
+                <PolarAngleAxis dataKey="metric" stroke={theme?.colors?.text || '#ccc'} fontSize={11} />
+                <PolarRadiusAxis 
+                  angle={30} 
+                  domain={[0, 100]} 
+                  tick={false} 
+                  axisLine={false} 
+                />
+                <Radar
+                  name="You"
+                  dataKey="you"
+                  stroke={LOCAL_COLORS.primary}
+                  fill={LOCAL_COLORS.primary}
+                  fillOpacity={0.3}
+                  strokeWidth={2}
+                  animationBegin={0}
+                  animationDuration={1500}
+                />
+                {globalAverage && (
+                  <Radar
+                    name="Average"
+                    dataKey="avg"
+                    stroke={theme?.colors?.backgroundSolid || '#666'}
+                    fill={theme?.colors?.backgroundSolid || '#666'}
+                    fillOpacity={0.1}
+                    strokeWidth={1}
+                    strokeDasharray="5 5"
+                  />
+                )}
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
               </RadarChart>
             </ResponsiveContainer>
           </div>
       </EnhancedChartBox>
-
-      {/* New Trend Analysis Chart */}
-      <EnhancedChartBox style={{ gridColumn: '1 / -1' }}>
         <ChartTitle>
           <FontAwesomeIcon icon={faFire} style={{ marginRight: '8px' }} />
           Listening Trends Over Time
         </ChartTitle>
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+            <CartesianGrid strokeDasharray="3 3" stroke={theme?.colors?.backgroundSolid || '#333'} />
             <XAxis 
               dataKey="date" 
-              stroke="#ccc"
+              stroke={theme?.colors?.text || '#ccc'}
               fontSize={12}
             />
-            <YAxis stroke="#ccc" fontSize={12} />
+            <YAxis stroke={theme?.colors?.text || '#ccc'} fontSize={12} />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
             <Area
               type="monotone"
               dataKey="totalPlays"
-              fill={DONUT_COLORS.primary}
-              fillOpacity={0.3}
-              stroke={DONUT_COLORS.primary}
+              fill={LOCAL_COLORS.primary}
+              fillOpacity={0.18}
+              stroke={LOCAL_COLORS.primary}
               strokeWidth={2}
               name="Total Plays"
               animationBegin={0}
@@ -532,7 +534,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             <Line
               type="monotone"
               dataKey="tracks"
-              stroke={DONUT_COLORS.tracks}
+              stroke={LOCAL_COLORS.tracks}
               strokeWidth={2}
               name="Unique Tracks"
               animationBegin={500}
@@ -541,7 +543,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             <Line
               type="monotone"
               dataKey="albums"
-              stroke={DONUT_COLORS.albums}
+              stroke={LOCAL_COLORS.albums}
               strokeWidth={2}
               name="Unique Albums"
               animationBegin={1000}
@@ -550,7 +552,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             <Line
               type="monotone"
               dataKey="artists"
-              stroke={DONUT_COLORS.artists}
+              stroke={LOCAL_COLORS.artists}
               strokeWidth={2}
               name="Unique Artists"
               animationBegin={1500}
@@ -558,7 +560,6 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             />
           </ComposedChart>
         </ResponsiveContainer>
-      </EnhancedChartBox>
 
       {/* New Genre Distribution Chart */}
       {genreData.length > 0 && (
@@ -585,7 +586,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="value" 
-                  fill={DONUT_COLORS.accent}
+                  fill={LOCAL_COLORS.accent}
                   radius={[6, 6, 6, 6]}
                   animationBegin={0}
                   animationDuration={900}
@@ -608,6 +609,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
 const Reports: React.FC = () => {
   const userId = useUserId();
   const isLoggedIn = useIsLoggedIn();
+  const theme: any = useTheme();
 
   // Enhanced state management
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>(TIME_RANGES[1]); // Default to month
@@ -854,8 +856,8 @@ const Reports: React.FC = () => {
           <button 
             onClick={handleRefresh}
             style={{
-              background: DONUT_COLORS.primary,
-              color: 'white',
+              background: theme?.colors?.accent || '#1DB954',
+              color: theme?.colors?.buttonText || 'white',
               border: 'none',
               padding: '12px 24px',
               borderRadius: '8px',
@@ -978,7 +980,7 @@ const Reports: React.FC = () => {
                     <div style={{ 
                       width: `${Math.max(2, (d.count / max) * 100)}%`, 
                       height: '100%', 
-                      background: (d.label === '2010s' ? DONUT_COLORS.primary : '#2b2b2b'),
+                        background: (d.label === '2010s' ? (theme?.colors?.accent || '#1DB954') : '#2b2b2b'),
                       transition: 'width 0.3s ease'
                     }} />
                   </div>
@@ -1015,7 +1017,7 @@ const Reports: React.FC = () => {
               {`${busiestHour % 12 || 12}:00${busiestHour < 12 ? ' AM' : ' PM'}`}
             </Value>
             <Label style={{ marginTop: '16px' }}>Plays This Hour</Label>
-            <Value style={{ fontSize: '2rem', color: DONUT_COLORS.primary }}>
+            <Value style={{ fontSize: '2rem', color: theme?.colors?.accent || '#1DB954' }}>
               {busiestCount.toLocaleString()}
             </Value>
           </div>

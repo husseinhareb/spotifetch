@@ -45,12 +45,12 @@ const glow = keyframes`
 
 // Styled components
 const WelcomeContainer = styled.div`
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  background: ${({ theme }) => theme.colors.background};
   border-radius: 24px;
   padding: 48px 32px;
   margin: 32px 0;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0,0,0,0.06);
   position: relative;
   overflow: hidden;
   
@@ -73,7 +73,7 @@ const WelcomeContainer = styled.div`
 
 const WelcomeIcon = styled.div`
   font-size: 4rem;
-  color: #1DB954;
+  color: ${({ theme }) => theme.colors.accent};
   margin-bottom: 24px;
   animation: ${float} 3s ease-in-out infinite;
 `;
@@ -81,9 +81,9 @@ const WelcomeIcon = styled.div`
 const WelcomeTitle = styled.h2`
   font-size: 2.5rem;
   font-weight: 700;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 16px;
-  background: linear-gradient(135deg, #1DB954, #1ed760);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, #1ed760);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -91,7 +91,7 @@ const WelcomeTitle = styled.h2`
 
 const WelcomeSubtitle = styled.p`
   font-size: 1.2rem;
-  color: #b3b3b3;
+  color: rgba(255,255,255,0.6);
   margin-bottom: 32px;
   max-width: 600px;
   margin-left: auto;
@@ -107,7 +107,7 @@ const FeatureGrid = styled.div`
 `;
 
 const FeatureCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 16px;
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -120,7 +120,7 @@ const FeatureCard = styled.div`
   
   &:hover {
     transform: translateY(-8px);
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
     border-color: rgba(29, 185, 84, 0.3);
     animation: ${glow} 2s infinite;
   }
@@ -128,26 +128,26 @@ const FeatureCard = styled.div`
 
 const FeatureIcon = styled.div`
   font-size: 2.5rem;
-  color: #1DB954;
+  color: ${({ theme }) => theme.colors.accent};
   margin-bottom: 16px;
 `;
 
 const FeatureTitle = styled.h3`
   font-size: 1.3rem;
   font-weight: 600;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 12px;
 `;
 
 const FeatureDescription = styled.p`
   font-size: 1rem;
-  color: #b3b3b3;
+  color: rgba(255,255,255,0.6);
   line-height: 1.5;
 `;
 
 const GetStartedButton = styled.button`
-  background: linear-gradient(135deg, #1DB954, #1ed760);
-  color: white;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, #1ed760);
+  color: ${({ theme }) => theme.colors.buttonText};
   border: none;
   padding: 16px 32px;
   border-radius: 25px;

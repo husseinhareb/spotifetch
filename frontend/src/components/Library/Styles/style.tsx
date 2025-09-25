@@ -10,15 +10,15 @@ export const Container = styled.div`
 
 export const Heading = styled.h2`
   font-size: 24px;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   margin: 1rem 0; 
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   padding-bottom: 0.5rem;
 `;
 
 export const Message = styled.p`
   font-size: 16px;
-  color: #666;
+  color: rgba(0,0,0,0.6);
   text-align: center;
   margin: 1.5rem 0;
 `;
@@ -38,7 +38,7 @@ export const AlbumImage = styled.img`
 
 export const AlbumName = styled.em`
   font-size: 14px;
-  color: #777;
+  color: rgba(0,0,0,0.6);
   margin-top: 0.05rem;
   white-space: nowrap;
   overflow: hidden;
@@ -48,7 +48,7 @@ export const AlbumName = styled.em`
 export const PlayIcon = styled.button`
   background: none;
   border: none;
-  color: #333;
+  color: ${({ theme }) => theme.colors.text};
   font-size: 18px;
   cursor: pointer;
   display: flex;
@@ -56,7 +56,7 @@ export const PlayIcon = styled.button`
   justify-content: center;
 
   &:hover {
-    color: #1db954;
+    color: ${({ theme }) => theme.colors.accent};
   }
 `;
 
@@ -67,7 +67,7 @@ export const TrackItem = styled.li`
   justify-content: space-between;
   margin-bottom: 0.3rem;
   padding: 0.2rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
 `;
 
 export const TrackDetails = styled.div`
@@ -80,7 +80,7 @@ export const TrackDetails = styled.div`
 
 export const TrackName = styled.strong`
   font-size: 16px;
-  color: #000;
+  color: ${({ theme }) => theme.colors.text};
   margin-right: 1rem; 
   white-space: nowrap;
   overflow: hidden;
@@ -90,7 +90,7 @@ export const TrackName = styled.strong`
 
 export const ArtistName = styled.span`
   font-size: 14px;
-  color: #555;
+  color: rgba(0,0,0,0.6);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -100,7 +100,7 @@ export const ArtistName = styled.span`
 
 export const PlayedAt = styled.small`
   font-size: 12px;
-  color: #999;
+  color: rgba(0,0,0,0.5);
   white-space: nowrap;
   text-align: right; 
   flex: 0; 
@@ -110,8 +110,8 @@ export const PlayedAt = styled.small`
 
 export const NavBar = styled.nav`
   width: 100%;
-  border-bottom: 1px solid #ddd;
-  background-color: #fafafa; 
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  background-color: ${({ theme }) => theme.colors.backgroundSolid};
   padding: 0.5rem 1rem;
 `;
 
@@ -129,7 +129,7 @@ export const NavItem = styled.li`
 `;
 
 export const NavLink = styled(Link)`
-  color: #000000;
+  color: ${({ theme }) => theme.colors.text};
   text-decoration: none;
   padding: 8px;
   /* Add your own styles here */

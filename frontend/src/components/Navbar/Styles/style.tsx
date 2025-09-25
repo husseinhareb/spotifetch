@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 // Navbar container
 export const Nav = styled.nav`
-  background-color: #1db954;
+  background-color: ${({ theme }) => theme.colors.navBackground};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,7 +22,7 @@ export const ContentWrapper = styled.div`
 
 // Title container
 export const Title = styled.div`
-  color: white;
+  color: ${({ theme }) => theme.colors.navText};
   font-size: 18px;
   font-weight: bold;
 `;
@@ -38,7 +38,7 @@ export const NavList = styled.ul`
   @media (max-width: 768px) {
     display: none;
     flex-direction: column;
-    background-color: #1db954;
+    background-color: ${({ theme }) => theme.colors.navBackground};
     position: absolute;
     top: 50px;
     left: 0;
@@ -72,7 +72,7 @@ export const NavItemRight = styled(NavItem)`
 export const NavButton = styled.button`
   background: none;
   border: none;
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -81,7 +81,7 @@ export const NavButton = styled.button`
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: ${({ theme }) => theme.colors.buttonBackground};
   }
 `;
 
@@ -98,10 +98,21 @@ export const ProfileThumbnail = styled.img`
 export const HamburgerIcon = styled.div`
   display: none;
   cursor: pointer;
-  color: white;
+  color: ${({ theme }) => theme.colors.navText};
   font-size: 24px;
 
   @media (max-width: 768px) {
     display: block;
   }
+`;
+
+export const ThemeToggle = styled.button`
+  background: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: ${({ theme }) => theme.colors.navText};
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 12px;
+  font-size: 13px;
 `;

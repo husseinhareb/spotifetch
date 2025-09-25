@@ -9,11 +9,11 @@ export const GlobalStyle = createGlobalStyle`
   *, *::before, *::after {
     box-sizing: inherit;
   }
-  /* reset default body margin and set dark theme base */
+  /* reset default body margin and theme-aware base */
   body {
     margin: 0;
-    background: linear-gradient(135deg, #0a0a0a 0%, #121212 50%, #060606 100%);
-    color: #e6eef0;
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.text};
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
@@ -22,7 +22,7 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   a {
-    color: #1DB954;
+    color: ${({ theme }) => theme.colors.link};
     text-decoration: none;
   }
 
