@@ -279,6 +279,13 @@ interface ChartsSectionProps {
   globalAverage?: Fingerprint;
   trendData: TrendData[];
   genreData: GenreData[];
+  byHour?: number[];
+  busiestHour?: number;
+  busiestCount?: number;
+  decadeData?: DecadeItem[];
+  prevTracks?: number;
+  prevAlbums?: number;
+  prevArtists?: number;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -331,6 +338,13 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   globalAverage,
   trendData,
   genreData,
+  byHour,
+  busiestHour,
+  busiestCount,
+  decadeData,
+  prevTracks,
+  prevAlbums,
+  prevArtists,
 }) => {
   // use theme for primary accent color inside charts
   const theme: any = useTheme();
@@ -346,9 +360,9 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
   };
 
   const pieData = [
-    { name: 'Tracks', value: tracks, color: LOCAL_COLORS.tracks },
-    { name: 'Albums', value: albums, color: LOCAL_COLORS.albums },
-    { name: 'Artists', value: artists, color: LOCAL_COLORS.artists },
+    { name: 'Tracks', value: tracks, prev: prevTracks, color: LOCAL_COLORS.tracks },
+    { name: 'Albums', value: albums, prev: prevAlbums, color: LOCAL_COLORS.albums },
+    { name: 'Artists', value: artists, prev: prevArtists, color: LOCAL_COLORS.artists },
   ];
 
   const metrics: (keyof Fingerprint)[] = [
@@ -380,6 +394,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
 
   return (
     <ChartsGrid>
+      
       {/* Enhanced Music Ratio with animations */}
       <EnhancedChartBox>
         <ChartTitle>
@@ -400,24 +415,47 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                     { name: 'rest', value: Math.max(0, maxVal - entry.value) },
                   ];
 
+                  const bgData = [{ name: 'bg', value: maxVal }];
+                  const coloredData = [
+                    { name: entry.name, value: entry.value },
+                    { name: 'rest', value: Math.max(0, maxVal - entry.value) },
+                  ];
+
                   return (
-                    <Pie
-                      key={entry.name}
-                      data={data}
-                      dataKey="value"
-                      startAngle={90}
-                      endAngle={-270}
-                      innerRadius={`${inner}%`}
-                      outerRadius={`${outer}%`}
-                      paddingAngle={2}
-                      isAnimationActive={true}
-                      animationBegin={idx * 100}
-                      animationDuration={800}
-                      nameKey="name"
-                    >
-                <Cell key={`${entry.name}-value`} fill={entry.color} stroke={LOCAL_COLORS.bgMuted} />
-                <Cell key={`${entry.name}-rest`} fill={theme?.colors?.background || '#0f0f0f'} stroke={LOCAL_COLORS.bgMuted} />
-                    </Pie>
+                    <React.Fragment key={entry.name}>
+                      {/* background full ring */}
+                      <Pie
+                        data={bgData}
+                        dataKey="value"
+                        startAngle={90}
+                        endAngle={-270}
+                        innerRadius={`${inner}%`}
+                        outerRadius={`${outer}%`}
+                        isAnimationActive={false}
+                        nameKey="name"
+                      >
+                        <Cell key={`${entry.name}-bg`} fill={theme?.colors?.buttonBackground || LOCAL_COLORS.bgMuted} stroke={LOCAL_COLORS.bgMuted} />
+                      </Pie>
+
+                      {/* colored overlay showing completion */}
+                      <Pie
+                        data={coloredData}
+                        dataKey="value"
+                        startAngle={90}
+                        endAngle={-270}
+                        innerRadius={`${inner}%`}
+                        outerRadius={`${outer}%`}
+                        paddingAngle={2}
+                        isAnimationActive={true}
+                        animationBegin={idx * 120}
+                        animationDuration={900}
+                        nameKey="name"
+                        cornerRadius={8}
+                      >
+                        <Cell key={`${entry.name}-value`} fill={entry.color} stroke={entry.color} />
+                        <Cell key={`${entry.name}-rest`} fill="transparent" stroke="none" />
+                      </Pie>
+                    </React.Fragment>
                   );
                 });
               })()}
@@ -453,12 +491,15 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
             {pieData.map((p, i) => {
               const maxVal = Math.max(...pieData.map((d) => d.value), 1);
               const pct = Math.round((p.value / maxVal) * 100);
+              const prev = (p as any).prev;
+              const change = prev && prev > 0 ? Math.round(((p.value - prev) / prev) * 100) : null;
+              const changeColor = change == null ? theme?.colors?.textSecondary : (change >= 0 ? theme?.colors?.accent : '#FF6B6B');
               return (
                 <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 4 }}>
                   <div style={{ width: 8, height: 8, background: p.color, borderRadius: 2 }} />
                   <span style={{ color: theme?.colors?.text || '#fff', minWidth: 50 }}>{p.name}</span>
                   <span style={{ color: theme?.colors?.textSecondary || '#9aa0a6' }}>{p.value}</span>
-                  <span style={{ color: LOCAL_COLORS.primary }}>{`(${pct}%)`}</span>
+                  <span style={{ color: changeColor, marginLeft: 6 }}>{change != null ? `(${change >= 0 ? '+' : ''}${change}%)` : `(${pct}%)`}</span>
                 </div>
               );
             })}
@@ -506,65 +547,96 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                 )}
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-              </RadarChart>
+                </RadarChart>
             </ResponsiveContainer>
           </div>
       </EnhancedChartBox>
+      {/* 24-hour clock moved here so it appears next to the other small charts */}
+      <ClockChartBox>
+        <ChartTitle>
+          <FontAwesomeIcon icon={faClock} style={{ marginRight: '8px' }} />
+          24-Hour Listening Pattern
+        </ChartTitle>
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {byHour && (
+            <RadialHourChart data={byHour} width={300} height={300} />
+          )}
+          {!byHour && <div style={{ color: theme?.colors?.textSecondary || '#777' }}>No listening data available</div>}
+        </div>
+      </ClockChartBox>
+
+      <EnhancedChartBox style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <StatIcon style={{ fontSize: '3rem', marginBottom: '16px' }}>
+            <FontAwesomeIcon icon={faClock} />
+          </StatIcon>
+          <Label>Most Active Hour</Label>
+          <Value style={{ fontSize: '2.5rem', margin: '8px 0' }}>{`${(busiestHour ?? 0) % 12 || 12}:00${(busiestHour ?? 0) < 12 ? ' AM' : ' PM'}`}</Value>
+          <Label style={{ marginTop: '16px' }}>Plays This Hour</Label>
+          <Value style={{ fontSize: '2rem', color: theme?.colors?.accent || '#1DB954' }}>{(busiestCount ?? 0).toLocaleString()}</Value>
+        </div>
+      </EnhancedChartBox>
+
+      {/* Listening trends: placed in its own box so title sits above the chart */}
+      <EnhancedChartBox style={{ gridColumn: '1 / -1' }}>
         <ChartTitle>
           <FontAwesomeIcon icon={faFire} style={{ marginRight: '8px' }} />
           Listening Trends Over Time
         </ChartTitle>
-        <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme?.colors?.backgroundSolid || '#333'} />
-            <XAxis 
-              dataKey="date" 
-              stroke={theme?.colors?.text || '#ccc'}
-              fontSize={12}
-            />
-            <YAxis stroke={theme?.colors?.text || '#ccc'} fontSize={12} />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            <Area
-              type="monotone"
-              dataKey="totalPlays"
-              fill={LOCAL_COLORS.primary}
-              fillOpacity={0.18}
-              stroke={LOCAL_COLORS.primary}
-              strokeWidth={2}
-              name="Total Plays"
-              animationBegin={0}
-              animationDuration={2000}
-            />
-            <Line
-              type="monotone"
-              dataKey="tracks"
-              stroke={LOCAL_COLORS.tracks}
-              strokeWidth={2}
-              name="Unique Tracks"
-              animationBegin={500}
-              animationDuration={2000}
-            />
-            <Line
-              type="monotone"
-              dataKey="albums"
-              stroke={LOCAL_COLORS.albums}
-              strokeWidth={2}
-              name="Unique Albums"
-              animationBegin={1000}
-              animationDuration={2000}
-            />
-            <Line
-              type="monotone"
-              dataKey="artists"
-              stroke={LOCAL_COLORS.artists}
-              strokeWidth={2}
-              name="Unique Artists"
-              animationBegin={1500}
-              animationDuration={2000}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+        <div style={{ width: '100%', height: 320 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={theme?.colors?.backgroundSolid || '#333'} />
+              <XAxis 
+                dataKey="date" 
+                stroke={theme?.colors?.text || '#ccc'}
+                fontSize={12}
+              />
+              <YAxis stroke={theme?.colors?.text || '#ccc'} fontSize={12} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Area
+                type="monotone"
+                dataKey="totalPlays"
+                fill={LOCAL_COLORS.primary}
+                fillOpacity={0.18}
+                stroke={LOCAL_COLORS.primary}
+                strokeWidth={2}
+                name="Total Plays"
+                animationBegin={0}
+                animationDuration={2000}
+              />
+              <Line
+                type="monotone"
+                dataKey="tracks"
+                stroke={LOCAL_COLORS.tracks}
+                strokeWidth={2}
+                name="Unique Tracks"
+                animationBegin={500}
+                animationDuration={2000}
+              />
+              <Line
+                type="monotone"
+                dataKey="albums"
+                stroke={LOCAL_COLORS.albums}
+                strokeWidth={2}
+                name="Unique Albums"
+                animationBegin={1000}
+                animationDuration={2000}
+              />
+              <Line
+                type="monotone"
+                dataKey="artists"
+                stroke={LOCAL_COLORS.artists}
+                strokeWidth={2}
+                name="Unique Artists"
+                animationBegin={1500}
+                animationDuration={2000}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </EnhancedChartBox>
 
       {/* New Genre Distribution Chart */}
       {genreData.length > 0 && (
@@ -577,7 +649,8 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
           {/* Span whole row and give the chart more horizontal space */}
           <div style={{ width: '100%', height: '360px', minHeight: 320, overflow: 'visible', padding: '8px 0' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={genreData} layout="horizontal" margin={{ top: 10, right: 100, left: 16, bottom: 12 }} barCategoryGap="30%" barSize={22}>
+              {/* Use vertical layout so categories are on Y-axis and values extend horizontally */}
+              <BarChart data={genreData} layout="vertical" margin={{ top: 10, right: 100, left: 16, bottom: 12 }} barCategoryGap="30%" barSize={22}>
                 <CartesianGrid strokeDasharray="3 3" stroke={theme?.colors?.buttonBackground || '#222'} />
                   <XAxis type="number" stroke={theme?.colors?.textSecondary || '#bbb'} fontSize={12} tickLine={false} domain={[0, genreMax]} ticks={genreTicks} />
                   <YAxis 
@@ -596,6 +669,10 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                     animationBegin={0}
                     animationDuration={900}
                   >
+                    {/* Color each bar using the data-provided color for stronger contrast */}
+                    {genreData.map((g, i) => (
+                      <Cell key={`genre-cell-${i}`} fill={g.color} />
+                    ))}
                     {/* custom label renderer: place value inside bar when narrow, otherwise to the right */}
                     <LabelList dataKey="value" content={(props: any) => {
                       const { x, y, width, height, value } = props;
@@ -979,6 +1056,40 @@ const Reports: React.FC = () => {
         </StatCard>
       </StatsGrid>
 
+      {/* Decade distribution: placed above the charts so it sits on its own row */}
+      <EnhancedChartBox style={{ marginBottom: 24, gridColumn: '1 / -1' }}>
+        <ChartTitle>
+          <FontAwesomeIcon icon={faMusic} style={{ marginRight: '8px' }} />
+          Decade Distribution
+        </ChartTitle>
+        <div style={{ marginTop: 8, padding: '8px 16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+            {/* Highlight the decade with the maximum count (dynamic), not a hard-coded label */}
+            {(() => {
+              const topCount = Math.max(...decadeData.map(x => x.count), 0);
+              const barMax = Math.max(topCount, 1);
+              return decadeData.map((d) => {
+              return (
+                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '20px' }}>
+                  <div style={{ width: '90px', color: theme?.colors?.textSecondary || '#ccc', fontSize: '0.85rem', flexShrink: 0 }}>{d.label}</div>
+                  <div style={{ flex: 1, background: theme?.colors?.background || '#0f0f0f', borderRadius: '4px', height: '16px', overflow: 'hidden', minWidth: 0 }}>
+                    <div style={{
+                      width: `${d.count === 0 ? 0 : Math.max(2, (d.count / barMax) * 100)}%`,
+                      height: '100%',
+                      background: (d.count === topCount && topCount > 0)
+                        ? (theme?.colors?.accent || '#1DB954')
+                        : (theme?.colors?.buttonBackground || '#2b2b2b'),
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                  <div style={{ width: '50px', textAlign: 'right', color: theme?.colors?.textSecondary || '#bbb', fontSize: '0.85rem', flexShrink: 0 }}>{d.count}</div>
+                </div>
+              );
+            });})()}
+          </div>
+        </div>
+      </EnhancedChartBox>
+
       {/* Enhanced Charts Section */}
       <ChartsSection
         tracks={musicRatio.tracks}
@@ -987,68 +1098,17 @@ const Reports: React.FC = () => {
         fingerprint={fingerprint}
         trendData={trendData}
         genreData={genreData}
+        byHour={byHour ?? undefined}
+        busiestHour={busiestHour}
+        busiestCount={busiestCount}
+        prevTracks={musicRatio.lastTracks}
+        prevAlbums={musicRatio.lastAlbums}
+        prevArtists={musicRatio.lastArtists}
       />
 
-      {/* Decade distribution section */}
-      <Section>
-        <ChartTitle>
-          <FontAwesomeIcon icon={faMusic} style={{ marginRight: '8px' }} />
-          Decade Distribution
-        </ChartTitle>
-        <EnhancedChartBox style={{ marginTop: '16px', padding: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
-            {decadeData.map((d) => {
-              const max = Math.max(...decadeData.map(x => x.count), 1);
-              return (
-                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '20px' }}>
-                  <div style={{ width: '70px', color: theme?.colors?.textSecondary || '#ccc', fontSize: '0.85rem', flexShrink: 0 }}>{d.label}</div>
-                  <div style={{ flex: 1, background: theme?.colors?.background || '#0f0f0f', borderRadius: '4px', height: '16px', overflow: 'hidden', minWidth: 0 }}>
-                    <div style={{ 
-                      width: `${Math.max(2, (d.count / max) * 100)}%`, 
-                      height: '100%', 
-                        background: (d.label === '2010s' ? (theme?.colors?.accent || '#1DB954') : theme?.colors?.buttonBackground || '#2b2b2b'),
-                      transition: 'width 0.3s ease'
-                    }} />
-                  </div>
-                  <div style={{ width: '50px', textAlign: 'right', color: theme?.colors?.textSecondary || '#bbb', fontSize: '0.85rem', flexShrink: 0 }}>{d.count}</div>
-                </div>
-              );
-            })}
-          </div>
-        </EnhancedChartBox>
-      </Section>
+      
 
-      {/* Enhanced Listening Clock */}
-      <Section>
-        <ClockChartBox>
-          <ChartTitle>
-            <FontAwesomeIcon icon={faClock} style={{ marginRight: '8px' }} />
-            24-Hour Listening Pattern
-          </ChartTitle>
-          <div style={{ width: '100%', height: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {byHour && (
-              <RadialHourChart data={byHour} width={320} height={320} />
-            )}
-            {!byHour && <div style={{ color: '#777' }}>No listening data available</div>}
-          </div>
-        </ClockChartBox>
-        
-        <EnhancedChartBox style={{ flex: 0.4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <StatIcon style={{ fontSize: '3rem', marginBottom: '16px' }}>
-              <FontAwesomeIcon icon={faClock} />
-            </StatIcon>
-            <Label>Most Active Hour</Label>
-            <Value style={{ fontSize: '2.5rem', margin: '8px 0' }}>
-              {`${busiestHour % 12 || 12}:00${busiestHour < 12 ? ' AM' : ' PM'}`}
-            </Value>
-            <Label style={{ marginTop: '16px' }}>Plays This Hour</Label>
-            <Value style={{ fontSize: '2rem', color: theme?.colors?.accent || '#1DB954' }}>
-              {busiestCount.toLocaleString()}
-            </Value>
-          </div>
-        </EnhancedChartBox>
-      </Section>
+      {/* Clock moved into charts section above */}
 
       {/* Enhanced Top Music */}
       <TopMusic userId={userId} />
