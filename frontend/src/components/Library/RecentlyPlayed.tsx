@@ -38,10 +38,10 @@ const pulse = keyframes`
 
 // Enhanced styled components
 const Container = styled.div`
-  background: linear-gradient(145deg, #1e1e1e, #0a0a0a);
+  background: ${({ theme }) => theme.colors.backgroundSolid};
   border-radius: 20px;
   padding: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   max-height: 600px;
   overflow-y: auto;
   animation: ${slideUp} 0.8s ease-out;
@@ -52,17 +52,18 @@ const Container = styled.div`
   }
   
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: ${({ theme }) => theme.colors.buttonBackground};
     border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: #1DB954;
+    background: ${({ theme }) => theme.colors.accent};
     border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb:hover {
-    background: #1ed760;
+    background: ${({ theme }) => theme.colors.accent};
+    filter: brightness(1.05);
   }
 `;
 
@@ -78,7 +79,7 @@ const SectionTitle = styled.h3`
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0 0 0 12px;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const TrackList = styled.div`
@@ -91,16 +92,16 @@ const TrackItem = styled.div`
   display: flex;
   align-items: center;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0,0,0,0);
   border-radius: 12px;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0,0,0,0);
   animation: ${fadeIn} 0.6s ease-out;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: ${({ theme }) => theme.colors.buttonBackground};
     transform: translateX(8px);
-    border-color: rgba(29, 185, 84, 0.3);
+    border-color: ${({ theme }) => theme.colors.accent}33; /* small alpha */
   }
 `;
 
@@ -122,12 +123,12 @@ const AlbumPlaceholder = styled.div`
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: linear-gradient(45deg, #333, #666);
+  background: linear-gradient(45deg, ${({ theme }) => theme.colors.backgroundSolid}, ${({ theme }) => theme.colors.background});
   margin-right: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: ${({ theme }) => theme.colors.textSecondary || '#999'};
   font-size: 1.5rem;
 `;
 
@@ -142,7 +143,7 @@ const TrackDetails = styled.div`
 const TrackName = styled.div`
   font-size: 1rem;
   font-weight: 600;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -150,7 +151,7 @@ const TrackName = styled.div`
 
 const ArtistName = styled.div`
   font-size: 0.9rem;
-  color: #b3b3b3;
+  color: ${({ theme }) => theme.colors.text || '#b3b3b3'};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -158,7 +159,7 @@ const ArtistName = styled.div`
 
 const PlayedAt = styled.div`
   font-size: 0.8rem;
-  color: #666;
+  color: ${({ theme }) => theme.colors.text || '#666'};
   margin-top: 4px;
   display: flex;
   align-items: center;
@@ -181,8 +182,8 @@ const ActionButton = styled.button`
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: ${({ theme }) => theme.colors.buttonBackground};
+  color: ${({ theme }) => theme.colors.buttonText || theme.colors.text};
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -190,7 +191,8 @@ const ActionButton = styled.button`
   justify-content: center;
   
   &:hover {
-    background: #1DB954;
+    background: ${({ theme }) => theme.colors.accent};
+    color: ${({ theme }) => theme.colors.buttonText || '#fff'};
     transform: scale(1.1);
   }
 `;
@@ -200,15 +202,15 @@ const LoadingContainer = styled.div`
   justify-content: center;
   align-items: center;
   padding: 32px;
-  color: #666;
+  color: ${({ theme }) => theme.colors.text || '#666'};
 `;
 
 const LoadingSpinner = styled.div`
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(29, 185, 84, 0.3);
+  border: 3px solid rgba(0,0,0,0.06);
   border-radius: 50%;
-  border-top-color: #1DB954;
+  border-top-color: ${({ theme }) => theme.colors.accent};
   animation: spin 1s ease-in-out infinite;
   margin-right: 12px;
   
@@ -220,37 +222,37 @@ const LoadingSpinner = styled.div`
 const Message = styled.div`
   text-align: center;
   padding: 32px;
-  color: #666;
+  color: ${({ theme }) => theme.colors.text || '#666'};
   font-size: 1rem;
 `;
 
 const ErrorMessage = styled(Message)`
   color: #ff6b6b;
-  background: rgba(255, 107, 107, 0.1);
+  background: rgba(255, 107, 107, 0.06);
   border-radius: 12px;
-  border: 1px solid rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.12);
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 60px 20px;
-  color: #666;
+  color: ${({ theme }) => theme.colors.text || '#666'};
 `;
 
 const LoadMoreButton = styled.button`
   width: 100%;
   padding: 16px;
   margin-top: 16px;
-  background: rgba(29, 185, 84, 0.1);
-  border: 1px solid rgba(29, 185, 84, 0.3);
-  color: #1DB954;
+  background: ${({ theme }) => `${theme.colors.accent}1A`};
+  border: 1px solid ${({ theme }) => `${theme.colors.accent}33`};
+  color: ${({ theme }) => theme.colors.accent};
   border-radius: 12px;
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.3s ease;
   
   &:hover {
-    background: rgba(29, 185, 84, 0.2);
+    background: ${({ theme }) => `${theme.colors.accent}2A`};
     transform: translateY(-2px);
   }
   

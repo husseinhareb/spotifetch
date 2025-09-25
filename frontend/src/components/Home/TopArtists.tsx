@@ -48,10 +48,10 @@ const shimmer = keyframes`
 
 // Enhanced styled components
 const TopArtistsContainer = styled.div`
-  background: linear-gradient(145deg, #1e1e1e, #0a0a0a);
+  background: ${({ theme }) => theme.colors.backgroundSolid};
   border-radius: 20px;
   padding: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   animation: ${slideUp} 0.8s ease-out;
 `;
 
@@ -74,7 +74,7 @@ const SectionTitle = styled.h3`
 
 const TimeRangeSelector = styled.div`
   display: flex;
-  background: rgba(255, 255, 255, 0.1);
+  background: ${({ theme }) => theme.colors.buttonBackground};
   border-radius: 8px;
   padding: 4px;
 `;
@@ -82,8 +82,8 @@ const TimeRangeSelector = styled.div`
 const TimeRangeButton = styled.button<{ active: boolean }>`
   padding: 8px 16px;
   border: none;
-  background: ${props => props.active ? '#1DB954' : 'transparent'};
-  color: white;
+  background: ${props => props.active ? props.theme.colors.accent : 'transparent'};
+  color: ${({ theme }) => theme.colors.buttonText || 'white'};
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -91,7 +91,7 @@ const TimeRangeButton = styled.button<{ active: boolean }>`
   white-space: nowrap;
 
   &:hover {
-    background: ${props => props.active ? '#1DB954' : 'rgba(255, 255, 255, 0.1)'};
+    background: ${props => props.active ? props.theme.colors.accent : 'rgba(255, 255, 255, 0.04)'};
   }
 `;
 
@@ -113,7 +113,7 @@ const ArtistCard = styled.div<{ featured?: boolean }>`
   aspect-ratio: 1;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: linear-gradient(45deg, #333, #666);
+  background: ${({ theme }) => `linear-gradient(45deg, ${theme.colors.backgroundSolid}, ${theme.colors.background})`};
   animation: ${scaleIn} 0.6s ease-out;
   
   ${props => props.featured && `
@@ -148,7 +148,7 @@ const ArtistOverlay = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
   padding: 24px 16px 16px;
   transform: translateY(100%);
   transition: transform 0.3s ease;
@@ -162,7 +162,7 @@ const ArtistName = styled.h4`
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 8px 0;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const ArtistRank = styled.div<{ rank: number }>`
@@ -173,7 +173,7 @@ const ArtistRank = styled.div<{ rank: number }>`
     props.rank === 1 ? 'linear-gradient(135deg, #FFD700, #FFA500)' :
     props.rank === 2 ? 'linear-gradient(135deg, #C0C0C0, #A0A0A0)' :
     props.rank === 3 ? 'linear-gradient(135deg, #CD7F32, #B8860B)' :
-    'rgba(0, 0, 0, 0.7)'
+    'rgba(0, 0, 0, 0.06)'
   };
   color: white;
   width: 32px;
@@ -198,8 +198,8 @@ const ActionButton = styled.button`
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: ${({ theme }) => theme.colors.buttonBackground};
+  color: ${({ theme }) => theme.colors.buttonText || 'white'};
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -207,7 +207,7 @@ const ActionButton = styled.button`
   justify-content: center;
   
   &:hover {
-    background: #1DB954;
+    background: ${({ theme }) => theme.colors.accent};
     transform: scale(1.1);
   }
 `;

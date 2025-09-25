@@ -51,8 +51,8 @@ const glow = keyframes`
 // Styled components
 const HomeContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-  color: white;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
   padding: 20px;
   animation: ${fadeInUp} 0.8s ease-out;
 `;
@@ -60,12 +60,12 @@ const HomeContainer = styled.div`
 const HeroSection = styled.div`
   text-align: center;
   padding: 60px 0;
-  background: radial-gradient(ellipse at center, rgba(29, 185, 84, 0.1) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(29, 185, 84, 0.06) 0%, transparent 70%);
 `;
 
 const GreetingIcon = styled.div`
   font-size: 3rem;
-  color: #1DB954;
+  color: ${({ theme }) => theme.colors.accent};
   margin-bottom: 16px;
   animation: ${float} 3s ease-in-out infinite;
 `;
@@ -74,11 +74,11 @@ const WelcomeMessage = styled.h1`
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #1DB954, #1ed760, #ffffff);
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.accent}, #1ed760, ${({ theme }) => theme.colors.backgroundSolid});
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(29, 185, 84, 0.3);
+  text-shadow: 0 0 30px rgba(29, 185, 84, 0.18);
   
   @media (max-width: 768px) {
     font-size: 2.5rem;
@@ -87,7 +87,7 @@ const WelcomeMessage = styled.h1`
 
 const Subtitle = styled.p`
   font-size: 1.3rem;
-  color: #b3b3b3;
+  color: ${({ theme }) => theme.colors.text || '#b3b3b3'};
   margin-bottom: 40px;
 `;
 
@@ -103,8 +103,8 @@ const QuickStatsGrid = styled.div`
   }
 `;
 
-const StatCard = styled.div<{ gradient: string }>`
-  background: ${props => props.gradient};
+const StatCard = styled.div<{ $gradient?: string }>`
+  background: ${props => props.$gradient || 'transparent'};
   padding: 24px;
   border-radius: 16px;
   text-align: center;
@@ -120,18 +120,18 @@ const StatCard = styled.div<{ gradient: string }>`
 const StatIcon = styled.div`
   font-size: 2.5rem;
   margin-bottom: 12px;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const StatValue = styled.div`
   font-size: 2rem;
   font-weight: 700;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 const StatLabel = styled.div`
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: ${({ theme }) => theme.colors.text || 'rgba(255, 255, 255, 0.8)'};
   margin-top: 8px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -346,25 +346,25 @@ const Home: React.FC = () => {
         
         {/* Quick Stats */}
         <QuickStatsGrid>
-          <StatCard gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
             <StatIcon><FontAwesomeIcon icon={faPlay} /></StatIcon>
             <StatValue>{stats.totalPlays.toLocaleString()}</StatValue>
             <StatLabel>Total Plays</StatLabel>
           </StatCard>
           
-          <StatCard gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
             <StatIcon><FontAwesomeIcon icon={faMicrophone} /></StatIcon>
             <StatValue>{stats.favoriteArtists}</StatValue>
             <StatLabel>Favorite Artists</StatLabel>
           </StatCard>
           
-          <StatCard gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
             <StatIcon><FontAwesomeIcon icon={faClock} /></StatIcon>
             <StatValue>{stats.hoursListened}h</StatValue>
             <StatLabel>Hours Listened</StatLabel>
           </StatCard>
           
-          <StatCard gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
+          <StatCard $gradient="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
             <StatIcon><FontAwesomeIcon icon={faFire} /></StatIcon>
             <StatValue>{stats.newDiscoveries}</StatValue>
             <StatLabel>New Discoveries</StatLabel>

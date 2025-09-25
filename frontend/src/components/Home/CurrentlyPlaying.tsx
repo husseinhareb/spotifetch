@@ -40,12 +40,12 @@ const progressGlow = keyframes`
 
 // Enhanced styled components
 const PlayerContainer = styled.div`
-  background: linear-gradient(145deg, #1e1e1e, #0a0a0a);
+  background: ${({ theme }) => theme.colors.backgroundSolid};
   border-radius: 20px;
   padding: 32px;
   margin: 20px 0;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   animation: ${slideIn} 0.8s ease-out;
   position: relative;
   overflow: hidden;
@@ -57,7 +57,7 @@ const PlayerContainer = styled.div`
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #1DB954, #1ed760);
+    background: linear-gradient(90deg, ${({ theme }) => theme.colors.accent}, #1ed760);
   }
 `;
 
@@ -106,8 +106,8 @@ const PlayingIndicator = styled.div<{ isPlaying: boolean }>`
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(29, 185, 84, 0.9);
-  color: white;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.buttonText || '#fff'};
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -126,7 +126,7 @@ const TrackInfo = styled.div`
 const TrackName = styled.h3`
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   margin: 0 0 8px 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -135,7 +135,7 @@ const TrackName = styled.h3`
 
 const ArtistName = styled.p`
   font-size: 1.1rem;
-  color: #b3b3b3;
+  color: ${({ theme }) => theme.colors.text || '#b3b3b3'};
   margin: 0 0 16px 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -158,7 +158,7 @@ const TimeDisplay = styled.div`
 const ProgressContainer = styled.div`
   width: 100%;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: ${({ theme }) => theme.colors.buttonBackground};
   border-radius: 3px;
   overflow: hidden;
   position: relative;
@@ -167,7 +167,7 @@ const ProgressContainer = styled.div`
 const ProgressBar = styled.div<{ progress: number; isPlaying: boolean }>`
   width: ${props => props.progress}%;
   height: 100%;
-  background: linear-gradient(90deg, #1DB954, #1ed760);
+  background: linear-gradient(90deg, ${({ theme }) => theme.colors.accent}, #1ed760);
   border-radius: 3px;
   transition: width 0.5s ease;
   animation: ${props => props.isPlaying ? progressGlow : 'none'} 2s infinite;
@@ -181,9 +181,9 @@ const ProgressBar = styled.div<{ progress: number; isPlaying: boolean }>`
     transform: translateY(-50%);
     width: 12px;
     height: 12px;
-    background: white;
+    background: ${({ theme }) => theme.colors.buttonText || '#fff'};
     border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     opacity: ${props => props.isPlaying ? 1 : 0.7};
   }
 `;
@@ -201,10 +201,10 @@ const ActionButton = styled.button<{ primary?: boolean }>`
   border-radius: 50%;
   border: none;
   background: ${props => props.primary ? 
-    'linear-gradient(135deg, #1DB954, #1ed760)' : 
-    'rgba(255, 255, 255, 0.1)'
+    `linear-gradient(135deg, ${props.theme.colors.accent}, #1ed760)` : 
+    props.theme.colors.buttonBackground
   };
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText || '#fff'};
   font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -215,8 +215,8 @@ const ActionButton = styled.button<{ primary?: boolean }>`
   &:hover {
     transform: scale(1.1);
     background: ${props => props.primary ? 
-      'linear-gradient(135deg, #1ed760, #1DB954)' : 
-      'rgba(255, 255, 255, 0.2)'
+      `linear-gradient(135deg, #1ed760, ${props.theme.colors.accent})` : 
+      'rgba(255, 255, 255, 0.08)'
     };
   }
   
@@ -226,12 +226,12 @@ const ActionButton = styled.button<{ primary?: boolean }>`
 `;
 
 const NoPlayingCard = styled.div`
-  background: linear-gradient(145deg, #1e1e1e, #0a0a0a);
+  background: ${({ theme }) => theme.colors.backgroundSolid};
   border-radius: 20px;
   padding: 48px 32px;
   text-align: center;
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  color: #666;
+  border: 2px dashed rgba(0,0,0,0.06);
+  color: ${({ theme }) => theme.colors.text || '#666'};
   animation: ${slideIn} 0.8s ease-out;
 `;
 
@@ -244,16 +244,16 @@ const NoPlayingIcon = styled.div`
 const NoPlayingText = styled.p`
   font-size: 1.2rem;
   margin: 0;
-  color: #999;
+  color: ${({ theme }) => theme.colors.text || '#999'};
 `;
 
 const LoadingSpinner = styled.div`
   display: inline-block;
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(29, 185, 84, 0.3);
+  border: 2px solid rgba(0,0,0,0.08);
   border-radius: 50%;
-  border-top-color: #1DB954;
+  border-top-color: ${({ theme }) => theme.colors.accent};
   animation: ${spin} 1s ease-in-out infinite;
 `;
 

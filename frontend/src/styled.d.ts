@@ -7,6 +7,7 @@ declare module 'styled-components' {
       background: string;
       backgroundSolid: string;
       text: string;
+      textSecondary: string;
       link: string;
       navBackground: string;
       navText: string;
