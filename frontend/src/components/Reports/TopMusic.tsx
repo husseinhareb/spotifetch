@@ -118,7 +118,7 @@ const PlayButton = styled.button`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(29, 185, 84, 0.9);
+  background: ${({ theme }) => theme.colors.accent};
   border: none;
   border-radius: 50%;
   width: 60px;
@@ -131,7 +131,7 @@ const PlayButton = styled.button`
   backdrop-filter: blur(10px);
   
   &:hover {
-    background: #1DB954;
+    background: ${({ theme }) => theme.colors.accent};
     transform: translate(-50%, -50%) scale(1.1);
   }
 `;
@@ -151,7 +151,7 @@ const EnhancedCardImage = styled(CardImage)`
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.3);
+      background: ${({ theme }) => `${theme.colors.backgroundSolid}80`};
     }
   }
 `;
@@ -161,12 +161,12 @@ const RankBadge = styled.div<{ rank: number }>`
   top: 16px;
   right: 16px;
   background: ${props => 
-    props.rank === 1 ? 'linear-gradient(135deg, #FFD700, #FFA500)' :
-    props.rank === 2 ? 'linear-gradient(135deg, #C0C0C0, #A0A0A0)' :
-    props.rank === 3 ? 'linear-gradient(135deg, #CD7F32, #B8860B)' :
-    'linear-gradient(135deg, #666, #444)'
+  props.rank === 1 ? `linear-gradient(135deg, ${props.theme.colors.accent || '#FFD700'}, ${props.theme.colors.link || '#FFA500'})` :
+  props.rank === 2 ? `linear-gradient(135deg, ${props.theme.colors.buttonBackground || '#C0C0C0'}, ${props.theme.colors.backgroundSolid || '#A0A0A0'})` :
+  props.rank === 3 ? `linear-gradient(135deg, ${props.theme.colors.link || '#CD7F32'}, ${props.theme.colors.buttonBackground || '#B8860B'})` :
+    ({ theme }: any) => `linear-gradient(135deg, ${theme.colors.buttonBackground}, ${theme.colors.backgroundSolid})`
   };
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText || theme.colors.text};
   width: 36px;
   height: 36px;
   border-radius: 50%;

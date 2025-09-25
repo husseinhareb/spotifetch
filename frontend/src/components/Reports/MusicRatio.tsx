@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import {
   ResponsiveContainer,
   Tooltip,
@@ -54,11 +54,11 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
-  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+  background: ${({ theme }) => theme.colors.backgroundSolid};
   border-radius: 16px;
   padding: 32px;
-  border: 1px solid #333;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -115,7 +115,7 @@ const MetricHeader = styled.div`
 `;
 
 const MetricTitle = styled.h3`
-  color: #ccc;
+  color: ${({ theme }) => theme.colors.textSecondary || '#ccc'};
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -126,7 +126,7 @@ const MetricTitle = styled.h3`
 `;
 
 const MetricValue = styled.p`
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   font-size: 2rem;
   font-weight: bold;
   margin: 0;
@@ -141,7 +141,7 @@ const MetricComparison = styled.div`
 `;
 
 const ComparisonText = styled.span`
-  color: #888;
+  color: ${({ theme }) => theme.colors.textSecondary || '#888'};
   font-size: 0.85rem;
 `;
 
@@ -151,18 +151,14 @@ const ChangeIndicator = styled.div<{ positive: boolean; significant: boolean }>`
   gap: 4px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: ${props => 
-    props.positive ? 
-      (props.significant ? '#16A34A20' : '#16A34A10') : 
-      (props.significant ? '#DC262620' : '#DC262610')
-  };
+  background: ${props => props.positive ? (props.significant ? 'rgba(22,163,74,0.12)' : 'rgba(22,163,74,0.06)') : (props.significant ? 'rgba(220,38,38,0.12)' : 'rgba(220,38,38,0.06)')};
   color: ${props => props.positive ? '#4ADE80' : '#FF6B6B'};
   font-size: 0.8rem;
   font-weight: bold;
 `;
 
 const ChartTitle = styled.h3`
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   text-align: center;
   margin-bottom: 20px;
   font-size: 1.2rem;
@@ -173,17 +169,18 @@ const ChartTitle = styled.h3`
 `;
 
 const CustomTooltip = ({ active, payload }: any) => {
+  const theme: any = useTheme();
   if (active && payload && payload.length) {
     return (
       <div style={{
-        background: 'rgba(0, 0, 0, 0.9)',
-        border: '1px solid #333',
+        background: theme.colors.backgroundSolid,
+        border: `1px solid ${theme.colors.buttonBackground}`,
         borderRadius: '8px',
         padding: '12px',
-        color: 'white',
+        color: theme.colors.text,
         fontSize: '0.9rem'
       }}>
-        <p style={{ margin: 0, fontWeight: 'bold', marginBottom: '4px' }}>
+        <p style={{ margin: 0, fontWeight: 'bold', marginBottom: '4px', color: theme.colors.text }}>
           {payload[0].payload.name}
         </p>
         <p style={{ margin: 0, color: payload[0].color }}>
@@ -225,25 +222,27 @@ const MusicRatio: React.FC<MusicRatioProps> = ({
   const albumsChange = calculateChange(currentAlbums, lastAlbums);
   const artistsChange = calculateChange(currentArtists, lastArtists);
 
+  const theme: any = useTheme();
+
   const radialData = [
     { 
       name: 'Artists', 
       value: safePercent(currentArtists, lastArtists), 
-      fill: '#C084FC',
+      fill: theme?.colors?.accent || '#C084FC',
       current: currentArtists,
       last: lastArtists
     },
     { 
       name: 'Albums', 
       value: safePercent(currentAlbums, lastAlbums), 
-      fill: '#4ADE80',
+      fill: theme?.colors?.accent || '#4ADE80',
       current: currentAlbums,
       last: lastAlbums
     },
     { 
       name: 'Tracks', 
       value: safePercent(currentTracks, lastTracks), 
-      fill: '#60A5FA',
+      fill: theme?.colors?.accent || '#60A5FA',
       current: currentTracks,
       last: lastTracks
     },
@@ -279,19 +278,19 @@ const MusicRatio: React.FC<MusicRatioProps> = ({
         <div style={{ width: '100%', height: '200px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={comparisonData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-              <XAxis dataKey="name" stroke="#ccc" fontSize={12} />
-              <YAxis stroke="#ccc" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke={theme?.colors?.buttonBackground || '#333'} />
+              <XAxis dataKey="name" stroke={theme?.colors?.textSecondary || '#ccc'} fontSize={12} />
+              <YAxis stroke={theme?.colors?.textSecondary || '#ccc'} fontSize={12} />
               <Tooltip 
                 contentStyle={{
-                  background: 'rgba(0, 0, 0, 0.9)',
-                  border: '1px solid #333',
+                  background: theme.colors.backgroundSolid,
+                  border: `1px solid ${theme.colors.buttonBackground}`,
                   borderRadius: '8px',
-                  color: 'white'
+                  color: theme.colors.text
                 }}
               />
-              <Bar dataKey="previous" fill="#666" name="Previous Period" />
-              <Bar dataKey="current" fill="#1DB954" name="Current Period" />
+              <Bar dataKey="previous" fill={theme?.colors?.buttonBackground || '#666'} name="Previous Period" />
+              <Bar dataKey="current" fill={theme?.colors?.accent || '#1DB954'} name="Current Period" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

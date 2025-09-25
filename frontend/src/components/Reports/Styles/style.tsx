@@ -100,7 +100,7 @@ export const DayBar = styled.div<{ height: number }>`
     top: 100%;
     margin-top: 4px;
     font-size: 0.75rem;
-    color: #555;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 

@@ -21,8 +21,8 @@ const Tooltip = styled.div<{ visible: boolean; x: number; y: number }>`
   position: absolute;
   left: ${props => props.x}px;
   top: ${props => props.y}px;
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
+  background: ${({ theme }) => theme.colors.backgroundSolid};
+  color: ${({ theme }) => theme.colors.text};
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -30,7 +30,7 @@ const Tooltip = styled.div<{ visible: boolean; x: number; y: number }>`
   opacity: ${props => props.visible ? 1 : 0};
   transition: opacity 0.2s ease;
   z-index: 10;
-  border: 1px solid #333;
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   
   &::after {
     content: '';
@@ -39,7 +39,7 @@ const Tooltip = styled.div<{ visible: boolean; x: number; y: number }>`
     left: 50%;
     transform: translateX(-50%);
     border: 4px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.9);
+    border-top-color: ${({ theme }) => theme.colors.backgroundSolid};
   }
 `;
 
@@ -100,7 +100,8 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
 
     // Enhanced color scale using theme accent
     const accent = theme?.colors?.accent || '#1DB954';
-    const accent2 = theme?.colors?.accentLight || '#1ed760';
+    // derive a lighter accent for interpolation if provided
+    const accent2 = theme?.colors?.accentLight || accent;
     const color = d3
       .scaleSequential()
       .domain([0, valueMax])
@@ -121,10 +122,10 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       g.append('circle')
         .attr('r', innerRadius + (outerRadius - innerRadius) * ratio)
         .attr('fill', 'none')
-        .attr('stroke', theme?.colors?.backgroundSolid ? '#333' : '#333')
+        .attr('stroke', theme?.colors?.buttonBackground || '#333')
         .attr('stroke-width', 0.5)
         .attr('stroke-dasharray', '2,2')
-        .attr('opacity', 0.3);
+        .attr('opacity', 0.4);
     });
 
     // Draw the 24 bars with enhanced interactivity
@@ -132,10 +133,10 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       .data(hours as number[])
       .enter()
       .append('path')
-      .attr('d', (d, i) => (arcGen as any)(d, i))
-  .attr('fill', d => color(d))
-  .attr('stroke', theme?.colors?.backgroundSolid ? '#000' : '#000')
-      .attr('stroke-width', 0.5)
+    .attr('d', (d, i) => (arcGen as any)(d, i))
+    .attr('fill', d => color(d))
+    .attr('stroke', theme?.colors?.buttonBackground || '#000')
+    .attr('stroke-width', 0.5)
       .style('cursor', 'pointer')
       .style('opacity', 0.8)
       .on('mouseover', function(event, d) {
@@ -225,7 +226,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
         .attr('y1', Math.sin(ang) * tickInner)
         .attr('x2', Math.cos(ang) * tickOuter)
         .attr('y2', Math.sin(ang) * tickOuter)
-        .attr('stroke', '#666')
+    .attr('stroke', theme?.colors?.textSecondary || '#666')
         .attr('stroke-width', 1);
     });
 
@@ -242,7 +243,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
     centerGroup.append('circle')
       .attr('r', innerRadius - Math.max(8, Math.floor(minSide * 0.03)))
       .attr('fill', theme?.colors?.backgroundSolid || 'rgba(10,10,10,0.8)')
-      .attr('stroke', theme?.colors?.backgroundSolid ? '#222' : '#222')
+      .attr('stroke', theme?.colors?.buttonBackground || '#222')
       .attr('stroke-width', 1);
 
     centerGroup.append('text')

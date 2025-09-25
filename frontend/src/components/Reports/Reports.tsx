@@ -128,9 +128,9 @@ const HeaderSection = styled.div`
   align-items: center;
   margin-bottom: 32px;
   padding: 24px;
-  background: linear-gradient(135deg, #1DB954, #1ed760);
+  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.accent}, ${theme.colors.link})`};
   border-radius: 12px;
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText || theme.colors.text};
 `;
 
 const PageTitle = styled.h1`
@@ -145,7 +145,7 @@ const PageTitle = styled.h1`
 const TimeRangeSelector = styled.div`
   display: flex;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: ${({ theme }) => theme.colors.buttonBackground};
   padding: 4px;
   border-radius: 8px;
 `;
@@ -153,15 +153,15 @@ const TimeRangeSelector = styled.div`
 const TimeRangeButton = styled.button<{ active: boolean }>`
   padding: 8px 16px;
   border: none;
-  background: ${props => props.active ? 'rgba(255, 255, 255, 0.2)' : 'transparent'};
-  color: white;
+  background: ${props => props.active ? props.theme.colors.accent : 'transparent'};
+  color: ${({ theme }) => theme.colors.buttonText || theme.colors.text};
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: ${props => props.active ? props.theme.colors.accent : 'rgba(255,255,255,0.04)'};
   }
 `;
 
@@ -173,10 +173,10 @@ const StatsGrid = styled.div`
 `;
 
 const StatCard = styled.div<{ gradient?: string }>`
-  background: ${props => props.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
+  background: ${props => props.gradient || `linear-gradient(135deg, ${props.theme.colors.accent} 0%, ${props.theme.colors.backgroundSolid} 100%)`};
   border-radius: 16px;
   padding: 24px;
-  color: white;
+  color: ${({ theme }) => theme.colors.buttonText || theme.colors.text};
   position: relative;
   overflow: hidden;
   
@@ -187,7 +187,7 @@ const StatCard = styled.div<{ gradient?: string }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    background: linear-gradient(45deg, rgba(255,255,255,0.06) 0%, transparent 100%);
     pointer-events: none;
   }
 `;
@@ -209,7 +209,7 @@ const StatChange = styled.div<{ positive: boolean }>`
   align-items: center;
   gap: 4px;
   font-size: 0.9rem;
-  color: ${props => props.positive ? '#4ADE80' : '#FF6B6B'};
+  color: ${props => props.positive ? (props.theme.colors.accent || '#4ADE80') : '#FF6B6B'};
 `;
 
 const ChartsGrid = styled.div`
@@ -226,9 +226,9 @@ const ChartsGrid = styled.div`
 `;
 
 const EnhancedChartBox = styled(ChartBox)`
-  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-  border: 1px solid #333;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: ${({ theme }) => theme.colors.backgroundSolid};
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   min-height: 320px;
@@ -253,12 +253,12 @@ const LoadingOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: ${({ theme }) => `${theme.colors.backgroundSolid}CC`} ;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  color: white;
+  color: ${({ theme }) => theme.colors.text};
   font-size: 1.2rem;
 `;
 
@@ -282,6 +282,7 @@ interface ChartsSectionProps {
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const theme: any = useTheme();
   if (active && payload && payload.length) {
     // payload is an array of series at this point; for bar charts it's usually one item
     const friendly = (name: string) => {
@@ -294,22 +295,26 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       return name;
     };
 
+    const bg = theme?.colors?.backgroundSolid || 'rgba(6,6,6,0.95)';
+    const border = theme?.colors?.buttonBackground || 'rgba(255,255,255,0.06)';
+    const text = theme?.colors?.text || (bg && bg.startsWith('rgba') ? '#fff' : '#111');
+
     return (
       <div style={{
-        background: 'rgba(6, 6, 6, 0.95)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: bg,
+        border: `1px solid ${border}`,
         borderRadius: 10,
         padding: '10px 14px',
-        color: 'white',
+        color: text,
         minWidth: 140,
-        boxShadow: '0 6px 20px rgba(0,0,0,0.6)'
+        boxShadow: '0 6px 20px rgba(0,0,0,0.12)'
       }}>
         <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 14 }}>{label}</div>
         {payload.map((entry: any, index: number) => (
           <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{ width: 10, height: 10, background: entry.color || '#fff', borderRadius: 2 }} />
-            <div style={{ fontSize: 13, color: '#e6eef2' }}>{friendly(entry.name)}:</div>
-            <div style={{ fontSize: 13, fontWeight: 700, marginLeft: 'auto', color: '#fff' }}>{entry.value}</div>
+            <div style={{ fontSize: 13, color: theme?.colors?.textSecondary || '#9aa0a6' }}>{friendly(entry.name)}:</div>
+            <div style={{ fontSize: 13, fontWeight: 700, marginLeft: 'auto', color: text }}>{entry.value}</div>
           </div>
         ))}
       </div>
@@ -426,8 +431,8 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                 return (
                   <div style={{ background: theme?.colors?.backgroundSolid || 'rgba(0,0,0,0.85)', padding: '8px 12px', color: theme?.colors?.text || 'white', borderRadius: 6 }}>
                     <div style={{ fontWeight: 700 }}>{slice.name}</div>
-                    <div style={{ fontSize: 12, color: '#9aa0a6' }}>Value: {slice.value}</div>
-                    <div style={{ fontSize: 12, color: '#9aa0a6' }}>Proportion: {pct}%</div>
+                    <div style={{ fontSize: 12, color: theme?.colors?.textSecondary || '#9aa0a6' }}>Value: {slice.value}</div>
+                    <div style={{ fontSize: 12, color: theme?.colors?.textSecondary || '#9aa0a6' }}>Proportion: {pct}%</div>
                   </div>
                 );
               }} />
@@ -452,8 +457,8 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
                 <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: 4 }}>
                   <div style={{ width: 8, height: 8, background: p.color, borderRadius: 2 }} />
                   <span style={{ color: theme?.colors?.text || '#fff', minWidth: 50 }}>{p.name}</span>
-                  <span style={{ color: '#9aa0a6' }}>{p.value}</span>
-                  <span style={{ color: LOCAL_COLORS.primary }}>({pct}%)</span>
+                  <span style={{ color: theme?.colors?.textSecondary || '#9aa0a6' }}>{p.value}</span>
+                  <span style={{ color: LOCAL_COLORS.primary }}>{`(${pct}%)`}</span>
                 </div>
               );
             })}
@@ -573,27 +578,48 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({
           <div style={{ width: '100%', height: '360px', minHeight: 320, overflow: 'visible', padding: '8px 0' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={genreData} layout="horizontal" margin={{ top: 10, right: 100, left: 16, bottom: 12 }} barCategoryGap="30%" barSize={22}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                <XAxis type="number" stroke="#bbb" fontSize={12} tickLine={false} domain={[0, genreMax]} ticks={genreTicks} />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  stroke="#ddd" 
-                  fontSize={13}
-                  width={160}
-                  axisLine={false}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar 
-                  dataKey="value" 
-                  fill={LOCAL_COLORS.accent}
-                  radius={[6, 6, 6, 6]}
-                  animationBegin={0}
-                  animationDuration={900}
-                >
-                  {/* show value labels at end of bars for readability */}
-                  <LabelList dataKey="value" position="right" offset={12} style={{ fill: '#e6eef2', fontSize: 13, fontWeight: 800 }} />
-                </Bar>
+                <CartesianGrid strokeDasharray="3 3" stroke={theme?.colors?.buttonBackground || '#222'} />
+                  <XAxis type="number" stroke={theme?.colors?.textSecondary || '#bbb'} fontSize={12} tickLine={false} domain={[0, genreMax]} ticks={genreTicks} />
+                  <YAxis 
+                    type="category" 
+                    dataKey="name" 
+                    stroke={theme?.colors?.text || '#ddd'} 
+                    fontSize={13}
+                    width={160}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar 
+                    dataKey="value" 
+                    fill={theme?.colors?.accent || LOCAL_COLORS.accent}
+                    radius={[6, 6, 6, 6]}
+                    animationBegin={0}
+                    animationDuration={900}
+                  >
+                    {/* custom label renderer: place value inside bar when narrow, otherwise to the right */}
+                    <LabelList dataKey="value" content={(props: any) => {
+                      const { x, y, width, height, value } = props;
+                      const fill = theme?.colors?.text || '#111';
+                      // if the bar is narrow, place label inside with white text for contrast
+                      if (width != null && width < 48) {
+                        const cx = x + width / 2;
+                        const cy = y + height / 2 + 4; // adjust for vertical centering
+                        return (
+                          <text x={cx} y={cy} textAnchor="middle" fill={theme?.colors?.buttonText || '#fff'} fontSize={13} fontWeight={800}>
+                            {value}
+                          </text>
+                        );
+                      }
+                      // otherwise place to the right
+                      const tx = x + width + 10;
+                      const ty = y + height / 2 + 4;
+                      return (
+                        <text x={tx} y={ty} textAnchor="start" fill={theme?.colors?.textSecondary || '#666'} fontSize={13} fontWeight={800}>
+                          {value}
+                        </text>
+                      );
+                    }} />
+                  </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -849,7 +875,7 @@ const Reports: React.FC = () => {
   if (error) {
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '60px', color: '#ff6b6b' }}>
+  <div style={{ textAlign: 'center', padding: '60px', color: theme?.colors?.accent || '#ff6b6b' }}>
           <FontAwesomeIcon icon={faRefresh} size="3x" style={{ marginBottom: '16px', opacity: 0.5 }} />
           <h2>Oops! Something went wrong</h2>
           <p>{error}</p>
@@ -912,7 +938,7 @@ const Reports: React.FC = () => {
 
       {/* Enhanced Stats Cards */}
       <StatsGrid>
-        <StatCard gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+  <StatCard gradient={`linear-gradient(135deg, ${theme?.colors?.accent || '#667eea'} 0%, ${theme?.colors?.buttonBackground || theme?.colors?.backgroundSolid} 100%)`}>
           <StatIcon><FontAwesomeIcon icon={faMusic} /></StatIcon>
           <StatValue>{musicRatio.tracks.toLocaleString()}</StatValue>
           <div style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Unique Tracks</div>
@@ -922,7 +948,7 @@ const Reports: React.FC = () => {
           </StatChange>
         </StatCard>
 
-        <StatCard gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+  <StatCard gradient={`linear-gradient(135deg, ${theme?.colors?.accent || '#f093fb'} 0%, ${theme?.colors?.link || '#f5576c'} 100%)`}>
           <StatIcon><FontAwesomeIcon icon={faClock} /></StatIcon>
           <StatValue>{Math.round(totalListenTime / 60)}h</StatValue>
           <div style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Listen Time</div>
@@ -932,7 +958,7 @@ const Reports: React.FC = () => {
           </StatChange>
         </StatCard>
 
-        <StatCard gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+  <StatCard gradient={`linear-gradient(135deg, ${theme?.colors?.link || '#4facfe'} 0%, ${theme?.colors?.buttonBackground || '#00f2fe'} 100%)`}>
           <StatIcon><FontAwesomeIcon icon={faFire} /></StatIcon>
           <StatValue>{streakDays}</StatValue>
           <div style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Day Streak</div>
@@ -942,7 +968,7 @@ const Reports: React.FC = () => {
           </StatChange>
         </StatCard>
 
-        <StatCard gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)">
+  <StatCard gradient={`linear-gradient(135deg, ${theme?.colors?.link || '#fa709a'} 0%, ${theme?.colors?.accent || '#fee140'} 100%)`}>
           <StatIcon><FontAwesomeIcon icon={faCalendarAlt} /></StatIcon>
           <StatValue>{`${busiestHour % 12 || 12}${busiestHour < 12 ? 'AM' : 'PM'}`}</StatValue>
           <div style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Peak Hour</div>
@@ -975,16 +1001,16 @@ const Reports: React.FC = () => {
               const max = Math.max(...decadeData.map(x => x.count), 1);
               return (
                 <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '20px' }}>
-                  <div style={{ width: '70px', color: '#ccc', fontSize: '0.85rem', flexShrink: 0 }}>{d.label}</div>
-                  <div style={{ flex: 1, background: '#0f0f0f', borderRadius: '4px', height: '16px', overflow: 'hidden', minWidth: 0 }}>
+                  <div style={{ width: '70px', color: theme?.colors?.textSecondary || '#ccc', fontSize: '0.85rem', flexShrink: 0 }}>{d.label}</div>
+                  <div style={{ flex: 1, background: theme?.colors?.background || '#0f0f0f', borderRadius: '4px', height: '16px', overflow: 'hidden', minWidth: 0 }}>
                     <div style={{ 
                       width: `${Math.max(2, (d.count / max) * 100)}%`, 
                       height: '100%', 
-                        background: (d.label === '2010s' ? (theme?.colors?.accent || '#1DB954') : '#2b2b2b'),
+                        background: (d.label === '2010s' ? (theme?.colors?.accent || '#1DB954') : theme?.colors?.buttonBackground || '#2b2b2b'),
                       transition: 'width 0.3s ease'
                     }} />
                   </div>
-                  <div style={{ width: '50px', textAlign: 'right', color: '#bbb', fontSize: '0.85rem', flexShrink: 0 }}>{d.count}</div>
+                  <div style={{ width: '50px', textAlign: 'right', color: theme?.colors?.textSecondary || '#bbb', fontSize: '0.85rem', flexShrink: 0 }}>{d.count}</div>
                 </div>
               );
             })}
