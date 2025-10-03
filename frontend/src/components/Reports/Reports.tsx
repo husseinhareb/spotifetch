@@ -779,21 +779,28 @@ const Reports: React.FC = () => {
   // Helper function to extract genre data from top artists
   const generateGenreData = async (userId: string): Promise<GenreData[]> => {
     try {
-      const topArtists = await getTopArtists(userId, 20);
+      const topArtists = await getTopArtists(userId, 40);
       const genreCount: { [key: string]: number } = {};
-      
-      // This would ideally come from artist genre data
-      // For now, we'll simulate with common genres
-      const commonGenres = ['Pop', 'Rock', 'Hip Hop', 'Electronic', 'Indie', 'Jazz', 'Classical'];
-      commonGenres.forEach((genre, index) => {
-        genreCount[genre] = Math.max(1, topArtists.length - index * 2);
+
+      // Aggregate true genres from artist metadata (if provided by backend)
+      topArtists.forEach((artist: any) => {
+        const genres: string[] = (artist.genres && Array.isArray(artist.genres)) ? artist.genres : [];
+        genres.forEach((g) => {
+          const name = g.trim();
+          if (!name) return;
+          genreCount[name] = (genreCount[name] || 0) + 1;
+        });
       });
-      
-      return Object.entries(genreCount)
+
+      // If no genres were available in the artist objects, return empty list
+      const entries = Object.entries(genreCount);
+      if (entries.length === 0) return [];
+
+      return entries
         .map(([name, value]) => ({
           name,
           value,
-          color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+          color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`,
         }))
         .sort((a, b) => b.value - a.value)
         .slice(0, 6);

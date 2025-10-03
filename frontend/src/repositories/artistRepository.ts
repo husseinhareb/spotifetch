@@ -6,6 +6,7 @@ export interface Artist {
   name: string;
   image: string;
   bio: string;
+  genres?: string[];
 }
 
 // Fetch top artists list with id, name, image, bio
@@ -22,6 +23,7 @@ export async function fetchTopArtists(timeRange: string): Promise<Artist[]> {
     name: a.artist_name,
     image: a.image_url,
     bio: a.description,
+    genres: a.genres || [],
   }));
 }
 
