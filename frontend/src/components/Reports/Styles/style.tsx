@@ -213,7 +213,7 @@ export const CardLabel = styled.span<{ bg: string }>`
   top: 12px;
   left: 12px;
   background: ${props => props.bg};
-  color: #000;
+  color: ${({ theme }) => theme.colors.text};
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.8rem;
@@ -235,13 +235,13 @@ export const Title = styled.h3`
 export const Subtitle = styled.p`
   margin: 0 0 12px;
   font-size: 0.9rem;
-  color: #ccc;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 export const Listens = styled.p`
   margin: 0;
   font-size: 0.9rem;
-  color: #ccc;
+  color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
 // ────────────────────────────────────────────────────────────

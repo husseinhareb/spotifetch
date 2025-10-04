@@ -115,7 +115,7 @@ const LibraryTitle = styled.h1`
 
 const LibrarySubtitle = styled.p`
   font-size: 1.2rem;
-  color: rgba(255,255,255,0.6);
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 32px;
   animation: ${slideIn} 1s ease-out 0.2s both;
 `;
@@ -139,7 +139,7 @@ const StatCard = styled.div<{ $gradient?: string }>`
   border-radius: 16px;
   text-align: center;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   
   &:hover {
     transform: translateY(-8px) scale(1.02);
@@ -162,17 +162,17 @@ const StatValue = styled.div`
 
 const StatLabel = styled.div`
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: ${({ theme }) => theme.colors.textSecondary};
   text-transform: uppercase;
   letter-spacing: 1px;
 `;
 
 const NavigationSection = styled.div`
-  background: rgba(255, 255, 255, 0.03);
+  background: ${({ theme }) => theme.colors.buttonBackground};
   border-radius: 20px;
   padding: 32px;
   margin-bottom: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   backdrop-filter: blur(10px);
 `;
 
@@ -198,12 +198,12 @@ const NavGrid = styled.div`
 
 const NavCard = styled(Link)<{ active?: boolean }>`
   background: ${props => props.active 
-    ? 'linear-gradient(135deg, #1DB954, #1ed760)' 
-    : 'rgba(255, 255, 255, 0.02)'
+    ? `linear-gradient(135deg, ${props.theme.colors.accent}, #1ed760)` 
+    : props.theme.colors.buttonBackground
   };
   border: 1px solid ${props => props.active 
     ? 'rgba(29, 185, 84, 0.5)' 
-    : 'rgba(255, 255, 255, 0.06)'
+    : props.theme.colors.buttonBackground
   };
   border-radius: 16px;
   padding: 24px;
@@ -216,8 +216,8 @@ const NavCard = styled(Link)<{ active?: boolean }>`
   &:hover {
     transform: translateY(-4px);
     background: ${props => props.active 
-      ? 'linear-gradient(135deg, #1ed760, #1DB954)' 
-      : 'rgba(255, 255, 255, 0.04)'
+      ? `linear-gradient(135deg, #1ed760, ${props.theme.colors.accent})` 
+      : props.theme.colors.backgroundSolid
     };
     border-color: ${props => props.active 
       ? 'rgba(29, 185, 84, 0.8)' 
@@ -242,7 +242,7 @@ const NavCardTitle = styled.h3`
 
 const NavCardDescription = styled.p`
   margin: 0;
-  color: rgba(255,255,255,0.75);
+  color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 0.95rem;
   line-height: 1.3;
 `;

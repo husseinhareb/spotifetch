@@ -319,7 +319,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 14 }}>{label}</div>
         {payload.map((entry: any, index: number) => (
           <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ width: 10, height: 10, background: entry.color || '#fff', borderRadius: 2 }} />
+              <div style={{ width: 10, height: 10, background: entry.color || theme?.colors?.buttonText || '#fff', borderRadius: 2 }} />
             <div style={{ fontSize: 13, color: theme?.colors?.textSecondary || '#9aa0a6' }}>{friendly(entry.name)}:</div>
             <div style={{ fontSize: 13, fontWeight: 700, marginLeft: 'auto', color: text }}>{entry.value}</div>
           </div>

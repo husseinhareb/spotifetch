@@ -200,18 +200,18 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       if (cx > 0.3) anchor = 'start';
       else if (cx < -0.3) anchor = 'end';
 
-      g.append('text')
-        .attr('x', cx * labelRadius)
-        .attr('y', cy * labelRadius)
-        .attr('text-anchor', anchor)
-        .attr('alignment-baseline', 'middle')
-        .style('fill', '#fff')
+  g.append('text')
+    .attr('x', cx * labelRadius)
+    .attr('y', cy * labelRadius)
+    .attr('text-anchor', anchor)
+    .attr('alignment-baseline', 'middle')
+    .style('fill', theme?.colors?.text || '#fff')
   .style('font-size', `${Math.max(10, Math.floor(minSide * 0.025))}px`)
-        .style('font-weight', '700')
-        .text(h === 0 ? '12AM' : 
-              h < 12 ? `${h}AM` : 
-              h === 12 ? '12PM' : 
-              `${h-12}PM`);
+    .style('font-weight', '700')
+    .text(h === 0 ? '12AM' : 
+      h < 12 ? `${h}AM` : 
+      h === 12 ? '12PM' : 
+      `${h-12}PM`);
     });
 
     // Minor tick marks
@@ -255,7 +255,7 @@ const RadialHourChart: React.FC<RadialHourChartProps> = ({
       
     centerGroup.append('text')
       .attr('y', 12)
-      .style('fill', totalPlays > 0 ? (theme?.colors?.accent || '#1DB954') : '#777')
+      .style('fill', totalPlays > 0 ? (theme?.colors?.accent || '#1DB954') : theme?.colors?.textSecondary || '#777')
       .style('font-size', `${Math.max(14, Math.floor(minSide * 0.04))}px`)
       .style('font-weight', '800')
       .text(totalPlays > 0 ? peakHour : '--');

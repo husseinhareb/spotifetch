@@ -267,9 +267,9 @@ const MusicRatio: React.FC<MusicRatioProps> = ({
         <div style={{ width: '100%', marginBottom: '12px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
           {radialData.map((d) => (
             <div key={d.name} style={{ textAlign: 'center', minWidth: 80 }}>
-              <div style={{ fontSize: '0.8rem', color: '#bbb', marginBottom: 6 }}>{d.name}</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>{Math.round(d.value)}%</div>
-              <div style={{ fontSize: '0.8rem', color: '#9aa0a6' }}>{d.current}/{d.last}</div>
+              <div style={{ fontSize: '0.8rem', color: theme?.colors?.textSecondary || '#bbb', marginBottom: 6 }}>{d.name}</div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: theme?.colors?.text || '#fff' }}>{Math.round(d.value)}%</div>
+              <div style={{ fontSize: '0.8rem', color: theme?.colors?.textSecondary || '#9aa0a6' }}>{d.current}/{d.last}</div>
             </div>
           ))}
         </div>

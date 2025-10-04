@@ -266,7 +266,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
   if (loading) {
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '60px', color: '#666' }}>
+        <div style={{ textAlign: 'center', padding: '60px', color: theme?.colors?.textSecondary || '#666' }}>
           <FontAwesomeIcon icon={faHeadphones} spin size="3x" style={{ marginBottom: '16px' }} />
           <div>Loading your top music...</div>
         </div>

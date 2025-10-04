@@ -91,7 +91,7 @@ const WelcomeTitle = styled.h2`
 
 const WelcomeSubtitle = styled.p`
   font-size: 1.2rem;
-  color: rgba(255,255,255,0.6);
+  color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 32px;
   max-width: 600px;
   margin-left: auto;
@@ -107,10 +107,10 @@ const FeatureGrid = styled.div`
 `;
 
 const FeatureCard = styled.div`
-  background: rgba(255, 255, 255, 0.04);
+  background: ${({ theme }) => theme.colors.buttonBackground};
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   transition: all 0.3s ease;
   animation: ${slideInLeft} 0.8s ease-out;
   
@@ -120,8 +120,8 @@ const FeatureCard = styled.div`
   
   &:hover {
     transform: translateY(-8px);
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(29, 185, 84, 0.3);
+    background: ${({ theme }) => theme.colors.backgroundSolid};
+    border-color: rgba(29, 185, 84, 0.16);
     animation: ${glow} 2s infinite;
   }
 `;
@@ -141,7 +141,7 @@ const FeatureTitle = styled.h3`
 
 const FeatureDescription = styled.p`
   font-size: 1rem;
-  color: rgba(255,255,255,0.6);
+  color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.5;
 `;
 

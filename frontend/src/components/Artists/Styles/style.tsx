@@ -7,7 +7,7 @@ export const ArtistDetailsContainer = styled.div`
   padding: 28px 20px;
   max-width: 1200px;
   margin: 0 auto;
-  color: #e6eef0;
+  color: ${({ theme }) => theme.colors.text};
 `;
 
 // Header with image and meta side-by-side on larger screens
@@ -34,18 +34,18 @@ export const ArtistMeta = styled.div`
   h1 {
     font-size: 2.25rem;
     margin: 0;
-    color: #ffffff;
+    color: ${({ theme }) => theme.colors.text};
     text-shadow: 0 6px 24px rgba(29,185,84,0.06);
   }
 
   .genres {
-    color: #a7bdb4;
+    color: ${({ theme }) => theme.colors.textSecondary};
     font-size: 0.95rem;
   }
 
   .popularity {
     font-size: 0.95rem;
-    color: #9aa9a0;
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
@@ -105,7 +105,7 @@ export const TrackItem = styled.li`
     display: flex;
     flex-direction: column;
     gap: 4px;
-    color: #e6eef0;
+    color: ${({ theme }) => theme.colors.text};
   }
 
   .track-title {
@@ -115,7 +115,7 @@ export const TrackItem = styled.li`
 
   .track-album {
     font-size: 0.9rem;
-    color: #9aa9a0;
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
@@ -145,7 +145,7 @@ export const DescriptionCard = styled.div`
   border: 1px solid rgba(29,185,84,0.06);
   border-radius: 12px;
   padding: 14px 16px;
-  color: #cfe9db;
+  color: ${({ theme }) => theme.colors.text};
   box-shadow: 0 8px 28px rgba(2,6,23,0.5);
   font-size: 1rem;
 `;
@@ -153,5 +153,5 @@ export const DescriptionCard = styled.div`
 export const SectionTitle = styled.h2`
   font-size: 1.25rem;
   margin: 18px 0 10px 0;
-  color: #e8fff4;
+  color: ${({ theme }) => theme.colors.text};
 `;
