@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink as RouterLink, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRightFromBracket, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faRightFromBracket, faBars, faTimes, faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
 import {
   Nav,
   Title,
@@ -147,8 +147,13 @@ const Navbar: React.FC = () => {
 
       <NavList className={menuOpen ? "active" : ""}>
         <NavItem>
-          <ThemeToggle onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+          <ThemeToggle
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+          >
+            <FontAwesomeIcon icon={theme === 'light' ? faMoon : faSun} />
+            <span style={{ marginLeft: 8 }}>{theme === 'light' ? 'Dark' : 'Light'}</span>
           </ThemeToggle>
         </NavItem>
         <NavItemRight>

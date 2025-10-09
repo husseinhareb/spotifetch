@@ -110,9 +110,24 @@ export const ThemeToggle = styled.button`
   background: none;
   border: 1px solid rgba(255,255,255,0.08);
   color: ${({ theme }) => theme.colors.navText};
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
   cursor: pointer;
   margin-left: 12px;
+  margin-right: 12px;
   font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.15s, transform 0.08s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.buttonBackground};
+    transform: translateY(-1px);
+  }
+
+  &:focus {
+    outline: 2px solid rgba(88, 101, 242, 0.2);
+    outline-offset: 2px;
+  }
 `;

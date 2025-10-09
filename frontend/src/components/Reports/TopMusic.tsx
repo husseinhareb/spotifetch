@@ -213,6 +213,11 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
   const [albumsRatio, setAlbumsRatio] = useState<number>(0);
   const [tracksRatio, setTracksRatio] = useState<number>(0);
 
+  // change objects: percent = null when previous period had 0 (can't compute percent)
+  const [artistsChange, setArtistsChange] = useState<{ percent: number | null; positive: boolean | null }>({ percent: null, positive: null });
+  const [albumsChange, setAlbumsChange] = useState<{ percent: number | null; positive: boolean | null }>({ percent: null, positive: null });
+  const [tracksChange, setTracksChange] = useState<{ percent: number | null; positive: boolean | null }>({ percent: null, positive: null });
+
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [topAlbums, setTopAlbums] = useState<TopAlbum[]>([]);
   const [topTracks, setTopTracks] = useState<TopTrack[]>([]);
@@ -232,6 +237,19 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         setArtistsRatio(ratio.artists);
         setAlbumsRatio(ratio.albums);
         setTracksRatio(ratio.tracks);
+
+        const calcChange = (current: number, last: number) => {
+          if (last === 0) {
+            return { percent: null as null, positive: current > 0 };
+          }
+          const raw = ((current - last) / Math.max(1, last)) * 100;
+          const percent = Math.round(raw);
+          return { percent, positive: percent >= 0 };
+        };
+
+        setArtistsChange(calcChange(ratio.artists, ratio.lastArtists));
+        setAlbumsChange(calcChange(ratio.albums, ratio.lastAlbums));
+        setTracksChange(calcChange(ratio.tracks, ratio.lastTracks));
 
         setTopArtists(artists);
         setTopAlbums(albums);
@@ -267,8 +285,12 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
           </Label>
           <Value>{artistsRatio.toLocaleString()}</Value>
           <Change>
-            <FontAwesomeIcon icon={faArrowUp} />
-            +{Math.round(Math.random() * 15)}% this period
+            <FontAwesomeIcon icon={artistsChange.percent === null ? faArrowUp : (artistsChange.positive ? faArrowUp : faArrowDown)} />
+            {artistsChange.percent === null ? (
+              <>New</>
+            ) : (
+              <>{artistsChange.positive ? '+' : ''}{artistsChange.percent}% this period</>
+            )}
           </Change>
           <ChartIcon icon={faMicrophone} />
         </EnhancedSummaryCard>
@@ -280,8 +302,12 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
           </Label>
           <Value>{albumsRatio.toLocaleString()}</Value>
           <Change>
-            <FontAwesomeIcon icon={faArrowUp} />
-            +{Math.round(Math.random() * 20)}% this period
+            <FontAwesomeIcon icon={albumsChange.percent === null ? faArrowUp : (albumsChange.positive ? faArrowUp : faArrowDown)} />
+            {albumsChange.percent === null ? (
+              <>New</>
+            ) : (
+              <>{albumsChange.positive ? '+' : ''}{albumsChange.percent}% this period</>
+            )}
           </Change>
           <ChartIcon icon={faCompactDisc} />
         </EnhancedSummaryCard>
@@ -293,8 +319,12 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
           </Label>
           <Value>{tracksRatio.toLocaleString()}</Value>
           <Change>
-            <FontAwesomeIcon icon={faArrowUp} />
-            +{Math.round(Math.random() * 25)}% this period
+            <FontAwesomeIcon icon={tracksChange.percent === null ? faArrowUp : (tracksChange.positive ? faArrowUp : faArrowDown)} />
+            {tracksChange.percent === null ? (
+              <>New</>
+            ) : (
+              <>{tracksChange.positive ? '+' : ''}{tracksChange.percent}% this period</>
+            )}
           </Change>
           <ChartIcon icon={faMusic} />
         </EnhancedSummaryCard>
