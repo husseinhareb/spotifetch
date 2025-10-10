@@ -22,12 +22,10 @@ const pulse = keyframes`
 
 // Base skeleton component
 const SkeletonBase = styled.div`
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.06) 25%,
-    rgba(255, 255, 255, 0.09) 50%, 
-    rgba(255, 255, 255, 0.06) 75%
-  );
+  background: ${({ theme }) =>
+    theme.name === 'dark'
+      ? 'linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.06) 75%)'
+      : 'linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.09) 50%, rgba(0,0,0,0.06) 75%)'};
   background-size: 200px 100%;
   animation: ${shimmer} 1.5s infinite linear;
   border-radius: 8px;
@@ -53,10 +51,10 @@ const SkeletonText = styled(SkeletonBase)<{ width?: string; height?: string }>`
 `;
 
 const SkeletonCard = styled.div`
-  background: rgba(255, 255, 255, 0.04);
+  background: ${({ theme }) => (theme.name === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${({ theme }) => (theme.name === 'dark' ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.06)')};
   animation: ${pulse} 2s infinite;
 `;
 
@@ -83,7 +81,7 @@ const TrackSkeletonContainer = styled.div`
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: ${({ theme }) => (theme.name === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)')};
   border-radius: 12px;
   margin-bottom: 12px;
 `;
