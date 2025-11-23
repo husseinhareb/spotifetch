@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     SPOTIPY_CLIENT_SECRET: str
     SPOTIPY_REDIRECT_URI: str
     LASTFM_KEY: str
+    SESSION_SECRET: str = "change-me-in-production-use-a-strong-secret"
 
     model_config = SettingsConfigDict(env_file=Path(__file__).parent.parent / ".env")
 

@@ -1,6 +1,5 @@
 # app/main.py
 
-import os
 import asyncio
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
@@ -22,8 +21,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Session middleware
-    app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
+    # Session middleware - use secret from environment for session persistence across restarts
+    app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET)
 
     # Include routers
     app.include_router(auth.router, prefix="/auth", tags=["auth"])

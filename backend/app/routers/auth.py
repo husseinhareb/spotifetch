@@ -3,7 +3,8 @@
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
 import spotipy
-from datetime import datetime
+from datetime import datetime, timezone
+from urllib.parse import urlencode
 
 from ..services.spotify_services import sp_oauth
 from ..db.database import users_collection
@@ -46,10 +47,10 @@ async def callback(request: Request):
         "user_id": user_id,
         "username": user_info.get("display_name"),
         "email": user_info.get("email"),
-        "profile_image": user_info["images"][0]["url"] if user_info.get("images") else None,
+        "profile_image": user_info["images"][0]["url"] if user_info.get("images") and len(user_info["images"]) > 0 else None,
         "country": user_info.get("country"),
         "product": user_info.get("product"),
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
     if not users_collection.find_one({"user_id": user_id}):
@@ -66,13 +67,13 @@ async def welcome(request: Request):
     sp = spotipy.Spotify(auth=token_info["access_token"])
     user_info = sp.current_user()
 
-    # now include `id` in the query string
-    redirect_url = (
-        "http://localhost:3000/"
-        f"?id={user_info['id']}"
-        f"&username={user_info.get('display_name','')}"
-        f"&email={user_info.get('email','')}"
-    )
+    # now include `id` in the query string with proper URL encoding
+    params = urlencode({
+        "id": user_info['id'],
+        "username": user_info.get('display_name', ''),
+        "email": user_info.get('email', ''),
+    })
+    redirect_url = f"http://localhost:3000/?{params}"
     return RedirectResponse(url=redirect_url)
 
 @router.get("/logout")
