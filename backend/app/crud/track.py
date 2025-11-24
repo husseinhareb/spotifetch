@@ -1,7 +1,7 @@
 # app/crud/track.py
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import spotipy
 
 from ..db.database import songs_collection
@@ -145,7 +145,7 @@ def sync_currently_playing(
         "progress_ms": playback["progress_ms"],
         "duration_ms": item["duration_ms"],
         # Use ISO string only—no datetime objects
-        "played_at":   datetime.utcnow().isoformat(),
+        "played_at":   datetime.now(timezone.utc).isoformat(),
     }
 
     # Upsert so we never return a raw Mongo document

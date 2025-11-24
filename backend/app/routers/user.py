@@ -1,7 +1,13 @@
 from fastapi import APIRouter, HTTPException
-from ..schemas import UserProfileSchema
+from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter()
+
+class UserProfileSchema(BaseModel):
+    display_name: str
+    followers: int
+    profile_url: Optional[str] = None
 
 @router.get("/profile", response_model=UserProfileSchema)
 async def get_profile():
