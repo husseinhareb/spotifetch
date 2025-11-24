@@ -8,7 +8,7 @@ from spotipy.oauth2 import SpotifyOauthError
 from datetime import datetime, timezone
 
 from ..services.spotify_services import sp_oauth
-from ..db.database import users_collection
+from ..db.database import get_users_collection
 from ..config import settings
 
 logger = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ async def callback(request: Request):
     }
 
     # Upsert user to avoid race conditions
-    users_collection.update_one(
+    get_users_collection().update_one(
         {"user_id": user_id},
         {"$setOnInsert": user_data},
         upsert=True

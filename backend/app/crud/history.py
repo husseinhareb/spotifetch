@@ -4,7 +4,7 @@ import logging
 from typing import List, Optional
 from datetime import datetime
 from pymongo.errors import DuplicateKeyError
-from ..db.database import history_collection
+from ..db.database import get_history_collection
 from ..schemas.history import HistoryCreate, HistoryOut, TopTrackOut, TopArtistOut, TopAlbumOut
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def save_history(entry: HistoryCreate) -> HistoryOut:
     # Use upsert to atomically insert if not exists (prevents race conditions)
     # The unique compound index on (user_id, track_id, played_at) ensures no duplicates
     try:
-        history_collection.update_one(
+        get_history_collection().update_one(
             {
                 "user_id": entry.user_id,
                 "track_id": entry.track_id,
@@ -38,7 +38,7 @@ def save_history(entry: HistoryCreate) -> HistoryOut:
         logger.debug(f"Duplicate history entry ignored: {entry.user_id}/{entry.track_id}")
 
     # Fetch back without any internal fields
-    raw = history_collection.find_one(
+    raw = get_history_collection().find_one(
         {
             "user_id": entry.user_id,
             "track_id": entry.track_id,
@@ -75,7 +75,7 @@ def get_user_history(
         query["played_at"] = {"$gte": since}
 
     cursor = (
-        history_collection
+        get_history_collection()
         .find(query, {"_id": 0, "user_id": 0})
         .sort("played_at", -1)
         .skip(skip)
@@ -122,7 +122,7 @@ def get_top_tracks(
         }
     ]
 
-    results = history_collection.aggregate(pipeline)
+    results = get_history_collection().aggregate(pipeline)
     return [TopTrackOut(**doc) for doc in results]
 
 def get_top_artists(
@@ -158,7 +158,7 @@ def get_top_artists(
         }
     ]
 
-    results = history_collection.aggregate(pipeline)
+    results = get_history_collection().aggregate(pipeline)
     return [TopArtistOut(**doc) for doc in results]
 
 
@@ -197,5 +197,5 @@ def get_top_albums(
         }
     ]
 
-    results = history_collection.aggregate(pipeline)
+    results = get_history_collection().aggregate(pipeline)
     return [TopAlbumOut(**doc) for doc in results]

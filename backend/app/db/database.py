@@ -118,3 +118,24 @@ def close_db() -> None:
         users_collection = None
         history_collection = None
         logger.info("Database connection closed")
+
+
+def get_songs_collection():
+    """Get the songs collection. Must call init_db() first."""
+    if songs_collection is None:
+        raise RuntimeError("Database not initialized. Call init_db() first.")
+    return songs_collection
+
+
+def get_users_collection():
+    """Get the users collection. Must call init_db() first."""
+    if users_collection is None:
+        raise RuntimeError("Database not initialized. Call init_db() first.")
+    return users_collection
+
+
+def get_history_collection():
+    """Get the history collection. Must call init_db() first."""
+    if history_collection is None:
+        raise RuntimeError("Database not initialized. Call init_db() first.")
+    return history_collection

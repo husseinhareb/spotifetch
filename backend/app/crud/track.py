@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 import spotipy
 
-from ..db.database import songs_collection
+from ..db.database import get_songs_collection
 
 def fetch_recently_played_spotify(
     spotify_client: spotipy.Spotify,
@@ -42,7 +42,7 @@ def sync_recently_played_db(
     to the songs_collection under the given username.
     """
     items = spotify_client.current_user_recently_played(limit=limit).get("items", [])
-    latest = songs_collection.find_one(
+    latest = get_songs_collection().find_one(
         {"username": username},
         sort=[("played_at", -1)]
     )
@@ -67,7 +67,7 @@ def sync_recently_played_db(
                 "album_image": album_images[0]["url"] if album_images and len(album_images) > 0 else None,
                 "played_at":   played_at,
             }
-            songs_collection.insert_one(doc)
+            get_songs_collection().insert_one(doc)
 
 
 def get_recently_played_db(
@@ -79,7 +79,7 @@ def get_recently_played_db(
     Return a page of the plays we've stored for this username.
     """
     cursor = (
-        songs_collection
+        get_songs_collection()
         .find({"username": username}, {"_id": 0})
         .sort("played_at", -1)
         .skip(skip)
@@ -103,7 +103,7 @@ def get_songs_most_played() -> List[Dict[str, Any]]:
         },
         {"$sort": {"play_count": -1}}
     ]
-    results = list(songs_collection.aggregate(pipeline))
+    results = list(get_songs_collection().aggregate(pipeline))
     output: List[Dict[str, Any]] = []
 
     for r in results:
@@ -160,7 +160,7 @@ def sync_currently_playing(
 
     # Only upsert if we have a valid track_id
     if info["track_id"]:
-        songs_collection.update_one(
+        get_songs_collection().update_one(
             {
                 "user_id":   user_id,
                 "track_id":  info["track_id"],
