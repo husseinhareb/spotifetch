@@ -95,35 +95,44 @@ def fetch_artist_info(
     """
     details = spotify_client.artist(artist_id)
     top_tracks = spotify_client.artist_top_tracks(artist_id, country=country).get("tracks", [])
-    desc = get_artist_description(details["name"])
+    desc = get_artist_description(details.get("name", "Unknown Artist"))
 
     # Get artist images - prefer Spotify, fallback to Last.fm
-    spotify_images = [img["url"] for img in details.get("images", [])]
+    spotify_images = [img["url"] for img in details.get("images", []) if img.get("url")]
     if not spotify_images:
         # try Last.fm images
-        spotify_images = fetch_artist_images(details["name"], limit=3)
+        spotify_images = fetch_artist_images(details.get("name", ""), limit=3)
+
+    # Safely build track_images list
+    track_images = []
+    for t in top_tracks[:5]:
+        album = t.get("album", {})
+        album_images = album.get("images", [])
+        if album_images and len(album_images) > 0:
+            track_images.append(album_images[0].get("url"))
+    track_images = [img for img in track_images if img]  # Filter out None values
 
     artist_info = {
-        "artist_name": details["name"],
-        "genres":      details["genres"],
-        "popularity":  details["popularity"],
+        "artist_name": details.get("name", "Unknown Artist"),
+        "genres":      details.get("genres", []),
+        "popularity":  details.get("popularity", 0),
         "images":      spotify_images,
         "description": desc,
-        "track_images": [
-            t["album"]["images"][0]["url"]
-            for t in top_tracks if t["album"].get("images")
-        ][:5],
+        "track_images": track_images,
     }
 
     tracks = []
     for t in top_tracks:
+        album = t.get("album", {})
+        album_images = album.get("images", [])
+        external_urls = t.get("external_urls", {})
         tracks.append({
-            "track_name":   t["name"],
-            "album_name":   t["album"]["name"],
-            "album_image":  t["album"]["images"][0]["url"] if t["album"].get("images") else None,
-            "duration_ms":  t["duration_ms"],
-            "popularity":   t["popularity"],
-            "external_url": t["external_urls"]["spotify"],
+            "track_name":   t.get("name", "Unknown Track"),
+            "album_name":   album.get("name", "Unknown Album"),
+            "album_image":  album_images[0]["url"] if album_images and len(album_images) > 0 else None,
+            "duration_ms":  t.get("duration_ms", 0),
+            "popularity":   t.get("popularity", 0),
+            "external_url": external_urls.get("spotify", ""),
         })
 
     return {"artist_info": artist_info, "top_tracks": tracks}

@@ -14,20 +14,22 @@ def fetch_recently_played_spotify(
     Fetch the user's recently played tracks directly from Spotify.
     """
     data = spotify_client.current_user_recently_played(limit=limit).get("items", [])
-    return [
-        {
-            "track_id":   item["track"]["id"],
-            "track_name": item["track"]["name"],
-            "artist_name": ", ".join(a["name"] for a in item["track"]["artists"]),
-            "album_name":  item["track"]["album"]["name"],
-            "album_image": (
-                item["track"]["album"]["images"][0]["url"]
-                if item["track"]["album"]["images"] else None
-            ),
-            "played_at":   item["played_at"],
-        }
-        for item in data
-    ]
+    result = []
+    for item in data:
+        track = item.get("track", {})
+        if not track:
+            continue
+        album = track.get("album", {})
+        album_images = album.get("images", [])
+        result.append({
+            "track_id":    track.get("id"),
+            "track_name":  track.get("name", "Unknown Track"),
+            "artist_name": ", ".join(a.get("name", "Unknown") for a in track.get("artists", [])),
+            "album_name":  album.get("name", "Unknown Album"),
+            "album_image": album_images[0]["url"] if album_images and len(album_images) > 0 else None,
+            "played_at":   item.get("played_at"),
+        })
+    return result
 
 
 def sync_recently_played_db(
@@ -47,19 +49,22 @@ def sync_recently_played_db(
     latest_time = latest["played_at"] if latest else None
 
     for item in items:
-        played_at = item["played_at"]
+        played_at = item.get("played_at")
+        if not played_at:
+            continue
         if not latest_time or played_at > latest_time:
-            track = item["track"]
+            track = item.get("track", {})
+            if not track:
+                continue
+            album = track.get("album", {})
+            album_images = album.get("images", [])
             doc = {
                 "username":    username,
-                "track_id":    track["id"],
-                "track_name":  track["name"],
-                "artist_name": ", ".join(a["name"] for a in track["artists"]),
-                "album_name":  track["album"]["name"],
-                "album_image": (
-                    track["album"]["images"][0]["url"]
-                    if track["album"]["images"] else None
-                ),
+                "track_id":    track.get("id"),
+                "track_name":  track.get("name", "Unknown Track"),
+                "artist_name": ", ".join(a.get("name", "Unknown") for a in track.get("artists", [])),
+                "album_name":  album.get("name", "Unknown Album"),
+                "album_image": album_images[0]["url"] if album_images and len(album_images) > 0 else None,
                 "played_at":   played_at,
             }
             songs_collection.insert_one(doc)
@@ -127,37 +132,43 @@ def sync_currently_playing(
     if not playback or not playback.get("is_playing"):
         return None
 
+    item = playback.get("item")
+    if not item:
+        # Can happen with podcasts, local files, or ads
+        return None
+
     user = spotify_client.current_user()
     user_id = user["id"]
-    item = playback["item"]
 
+    # Safely access nested fields
+    album = item.get("album", {})
+    album_images = album.get("images", [])
+    
     info: Dict[str, Any] = {
         "user_id":     user_id,
-        "track_id":    item["id"],
-        "track_name":  item["name"],
-        "artist_name": ", ".join(a["name"] for a in item["artists"]),
-        "album_name":  item["album"]["name"],
-        "album_image": (
-            item["album"]["images"][0]["url"]
-            if item["album"].get("images") else None
-        ),
-        "is_playing":  playback["is_playing"],
-        "progress_ms": playback["progress_ms"],
-        "duration_ms": item["duration_ms"],
+        "track_id":    item.get("id"),
+        "track_name":  item.get("name", "Unknown Track"),
+        "artist_name": ", ".join(a.get("name", "Unknown") for a in item.get("artists", [])),
+        "album_name":  album.get("name", "Unknown Album"),
+        "album_image": album_images[0]["url"] if album_images and len(album_images) > 0 else None,
+        "is_playing":  playback.get("is_playing", False),
+        "progress_ms": playback.get("progress_ms", 0),
+        "duration_ms": item.get("duration_ms", 0),
         # Use ISO string only—no datetime objects
         "played_at":   datetime.now(timezone.utc).isoformat(),
     }
 
-    # Upsert so we never return a raw Mongo document
-    songs_collection.update_one(
-        {
-            "user_id":   user_id,
-            "track_id":  info["track_id"],
-            "played_at": info["played_at"],
-        },
-        {"$setOnInsert": info},
-        upsert=True,
-    )
+    # Only upsert if we have a valid track_id
+    if info["track_id"]:
+        songs_collection.update_one(
+            {
+                "user_id":   user_id,
+                "track_id":  info["track_id"],
+                "played_at": info["played_at"],
+            },
+            {"$setOnInsert": info},
+            upsert=True,
+        )
 
     # Ensure album_image is a plain string
     if info.get("album_image") is not None:
