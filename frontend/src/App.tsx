@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import { ContentWrapper } from './components/Navbar/Styles/style';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 
 import Home from './components/Home/Home';
 import Profile from './components/Profile/Profile';
@@ -23,26 +24,30 @@ const ProtectedRoute: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <Router>
-    <Navbar />
-    <ContentWrapper>
-      <Routes>
-        {/* public pages */}
-        <Route path="/" element={<Home />} />
-        <Route path="/artist/:artistId" element={<ArtistPage />} />
+  <ErrorBoundary>
+    <Router>
+      <Navbar />
+      <ContentWrapper>
+        <ErrorBoundary>
+          <Routes>
+            {/* public pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/artist/:artistId" element={<ArtistPage />} />
 
-        {/* protected pages */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/library/*" element={<Library />} />
-          <Route path="/reports" element={<Reports />} />
-        </Route>
+            {/* protected pages */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/library/*" element={<Library />} />
+              <Route path="/reports" element={<Reports />} />
+            </Route>
 
-        {/* catch-all: redirect unknown URLs back to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </ContentWrapper>
-  </Router>
+            {/* catch-all: redirect unknown URLs back to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </ErrorBoundary>
+      </ContentWrapper>
+    </Router>
+  </ErrorBoundary>
 );
 
 export default App;

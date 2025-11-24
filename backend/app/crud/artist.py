@@ -1,13 +1,27 @@
 # app/crud/artist.py
 
 import logging
-import requests
+import httpx
 import re
 import spotipy
 from typing import List, Optional
 from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
+
+# Shared async HTTP client for connection pooling
+_http_client: Optional[httpx.AsyncClient] = None
+
+
+async def get_http_client() -> httpx.AsyncClient:
+    """Get or create a shared async HTTP client."""
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(10.0),
+            follow_redirects=True
+        )
+    return _http_client
 
 
 def _get_settings():
@@ -26,12 +40,14 @@ def _get_settings():
         return _S()
 
 
-
-def get_artist_description(artist_name: str) -> Optional[str]:
+async def get_artist_description(artist_name: str) -> Optional[str]:
     """
     Fetch the first two sentences of the artist bio from Last.fm.
     """
     settings = _get_settings()
+    if not settings.LASTFM_KEY:
+        return None
+        
     # URL-encode artist name to handle special characters
     encoded_name = quote(artist_name, safe='')
     url = (
@@ -40,8 +56,9 @@ def get_artist_description(artist_name: str) -> Optional[str]:
         f"&api_key={settings.LASTFM_KEY}&format=json"
     )
     try:
-        r = requests.get(url, timeout=6)
-    except requests.RequestException as e:
+        client = await get_http_client()
+        r = await client.get(url)
+    except httpx.RequestError as e:
         # Network error / timeout / DNS failure
         logger.debug(f"Failed to fetch Last.fm bio for {artist_name}: {e}")
         return None
@@ -58,6 +75,7 @@ def get_artist_description(artist_name: str) -> Optional[str]:
         return sentences[0] + ". " + sentences[1] + "."
     return summary or None
 
+
 def fetch_top_artists(
     spotify_client: spotipy.Spotify,
     time_range: str = "medium_term",
@@ -65,13 +83,14 @@ def fetch_top_artists(
 ) -> List[dict]:
     """
     Return list of user's top artists with an optional Last.fm description.
+    Note: This is sync because it's called from async context but uses sync Spotify client.
+    Description fetching is moved to a separate async endpoint if needed.
     """
     items = spotify_client.current_user_top_artists(
         time_range=time_range, limit=limit
     ).get("items", [])
     result = []
     for art in items:
-        desc = get_artist_description(art["name"])
         images = art.get("images", [])
         result.append({
             "artist_id":    art["id"],
@@ -79,11 +98,10 @@ def fetch_top_artists(
             "genres":       art.get("genres", []),
             "popularity":   art.get("popularity", 0),
             "image_url":    images[0]["url"] if images and len(images) > 0 else None,
-            "description":  desc,
+            "description":  None,  # Fetch async separately if needed
         })
     return result
 
-# Remove old Wikipedia implementation - replaced with better image sources
 
 def fetch_artist_info(
     spotify_client: spotipy.Spotify,
@@ -91,17 +109,14 @@ def fetch_artist_info(
     country: str = "US"
 ) -> dict:
     """
-    Return detailed artist info + their top tracks + Last.fm bio.
+    Return detailed artist info + their top tracks.
+    Bio is fetched separately to keep this sync.
     """
     details = spotify_client.artist(artist_id)
     top_tracks = spotify_client.artist_top_tracks(artist_id, country=country).get("tracks", [])
-    desc = get_artist_description(details.get("name", "Unknown Artist"))
 
-    # Get artist images - prefer Spotify, fallback to Last.fm
+    # Get artist images from Spotify
     spotify_images = [img["url"] for img in details.get("images", []) if img.get("url")]
-    if not spotify_images:
-        # try Last.fm images
-        spotify_images = fetch_artist_images(details.get("name", ""), limit=3)
 
     # Safely build track_images list
     track_images = []
@@ -117,7 +132,7 @@ def fetch_artist_info(
         "genres":      details.get("genres", []),
         "popularity":  details.get("popularity", 0),
         "images":      spotify_images,
-        "description": desc,
+        "description": None,  # Will be fetched async
         "track_images": track_images,
     }
 
@@ -137,13 +152,15 @@ def fetch_artist_info(
 
     return {"artist_info": artist_info, "top_tracks": tracks}
 
-def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
+
+async def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
     """
     Return up to `limit` real artist image URLs using Last.fm (preferred)
     """
+    settings = _get_settings()
+    
     try:
         # Primary: Try Last.fm and filter out placeholders
-        settings = _get_settings()
         url = "http://ws.audioscrobbler.com/2.0/"
         params = {
             "method":  "artist.getInfo",
@@ -153,7 +170,9 @@ def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
         }
         PLACEHOLDER_SIGNATURE = "2a96cbd8b46e442fc41c2b86b821562f"
         
-        r = requests.get(url, params=params, timeout=10)
+        client = await get_http_client()
+        r = await client.get(url, params=params)
+        
         if r.status_code == 200:
             try:
                 data = r.json()
@@ -166,14 +185,14 @@ def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
             if filtered:
                 return list(dict.fromkeys(filtered))[:limit]
 
-    except requests.RequestException as e:
+    except httpx.RequestError as e:
         logger.debug(f"Error fetching images for {artist_name}: {e}")
 
     # Final fallback: return empty list and let frontend handle placeholders
     return []
 
 
-def fetch_unsplash_images(artist_name: str, limit: int = 10) -> List[str]:
+async def fetch_unsplash_images(artist_name: str, limit: int = 10) -> List[str]:
     """
     Fetch images from Unsplash using the UNSPLASH_KEY in settings.
     Returns a list of image URLs (may be empty).
@@ -188,19 +207,20 @@ def fetch_unsplash_images(artist_name: str, limit: int = 10) -> List[str]:
     headers = {"Authorization": f"Client-ID {key}"}
 
     try:
-        r = requests.get(url, params=params, headers=headers, timeout=10)
+        client = await get_http_client()
+        r = await client.get(url, params=params, headers=headers)
         if r.status_code == 200:
             data = r.json()
             results = data.get("results", [])
             urls = [item.get("urls", {}).get("regular") for item in results if item.get("urls")]
             return [u for u in urls if u][:limit]
-    except requests.RequestException as e:
+    except httpx.RequestError as e:
         logger.debug(f"Unsplash fetch error for {artist_name}: {e}")
 
     return []
 
 
-def fetch_pixabay_images(artist_name: str, limit: int = 10) -> List[str]:
+async def fetch_pixabay_images(artist_name: str, limit: int = 10) -> List[str]:
     """
     Fetch images from Pixabay using the PIXABAY_KEY in settings.
     Returns a list of image URLs (may be empty).
@@ -214,34 +234,37 @@ def fetch_pixabay_images(artist_name: str, limit: int = 10) -> List[str]:
     params = {"key": key, "q": artist_name, "image_type": "photo", "per_page": limit}
 
     try:
-        r = requests.get(url, params=params, timeout=10)
+        client = await get_http_client()
+        r = await client.get(url, params=params)
         if r.status_code == 200:
             data = r.json()
             hits = data.get("hits", [])
             urls = [h.get("webformatURL") or h.get("largeImageURL") for h in hits if h]
             return [u for u in urls if u][:limit]
-    except requests.RequestException as e:
+    except httpx.RequestError as e:
         logger.debug(f"Pixabay fetch error for {artist_name}: {e}")
 
     return []
 
 
-def fetch_artist_images_web_scraping(artist_name: str, limit: int = 12) -> List[str]:
+async def fetch_artist_images_web_scraping(artist_name: str, limit: int = 12) -> List[str]:
     """
     Orchestrator that tries multiple sources to gather artist images.
     Preference order: Last.fm, Unsplash, Pixabay. Returns up to `limit` unique URLs.
     """
     # Primary: Last.fm
-    imgs = fetch_artist_images(artist_name, limit=limit)
+    imgs = await fetch_artist_images(artist_name, limit=limit)
     if imgs:
         return imgs[:limit]
 
     # Secondary: Unsplash
-    unsplash = fetch_unsplash_images(artist_name, limit=limit)
+    unsplash = await fetch_unsplash_images(artist_name, limit=limit)
     if unsplash:
         return unsplash[:limit]
 
     # Tertiary: Pixabay
-    pixabay = fetch_pixabay_images(artist_name, limit=limit)
+    pixabay = await fetch_pixabay_images(artist_name, limit=limit)
     if pixabay:
         return pixabay[:limit]
+    
+    return []

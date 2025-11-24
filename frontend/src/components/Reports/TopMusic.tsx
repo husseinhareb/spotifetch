@@ -335,7 +335,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         {/* Top Artist */}
         {topArtists.length > 0 && (
           <EnhancedCard>
-            <EnhancedCardImage img={topArtists[0]?.artist_image}>
+            <EnhancedCardImage img={topArtists[0]?.artist_image ?? undefined}>
               <RankBadge rank={1}>1</RankBadge>
               <CardLabel bg="linear-gradient(135deg, #C084FC, #9333EA)">
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />
@@ -381,7 +381,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         {/* Top Album */}
         {topAlbums.length > 0 && (
           <EnhancedCard>
-            <EnhancedCardImage img={topAlbums[0]?.album_image}>
+            <EnhancedCardImage img={topAlbums[0]?.album_image ?? undefined}>
               <RankBadge rank={1}>1</RankBadge>
               <CardLabel bg="linear-gradient(135deg, #4ADE80, #16A34A)">
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />
@@ -428,7 +428,7 @@ const TopMusic: React.FC<{ userId: string }> = ({ userId }) => {
         {/* Top Track */}
         {topTracks.length > 0 && (
           <EnhancedCard>
-            <EnhancedCardImage img={topTracks[0]?.album_image}>
+            <EnhancedCardImage img={topTracks[0]?.album_image ?? undefined}>
               <RankBadge rank={1}>1</RankBadge>
               <CardLabel bg="linear-gradient(135deg, #60A5FA, #2563EB)">
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '4px' }} />

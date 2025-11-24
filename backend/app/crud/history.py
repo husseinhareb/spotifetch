@@ -1,28 +1,41 @@
 # app/crud/history.py
 
+import logging
 from typing import List, Optional
 from datetime import datetime
+from pymongo.errors import DuplicateKeyError
 from ..db.database import history_collection
 from ..schemas.history import HistoryCreate, HistoryOut, TopTrackOut, TopArtistOut, TopAlbumOut
+
+logger = logging.getLogger(__name__)
+
 
 def save_history(entry: HistoryCreate) -> HistoryOut:
     """
     Insert the play event if it's not already recorded,
-    then return the cleaned-up record.
+    using upsert to prevent race conditions.
+    Returns the cleaned-up record.
     """
     # Build a pure-Python dict, converting any HttpUrl → str
-    doc = entry.dict()
+    doc = entry.model_dump()
     if doc.get("album_image") is not None:
         doc["album_image"] = str(doc["album_image"])
 
-    # Avoid duplicates
-    exists = history_collection.find_one({
-        "user_id": entry.user_id,
-        "track_id": entry.track_id,
-        "played_at": entry.played_at,
-    })
-    if not exists:
-        history_collection.insert_one(doc)
+    # Use upsert to atomically insert if not exists (prevents race conditions)
+    # The unique compound index on (user_id, track_id, played_at) ensures no duplicates
+    try:
+        history_collection.update_one(
+            {
+                "user_id": entry.user_id,
+                "track_id": entry.track_id,
+                "played_at": entry.played_at,
+            },
+            {"$setOnInsert": doc},
+            upsert=True
+        )
+    except DuplicateKeyError:
+        # Already exists - this is fine, just log it
+        logger.debug(f"Duplicate history entry ignored: {entry.user_id}/{entry.track_id}")
 
     # Fetch back without any internal fields
     raw = history_collection.find_one(
@@ -33,6 +46,18 @@ def save_history(entry: HistoryCreate) -> HistoryOut:
         },
         {"_id": 0, "user_id": 0}
     )
+    
+    if raw is None:
+        # Fallback: construct from input if query fails
+        return HistoryOut(
+            track_id=entry.track_id,
+            track_name=entry.track_name,
+            artist_name=entry.artist_name,
+            album_name=entry.album_name,
+            album_image=entry.album_image,
+            played_at=entry.played_at
+        )
+    
     return HistoryOut(**raw)
 
 

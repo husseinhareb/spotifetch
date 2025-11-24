@@ -2,15 +2,16 @@
 import { api } from "./apiConfig";
 
 export interface HistorySong {
-  artist_id: any;
-  album_id: any;
+  artist_id: string | null;
+  album_id: string | null;
   track_id: string;
   track_name: string;
   artist_name: string;
   album_name: string;
-  album_image: string;
+  album_image: string | null;
   played_at: string;
   play_count?: number;
+  duration_ms?: number;
 }
 
 export interface TopTrack {
@@ -18,7 +19,7 @@ export interface TopTrack {
   track_name: string;
   artist_name: string;
   album_name: string;
-  album_image: string;
+  album_image: string | null;
   play_count: number;
 }
 
@@ -26,14 +27,14 @@ export interface TopTrack {
 export interface TopArtist {
   artist_name: string;
   play_count: number;
-  artist_image?: string;
+  artist_image?: string | null;
 }
 
 
 export interface TopAlbum {
   album_name: string;
   artist_name: string;
-  album_image?: string;
+  album_image?: string | null;
   play_count: number;
 }
 
