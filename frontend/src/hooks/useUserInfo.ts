@@ -24,7 +24,7 @@ const useUserInfo = () => {
     const checkLoginStatus = async () => {
         try {
             try {
-                const resp = await api.get('/user_info');
+                const resp = await api.get('/auth/user_info');
                 const userInfo = resp.data;
                 setUsername(userInfo.display_name || 'N/A');
                 setEmail(userInfo.email || 'N/A');

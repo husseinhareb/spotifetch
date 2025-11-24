@@ -270,7 +270,6 @@ const RecentlyPlayed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [hoveredTrack, setHoveredTrack] = useState<number | null>(null);
   const username = useUserId();
 
   const loadMore = useCallback(async () => {
@@ -295,9 +294,13 @@ const RecentlyPlayed: React.FC = () => {
     }
   }, [hasMore, username, skip]);
 
+  // Only load on initial mount or when username changes
   useEffect(() => {
-    loadMore();
-  }, [username, loadMore]);
+    if (username !== "N/A") {
+      loadMore();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
 
   if (initialLoading) {
     return (
@@ -355,8 +358,6 @@ const RecentlyPlayed: React.FC = () => {
         {recentTracks.map((track, idx) => (
           <TrackItem 
             key={`${track.track_id}-${idx}`}
-            onMouseEnter={() => setHoveredTrack(idx)}
-            onMouseLeave={() => setHoveredTrack(null)}
             style={{ animationDelay: `${idx * 0.05}s` }}
           >
             {track.album_image ? (

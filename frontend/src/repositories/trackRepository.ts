@@ -1,5 +1,5 @@
 // src/repositories/trackRepository.ts
-import axios from 'axios';
+import { api } from './apiConfig';
 
 export interface Song {
   track_name: string;
@@ -11,13 +11,13 @@ export interface Song {
 }
 
 export async function fetchRecentTracks(username: string, skip: number): Promise<Song[]> {
-  const resp = await axios.get<{ recent_tracks: Song[] }>(
-    `/tracks/user/${username}/library/recently_played_db?skip=${skip}`
+  const resp = await api.get<{ recent_tracks: Song[] }>(
+    `/tracks/user/${encodeURIComponent(username)}/library/recently_played_db?skip=${skip}`
   );
   return resp.data.recent_tracks;
 }
 
 export async function fetchMostPlayedSongs(): Promise<Song[]> {
-  const resp = await axios.get<{ songs: Song[] }>('/tracks/songs_most_played');
+  const resp = await api.get<{ songs: Song[] }>('/tracks/songs_most_played');
   return resp.data.songs;
 }

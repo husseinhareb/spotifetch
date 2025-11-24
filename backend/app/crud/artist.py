@@ -1,9 +1,13 @@
 # app/crud/artist.py
 
+import logging
 import requests
 import re
 import spotipy
 from typing import List, Optional
+from urllib.parse import quote
+
+logger = logging.getLogger(__name__)
 
 
 def _get_settings():
@@ -28,21 +32,24 @@ def get_artist_description(artist_name: str) -> Optional[str]:
     Fetch the first two sentences of the artist bio from Last.fm.
     """
     settings = _get_settings()
+    # URL-encode artist name to handle special characters
+    encoded_name = quote(artist_name, safe='')
     url = (
         f"http://ws.audioscrobbler.com/2.0/"
-        f"?method=artist.getinfo&artist={artist_name}"
+        f"?method=artist.getinfo&artist={encoded_name}"
         f"&api_key={settings.LASTFM_KEY}&format=json"
     )
     try:
         r = requests.get(url, timeout=6)
-    except Exception:
+    except requests.RequestException as e:
         # Network error / timeout / DNS failure
+        logger.debug(f"Failed to fetch Last.fm bio for {artist_name}: {e}")
         return None
     if r.status_code != 200:
         return None
     try:
         data = r.json().get("artist", {})
-    except Exception:
+    except ValueError:
         # Last.fm returned non-JSON or empty body; ignore description
         return None
     summary = data.get("bio", {}).get("summary", "")
@@ -65,12 +72,13 @@ def fetch_top_artists(
     result = []
     for art in items:
         desc = get_artist_description(art["name"])
+        images = art.get("images", [])
         result.append({
             "artist_id":    art["id"],
             "artist_name":  art["name"],
-            "genres":       art["genres"],
-            "popularity":   art["popularity"],
-            "image_url":    art["images"][0]["url"] if art["images"] else None,
+            "genres":       art.get("genres", []),
+            "popularity":   art.get("popularity", 0),
+            "image_url":    images[0]["url"] if images and len(images) > 0 else None,
             "description":  desc,
         })
     return result
@@ -140,7 +148,7 @@ def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
         if r.status_code == 200:
             try:
                 data = r.json()
-            except Exception:
+            except ValueError:
                 data = {}
             imgs = data.get("artist", {}).get("image", [])
             raw_urls = [i.get("#text", "").strip() for i in imgs if i.get("#text")]
@@ -149,8 +157,8 @@ def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
             if filtered:
                 return list(dict.fromkeys(filtered))[:limit]
 
-    except Exception as e:
-        print(f"Error fetching images for {artist_name}: {e}")
+    except requests.RequestException as e:
+        logger.debug(f"Error fetching images for {artist_name}: {e}")
 
     # Final fallback: return empty list and let frontend handle placeholders
     return []
@@ -175,10 +183,10 @@ def fetch_unsplash_images(artist_name: str, limit: int = 10) -> List[str]:
         if r.status_code == 200:
             data = r.json()
             results = data.get("results", [])
-            urls = [r.get("urls", {}).get("regular") for r in results if r.get("urls")]
+            urls = [item.get("urls", {}).get("regular") for item in results if item.get("urls")]
             return [u for u in urls if u][:limit]
-    except Exception as e:
-        print(f"Unsplash fetch error for {artist_name}: {e}")
+    except requests.RequestException as e:
+        logger.debug(f"Unsplash fetch error for {artist_name}: {e}")
 
     return []
 
@@ -203,15 +211,12 @@ def fetch_pixabay_images(artist_name: str, limit: int = 10) -> List[str]:
             hits = data.get("hits", [])
             urls = [h.get("webformatURL") or h.get("largeImageURL") for h in hits if h]
             return [u for u in urls if u][:limit]
-    except Exception as e:
-        print(f"Pixabay fetch error for {artist_name}: {e}")
+    except requests.RequestException as e:
+        logger.debug(f"Pixabay fetch error for {artist_name}: {e}")
 
     return []
 
 
-
-    # Final: empty list
-    return []
 def fetch_artist_images_web_scraping(artist_name: str, limit: int = 12) -> List[str]:
     """
     Orchestrator that tries multiple sources to gather artist images.
