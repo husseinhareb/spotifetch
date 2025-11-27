@@ -67,15 +67,34 @@ export async function getTopTracks(
 
 /**
  * Fetch the user's raw listening history for reports.
- * Delegates to fetchUserHistory, optionally since a given ISO timestamp.
+ * Fetches all available history by paginating through results.
  */
 export async function fetchReports(
   userId: string,
-  since?: string
+  _since?: string
 ): Promise<HistorySong[]> {
   try {
-    const sinceMs = since ? Date.parse(since) : undefined;
-    return await fetchUserHistory(userId, sinceMs);
+    // Fetch a large batch for reports - the backend will limit appropriately
+    const allHistory: HistorySong[] = [];
+    let skip = 0;
+    const batchSize = 200;
+    let hasMore = true;
+    
+    // Paginate to get full history (with a reasonable cap)
+    while (hasMore && allHistory.length < 2000) {
+      const batch = await fetchUserHistory(userId, skip, batchSize);
+      if (batch.length === 0) {
+        hasMore = false;
+      } else {
+        allHistory.push(...batch);
+        skip += batch.length;
+        if (batch.length < batchSize) {
+          hasMore = false;
+        }
+      }
+    }
+    
+    return allHistory;
   } catch (err) {
     console.error('Error in fetchReports:', err);
     throw err;

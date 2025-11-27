@@ -23,13 +23,21 @@ def require_spotify_client(request: Request) -> spotipy.Spotify:
     return spotipy.Spotify(auth=token["access_token"])
 
 
+def verify_user_authorization(sp: spotipy.Spotify, username: str) -> None:
+    """Verify that the authenticated user matches the requested username."""
+    current_user = sp.current_user()
+    if current_user.get("id") != username:
+        raise HTTPException(status_code=403, detail="Access denied: You can only access your own data")
+
+
 @router.get("/user/{username}/library/recently_played")
 async def recently_played(
     request: Request,
     username: str,
-    limit: int = Query(30, ge=1),
+    limit: int = Query(30, ge=1, le=50),
 ):
     client = require_spotify_client(request)
+    verify_user_authorization(client, username)
     tracks = fetch_recently_played_spotify(client, limit=limit)
     return {"recent_tracks": tracks}
 
@@ -39,9 +47,10 @@ async def recently_played_db(
     request: Request,
     username: str,
     skip: int = Query(0, ge=0),
-    limit: int = Query(30, ge=1),
+    limit: int = Query(30, ge=1, le=100),
 ):
     client = require_spotify_client(request)
+    verify_user_authorization(client, username)
     # on first page, sync Spotify → Mongo
     if skip == 0:
         sync_recently_played_db(client, username)

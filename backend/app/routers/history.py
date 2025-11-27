@@ -41,15 +41,26 @@ async def record_history(request: Request, user_id: str):
     if not playback or not playback.get("is_playing"):
         raise HTTPException(status_code=404, detail="No track currently playing")
 
-    item = playback["item"]
+    item = playback.get("item")
+    if not item:
+        raise HTTPException(status_code=404, detail="No track item in playback (possibly podcast or local file)")
+    
+    track_id = item.get("id")
+    if not track_id:
+        raise HTTPException(status_code=404, detail="Track has no ID (likely a local file)")
+    
+    artists = item.get("artists", [])
+    album = item.get("album", {})
+    album_images = album.get("images", [])
+    
     entry = HistoryCreate(
         user_id=user_id,
-        track_id=item["id"],
-        track_name=item["name"],
-        artist_name=", ".join(a["name"] for a in item["artists"]),
-        album_name=item["album"]["name"],
-        album_image=(item["album"]["images"][0]["url"] if item["album"]["images"] else None),
-    played_at=datetime.now(timezone.utc)
+        track_id=track_id,
+        track_name=item.get("name", "Unknown Track"),
+        artist_name=", ".join(a.get("name", "Unknown") for a in artists),
+        album_name=album.get("name", "Unknown Album"),
+        album_image=(album_images[0].get("url") if album_images else None),
+        played_at=datetime.now(timezone.utc)
     )
 
     saved = save_history(entry)

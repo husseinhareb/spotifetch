@@ -1,5 +1,6 @@
 # app/crud/artist.py
 
+import asyncio
 import logging
 import httpx
 import re
@@ -11,17 +12,30 @@ logger = logging.getLogger(__name__)
 
 # Shared async HTTP client for connection pooling
 _http_client: Optional[httpx.AsyncClient] = None
+_http_client_lock: asyncio.Lock = asyncio.Lock()
 
 
 async def get_http_client() -> httpx.AsyncClient:
-    """Get or create a shared async HTTP client."""
+    """Get or create a shared async HTTP client with thread-safe initialization."""
     global _http_client
     if _http_client is None or _http_client.is_closed:
-        _http_client = httpx.AsyncClient(
-            timeout=httpx.Timeout(10.0),
-            follow_redirects=True
-        )
+        async with _http_client_lock:
+            # Double-check after acquiring lock
+            if _http_client is None or _http_client.is_closed:
+                _http_client = httpx.AsyncClient(
+                    timeout=httpx.Timeout(10.0),
+                    follow_redirects=True
+                )
     return _http_client
+
+
+async def close_http_client() -> None:
+    """Close the shared HTTP client. Call during application shutdown."""
+    global _http_client
+    if _http_client is not None and not _http_client.is_closed:
+        await _http_client.aclose()
+        _http_client = None
+        logger.info("HTTP client closed")
 
 
 def _get_settings():

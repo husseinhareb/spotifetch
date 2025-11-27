@@ -46,15 +46,16 @@ export async function recordNow(userId: string) {
 }
 
 /**
- * Page through a user’s raw listening history.
+ * Page through a user's raw listening history.
  */
 export async function fetchUserHistory(
   userId: string,
-  skip: number = 0
+  skip: number = 0,
+  limit: number = 50
 ): Promise<HistorySong[]> {
   const resp = await api.get<HistorySong[]>(
     `/user/${encodeURIComponent(userId)}/history/`,
-    { params: { skip } }
+    { params: { skip, limit } }
   );
   return resp.data;
 }

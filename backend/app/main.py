@@ -14,6 +14,7 @@ from slowapi.errors import RateLimitExceeded
 from .config import settings
 from .db.database import init_db, close_db, verify_connection
 from .services.spotify_services import fetch_currently_playing
+from .crud.artist import close_http_client
 from .routers import artist, auth, track, history
 
 # Configure logging
@@ -56,6 +57,9 @@ async def lifespan(app: FastAPI):
         await background_task
     except asyncio.CancelledError:
         logger.info("Background task cancelled")
+    
+    # Close HTTP client used for external API calls
+    await close_http_client()
     
     # Close database connection
     close_db()
