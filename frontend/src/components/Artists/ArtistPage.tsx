@@ -33,21 +33,34 @@ const ArtistPage: React.FC = () => {
         const data = await fetchArtistInfo(artistId);
         setArtistInfo(data);
 
+        // Collect all available images from different sources
+        let allImages: string[] = [];
+        
+        // Add Spotify artist images first (most reliable)
+        if (data.artist_info.images && data.artist_info.images.length > 0) {
+          allImages.push(...data.artist_info.images);
+        }
+        
+        // Add track/album images as additional gallery content
+        if (data.artist_info.track_images && data.artist_info.track_images.length > 0) {
+          allImages.push(...data.artist_info.track_images);
+        }
+
         try {
-          // Try the new gallery endpoint first (uses web scraping)
+          // Try the gallery endpoint for additional images from external sources
           const gallery = await fetchArtistGallery(data.artist_info.artist_name, 12);
-          if (gallery.length > 0) {
-            setLastFmImages(gallery);
-          } else {
-            // Fallback to Last.fm if gallery is empty
-            const lastfmImgs = await fetchLastFmImages(data.artist_info.artist_name);
-            const filtered = lastfmImgs.filter(url => url && !url.includes(PLACEHOLDER_HASH));
-            setLastFmImages(filtered.length > 0 ? filtered : []);
+          const filtered = gallery.filter(url => url && !url.includes(PLACEHOLDER_HASH));
+          if (filtered.length > 0) {
+            allImages.push(...filtered);
           }
         } catch (imgErr) {
-          console.error('Failed to load images', imgErr);
-          setLastFmImages([]);
+          console.error('Failed to load external images', imgErr);
         }
+        
+        // Remove duplicates while preserving order
+        const uniqueImages = [...new Set(allImages)];
+        setLastFmImages(uniqueImages.length > 0 ? uniqueImages : []);
+        
       } catch (err: any) {
         console.error('Error loading artist page', err);
         setError(err?.message || 'Failed to load artist');

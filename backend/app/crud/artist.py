@@ -167,14 +167,114 @@ def fetch_artist_info(
     return {"artist_info": artist_info, "top_tracks": tracks}
 
 
+async def fetch_theaudiodb_images(artist_name: str, limit: int = 10) -> List[str]:
+    """
+    Fetch artist images from TheAudioDB (free API, no key required for basic access).
+    Returns various artist images including fanart, thumbs, logos, etc.
+    """
+    try:
+        # TheAudioDB free API endpoint
+        encoded_name = quote(artist_name, safe='')
+        url = f"https://www.theaudiodb.com/api/v1/json/2/search.php?s={encoded_name}"
+        
+        client = await get_http_client()
+        r = await client.get(url)
+        
+        if r.status_code == 200:
+            try:
+                data = r.json()
+            except ValueError:
+                return []
+            
+            artists = data.get("artists") or []
+            if not artists:
+                return []
+            
+            artist = artists[0]  # Take first match
+            images = []
+            
+            # Collect all available image types
+            image_keys = [
+                "strArtistThumb",
+                "strArtistFanart", "strArtistFanart2", "strArtistFanart3", "strArtistFanart4",
+                "strArtistWideThumb",
+                "strArtistCutout",
+                "strArtistClearart",
+                "strArtistBanner",
+            ]
+            
+            for key in image_keys:
+                img_url = artist.get(key)
+                if img_url and img_url.strip():
+                    images.append(img_url.strip())
+            
+            # Remove duplicates while preserving order
+            return list(dict.fromkeys(images))[:limit]
+            
+    except httpx.RequestError as e:
+        logger.debug(f"TheAudioDB fetch error for {artist_name}: {e}")
+    
+    return []
+
+
+async def fetch_deezer_artist_images(artist_name: str, limit: int = 10) -> List[str]:
+    """
+    Fetch artist images from Deezer API (free, no key required).
+    """
+    try:
+        encoded_name = quote(artist_name, safe='')
+        url = f"https://api.deezer.com/search/artist?q={encoded_name}&limit=1"
+        
+        client = await get_http_client()
+        r = await client.get(url)
+        
+        if r.status_code == 200:
+            try:
+                data = r.json()
+            except ValueError:
+                return []
+            
+            artists = data.get("data") or []
+            if not artists:
+                return []
+            
+            artist = artists[0]
+            images = []
+            
+            # Deezer provides multiple image sizes
+            for key in ["picture_xl", "picture_big", "picture_medium", "picture"]:
+                img_url = artist.get(key)
+                if img_url and img_url.strip():
+                    images.append(img_url.strip())
+                    break  # Just get the best quality one
+            
+            return images[:limit]
+            
+    except httpx.RequestError as e:
+        logger.debug(f"Deezer fetch error for {artist_name}: {e}")
+    
+    return []
+
+
 async def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
     """
-    Return up to `limit` real artist image URLs using Last.fm (preferred)
+    Return up to `limit` real artist image URLs.
+    Tries multiple free sources: TheAudioDB, Deezer, then Last.fm as fallback.
     """
     settings = _get_settings()
     
+    # Primary: Try TheAudioDB (free, has good artist images)
+    audiodb_images = await fetch_theaudiodb_images(artist_name, limit=limit)
+    if audiodb_images:
+        return audiodb_images
+    
+    # Secondary: Try Deezer (free, no API key needed)
+    deezer_images = await fetch_deezer_artist_images(artist_name, limit=limit)
+    if deezer_images:
+        return deezer_images
+    
+    # Tertiary: Try Last.fm (mostly returns placeholders now, but worth trying)
     try:
-        # Primary: Try Last.fm and filter out placeholders
         url = "http://ws.audioscrobbler.com/2.0/"
         params = {
             "method":  "artist.getInfo",
@@ -200,7 +300,7 @@ async def fetch_artist_images(artist_name: str, limit: int = 10) -> List[str]:
                 return list(dict.fromkeys(filtered))[:limit]
 
     except httpx.RequestError as e:
-        logger.debug(f"Error fetching images for {artist_name}: {e}")
+        logger.debug(f"Error fetching Last.fm images for {artist_name}: {e}")
 
     # Final fallback: return empty list and let frontend handle placeholders
     return []
@@ -264,21 +364,36 @@ async def fetch_pixabay_images(artist_name: str, limit: int = 10) -> List[str]:
 async def fetch_artist_images_web_scraping(artist_name: str, limit: int = 12) -> List[str]:
     """
     Orchestrator that tries multiple sources to gather artist images.
-    Preference order: Last.fm, Unsplash, Pixabay. Returns up to `limit` unique URLs.
+    Preference order: TheAudioDB, Deezer, Unsplash, Pixabay.
+    Returns up to `limit` unique URLs.
     """
-    # Primary: Last.fm
-    imgs = await fetch_artist_images(artist_name, limit=limit)
-    if imgs:
-        return imgs[:limit]
-
-    # Secondary: Unsplash
-    unsplash = await fetch_unsplash_images(artist_name, limit=limit)
-    if unsplash:
-        return unsplash[:limit]
-
-    # Tertiary: Pixabay
-    pixabay = await fetch_pixabay_images(artist_name, limit=limit)
-    if pixabay:
-        return pixabay[:limit]
+    all_images: List[str] = []
     
-    return []
+    # Primary: TheAudioDB (free, best for artist-specific images)
+    audiodb = await fetch_theaudiodb_images(artist_name, limit=limit)
+    all_images.extend(audiodb)
+    
+    # If we have enough, return early
+    if len(all_images) >= limit:
+        return list(dict.fromkeys(all_images))[:limit]
+    
+    # Secondary: Deezer
+    deezer = await fetch_deezer_artist_images(artist_name, limit=limit)
+    all_images.extend(deezer)
+    
+    if len(all_images) >= limit:
+        return list(dict.fromkeys(all_images))[:limit]
+    
+    # Tertiary: Unsplash (requires API key)
+    unsplash = await fetch_unsplash_images(artist_name, limit=limit)
+    all_images.extend(unsplash)
+    
+    if len(all_images) >= limit:
+        return list(dict.fromkeys(all_images))[:limit]
+
+    # Quaternary: Pixabay (requires API key)
+    pixabay = await fetch_pixabay_images(artist_name, limit=limit)
+    all_images.extend(pixabay)
+    
+    # Remove duplicates and return
+    return list(dict.fromkeys(all_images))[:limit]

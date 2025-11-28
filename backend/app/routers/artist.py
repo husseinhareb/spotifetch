@@ -97,14 +97,26 @@ async def test_images(
     artist_name: Annotated[str, Path(min_length=1, max_length=200)]
 ):
     """Test endpoint to verify image fetching works"""
-    from ..crud.artist import fetch_unsplash_images, fetch_pixabay_images
+    from ..crud.artist import (
+        fetch_unsplash_images, 
+        fetch_pixabay_images,
+        fetch_theaudiodb_images,
+        fetch_deezer_artist_images
+    )
     
     sanitized_name = validate_artist_name(artist_name)
+    
+    audiodb = await fetch_theaudiodb_images(sanitized_name, 5)
+    deezer = await fetch_deezer_artist_images(sanitized_name, 5)
     unsplash = await fetch_unsplash_images(sanitized_name, 5)
     pixabay = await fetch_pixabay_images(sanitized_name, 5)
     
     return JSONResponse({
         "artist": sanitized_name,
+        "theaudiodb_count": len(audiodb),
+        "theaudiodb_samples": audiodb[:3],
+        "deezer_count": len(deezer),
+        "deezer_samples": deezer[:3],
         "unsplash_count": len(unsplash),
         "unsplash_samples": unsplash[:2],
         "pixabay_count": len(pixabay), 
