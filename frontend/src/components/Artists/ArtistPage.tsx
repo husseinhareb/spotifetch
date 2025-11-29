@@ -27,7 +27,7 @@ import { fetchArtistInfo, fetchArtistGallery, ArtistInfo } from '../../repositor
 
 const PLACEHOLDER_HASH = '2a96cbd8b46e442fc41c2b86b821562f';
 
-const PREVIEW_IMAGE_COUNT = 5;
+const PREVIEW_IMAGE_COUNT = 6;
 
 const ArtistPage: React.FC = () => {
   const { artistId } = useParams<{ artistId: string }>();
@@ -50,7 +50,7 @@ const ArtistPage: React.FC = () => {
 
         // Fetch real artist images from external sources (TheAudioDB, Deezer)
         try {
-          const gallery = await fetchArtistGallery(data.artist_info.artist_name, 12);
+          const gallery = await fetchArtistGallery(data.artist_info.artist_name, 50);
           const filtered = gallery.filter(url => url && !url.includes(PLACEHOLDER_HASH));
           setGalleryImages(filtered);
           // Set main image from gallery

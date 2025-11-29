@@ -435,6 +435,40 @@ export const EmptyGallery = styled.div`
   }
 `;
 
+// Show more link
+export const ShowMoreLink = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px 24px;
+  background: rgba(29, 185, 84, 0.1);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+  border-radius: 12px;
+  color: #1DB954;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(29, 185, 84, 0.2);
+    border-color: rgba(29, 185, 84, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(29, 185, 84, 0.2);
+    
+    svg {
+      transform: translateX(4px);
+    }
+  }
+  
+  svg {
+    transition: transform 0.3s ease;
+  }
+`;
+
 // Lightbox for full-screen image view
 export const Lightbox = styled.div<{ $isOpen: boolean }>`
   position: fixed;

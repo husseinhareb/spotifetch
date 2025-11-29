@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import Home from './components/Home/Home';
 import Profile from './components/Profile/Profile';
 import ArtistPage from './components/Artists/ArtistPage';
+import ArtistGallery from './components/Artists/ArtistGallery';
 import Library from './components/Library/Library';
 import Reports from './components/Reports/Reports';
 
@@ -33,6 +34,7 @@ const App: React.FC = () => (
             {/* public pages */}
             <Route path="/" element={<Home />} />
             <Route path="/artist/:artistId" element={<ArtistPage />} />
+            <Route path="/artist/:artistId/gallery" element={<ArtistGallery />} />
 
             {/* protected pages */}
             <Route element={<ProtectedRoute />}>
