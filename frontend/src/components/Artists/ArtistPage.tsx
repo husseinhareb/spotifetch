@@ -23,7 +23,7 @@ const ArtistPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [mainImageSrc, setMainImageSrc] = useState<string>('https://via.placeholder.com/300');
 
-  // Fetch artist info and Last.fm images using repository helpers
+  // Fetch artist info and artist images from external sources
   useEffect(() => {
     const load = async () => {
       if (!artistId) return;
@@ -33,33 +33,16 @@ const ArtistPage: React.FC = () => {
         const data = await fetchArtistInfo(artistId);
         setArtistInfo(data);
 
-        // Collect all available images from different sources
-        let allImages: string[] = [];
-        
-        // Add Spotify artist images first (most reliable)
-        if (data.artist_info.images && data.artist_info.images.length > 0) {
-          allImages.push(...data.artist_info.images);
-        }
-        
-        // Add track/album images as additional gallery content
-        if (data.artist_info.track_images && data.artist_info.track_images.length > 0) {
-          allImages.push(...data.artist_info.track_images);
-        }
-
+        // Fetch real artist images from external sources (TheAudioDB, Deezer)
+        // NOT from Spotify which only has album artwork
         try {
-          // Try the gallery endpoint for additional images from external sources
           const gallery = await fetchArtistGallery(data.artist_info.artist_name, 12);
           const filtered = gallery.filter(url => url && !url.includes(PLACEHOLDER_HASH));
-          if (filtered.length > 0) {
-            allImages.push(...filtered);
-          }
+          setLastFmImages(filtered);
         } catch (imgErr) {
           console.error('Failed to load external images', imgErr);
+          setLastFmImages([]);
         }
-        
-        // Remove duplicates while preserving order
-        const uniqueImages = [...new Set(allImages)];
-        setLastFmImages(uniqueImages.length > 0 ? uniqueImages : []);
         
       } catch (err: any) {
         console.error('Error loading artist page', err);
@@ -72,15 +55,15 @@ const ArtistPage: React.FC = () => {
     load();
   }, [artistId]);
 
-  // update main image when artistInfo or lastFmImages change
+  // update main image - prefer external artist images over Spotify album art
   useEffect(() => {
     if (!artistInfo) {
       setMainImageSrc('https://via.placeholder.com/300');
       return;
     }
+    // Use external artist images first (real artist photos)
+    // Fall back to placeholder if none available
     const computed =
-      (artistInfo.artist_info.images && artistInfo.artist_info.images.length > 0 && artistInfo.artist_info.images[0]) ||
-      (artistInfo.artist_info.track_images && artistInfo.artist_info.track_images.length > 0 && artistInfo.artist_info.track_images[0]) ||
       (lastFmImages && lastFmImages.length > 0 && lastFmImages[0]) ||
       'https://via.placeholder.com/300';
     setMainImageSrc(computed);
