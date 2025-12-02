@@ -216,7 +216,7 @@ const ActionButton = styled.button<{ primary?: boolean }>`
     transform: scale(1.1);
     background: ${props => props.primary ? 
       `linear-gradient(135deg, #1ed760, ${props.theme.colors.accent})` : 
-      'rgba(255, 255, 255, 0.08)'
+      props.theme.name === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
     };
   }
   

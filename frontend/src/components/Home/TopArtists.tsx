@@ -91,7 +91,7 @@ const TimeRangeButton = styled.button<{ active: boolean }>`
   white-space: nowrap;
 
   &:hover {
-    background: ${props => props.active ? props.theme.colors.accent : 'rgba(255, 255, 255, 0.04)'};
+    background: ${props => props.active ? props.theme.colors.accent : props.theme.colors.buttonBackground};
   }
 `;
 

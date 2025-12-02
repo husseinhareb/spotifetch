@@ -67,7 +67,7 @@ const Header = styled.div`
   justify-content: space-between;
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid ${({ theme }) => theme.colors.buttonBackground};
 `;
 
 const SectionTitle = styled.h2`
@@ -86,7 +86,7 @@ const SectionTitle = styled.h2`
 
 const ViewToggle = styled.div`
   display: flex;
-  background: rgba(255, 255, 255, 0.1);
+  background: ${({ theme }) => theme.colors.buttonBackground};
   border-radius: 12px;
   padding: 4px;
 `;
@@ -148,8 +148,8 @@ const TrackGrid = styled.div`
 `;
 
 const TrackCard = styled.div`
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: ${({ theme }) => theme.name === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   border-radius: 16px;
   padding: 20px;
   transition: all 0.3s ease;
@@ -158,7 +158,7 @@ const TrackCard = styled.div`
   overflow: hidden;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: ${({ theme }) => theme.name === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'};
     transform: translateY(-4px);
     border-color: rgba(29, 185, 84, 0.3);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
@@ -306,8 +306,8 @@ const ActionButton = styled.button`
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: ${({ theme }) => theme.colors.buttonBackground};
+  color: ${({ theme }) => theme.colors.buttonText};
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -315,7 +315,8 @@ const ActionButton = styled.button`
   justify-content: center;
   
   &:hover {
-    background: #1DB954;
+    background: ${({ theme }) => theme.colors.accent};
+    color: white;
     transform: scale(1.1);
   }
 `;

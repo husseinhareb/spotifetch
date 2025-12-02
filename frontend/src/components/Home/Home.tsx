@@ -109,7 +109,7 @@ const StatCard = styled.div<{ $gradient?: string }>`
   border-radius: 16px;
   text-align: center;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   
   &:hover {
     transform: translateY(-8px) scale(1.02);
@@ -200,15 +200,19 @@ const MainPanel = styled.div`
 `;
 
 const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
-  background: ${props => 
-    props.variant === 'secondary' 
-      ? 'rgba(255, 255, 255, 0.1)' 
+  background: ${({ variant, theme }) => 
+    variant === 'secondary' 
+      ? theme.colors.buttonBackground 
       : 'linear-gradient(135deg, #1DB954, #1ed760)'
   };
-  color: white;
-  border: ${props => 
-    props.variant === 'secondary' 
-      ? '1px solid rgba(255, 255, 255, 0.2)' 
+  color: ${({ variant, theme }) => 
+    variant === 'secondary' 
+      ? theme.colors.buttonText 
+      : 'white'
+  };
+  border: ${({ variant, theme }) => 
+    variant === 'secondary' 
+      ? `1px solid ${theme.colors.buttonBackground}` 
       : 'none'
   };
   padding: 14px 28px;
@@ -223,14 +227,18 @@ const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: ${props => 
-      props.variant === 'secondary' 
-        ? '0 8px 25px rgba(255, 255, 255, 0.1)' 
+    box-shadow: ${({ variant, theme }) => 
+      variant === 'secondary' 
+        ? theme.name === 'dark' 
+          ? '0 8px 25px rgba(255, 255, 255, 0.1)' 
+          : '0 8px 25px rgba(0, 0, 0, 0.1)'
         : '0 8px 25px rgba(29, 185, 84, 0.4)'
     };
-    background: ${props => 
-      props.variant === 'secondary' 
-        ? 'rgba(255, 255, 255, 0.15)' 
+    background: ${({ variant, theme }) => 
+      variant === 'secondary' 
+        ? theme.name === 'dark'
+          ? 'rgba(255, 255, 255, 0.15)'
+          : 'rgba(0, 0, 0, 0.1)'
         : 'linear-gradient(135deg, #1ed760, #1DB954)'
     };
   }

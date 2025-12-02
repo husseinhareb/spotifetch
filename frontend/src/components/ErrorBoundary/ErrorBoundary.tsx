@@ -82,12 +82,12 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
       box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
     }
   ` : `
-    background: rgba(255, 255, 255, 0.1);
-    color: ${theme.colors?.text || 'white'};
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: ${theme.colors?.buttonBackground || 'rgba(0, 0, 0, 0.06)'};
+    color: ${theme.colors?.buttonText || theme.colors?.text || '#0b0b0b'};
+    border: 1px solid ${theme.colors?.buttonBackground || 'rgba(0, 0, 0, 0.1)'};
     
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: ${theme.name === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'};
       transform: translateY(-2px);
     }
   `}

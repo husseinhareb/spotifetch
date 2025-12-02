@@ -108,7 +108,7 @@ export const HamburgerIcon = styled.div`
 
 export const ThemeToggle = styled.button`
   background: none;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid ${({ theme }) => theme.colors.buttonBackground};
   color: ${({ theme }) => theme.colors.navText};
   padding: 6px 10px;
   border-radius: 8px;
